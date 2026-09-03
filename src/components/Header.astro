@@ -1,0 +1,120 @@
+---
+---
+<!-- Fondo oscuro al buscar -->
+<div id="search-backdrop" class="search-backdrop"></div>
+
+<header class="main-header">
+  <div class="header-left">
+    <!-- Añadimos ID al botón de hamburguesa -->
+    <button id="btn-mobile-menu" class="icon-btn hide-on-desktop">☰</button>
+    <nav class="hide-on-mobile">
+      <a href="/">Inicio</a>
+      <a href="/portada">Portada</a>
+      <!-- Añadimos ID al botón Aleatorio -->
+      <a href="#" id="btn-random">Aleatorio</a>
+    </nav>
+  </div>
+
+  <div class="header-center">
+    <span class="logo hide-on-mobile">Repositorio Personal</span>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Buscar... (Usa # para tags)" class="search-bar" autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button id="btn-settings" class="icon-btn" title="Apariencia">⚙️</button>
+  </div>
+</header>
+
+<!-- La lista de resultados ahora está fuera del header para poder centrarse libremente -->
+<ul id="search-results" class="search-results"></ul>
+
+<style>
+  /* Mantén los mismos estilos visuales del header de la Fase 1 aquí */
+  .main-header { position: sticky; top: 0; height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 100; }
+  .header-left, .header-center, .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-center { flex-grow: 1; justify-content: center; }
+  nav a { color: var(--text-color); text-decoration: none; font-weight: 500; font-size: 0.9rem;}
+  nav a:hover { text-decoration: underline; }
+  .logo { font-weight: bold; font-size: 1.2rem; margin-right: 1rem; }
+  .search-bar { padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--border-color); width: 250px; z-index: 301; position: relative; }
+  .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+  @media (min-width: 1025px) { .hide-on-desktop { display: none !important; } }
+</style>
+
+<script>
+  let searchData: any[] = [];
+  const input = document.getElementById('search-input') as HTMLInputElement;
+  const resultsBox = document.getElementById('search-results');
+  const backdrop = document.getElementById('search-backdrop');
+
+  // --- LÓGICA DE BÚSQUEDA Y TAGS ---
+  input?.addEventListener('input', async (e) => {
+    const rawQuery = (e.target as HTMLInputElement).value.toLowerCase();
+    
+    if (rawQuery.length < 2) {
+      if (resultsBox) resultsBox.style.display = 'none';
+      if (backdrop) backdrop.style.display = 'none';
+      return;
+    }
+
+    if (searchData.length === 0) {
+      const res = await fetch('/search.json');
+      searchData = await res.json();
+    }
+
+    // Detectar si es búsqueda de tag
+    const isTagSearch = rawQuery.startsWith('#');
+    const query = isTagSearch ? rawQuery.slice(1).trim() : rawQuery;
+
+    const filtered = searchData.filter(item => {
+      const tagMatch = item.tags.some((tag: string) => tag.toLowerCase().includes(query));
+      if (isTagSearch) return tagMatch; // Si empieza con #, SOLO busca en tags
+      return item.title.toLowerCase().includes(query) || tagMatch; // Si no, busca en ambos
+    });
+
+    if (resultsBox && backdrop) {
+      resultsBox.innerHTML = '';
+      if (filtered.length > 0) {
+        filtered.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${item.url}">📄 ${item.title} ${item.tags.length > 0 ? `<small style="opacity:0.5">(${item.tags.join(', ')})</small>` : ''}</a>`;
+          resultsBox.appendChild(li);
+        });
+      } else {
+        resultsBox.innerHTML = '<li class="no-results">No se encontraron resultados</li>';
+      }
+      resultsBox.style.display = 'block';
+      backdrop.style.display = 'block';
+    }
+  });
+
+  // Cerrar buscador al hacer clic afuera
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (resultsBox && backdrop && !target.closest('.search-container') && !target.closest('.search-results')) {
+      resultsBox.style.display = 'none';
+      backdrop.style.display = 'none';
+    }
+  });
+
+  // --- LÓGICA DE PÁGINA ALEATORIA ---
+  document.getElementById('btn-random')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (searchData.length === 0) {
+      const res = await fetch('/search.json');
+      searchData = await res.json();
+    }
+    if (searchData.length > 0) {
+      const random = searchData[Math.floor(Math.random() * searchData.length)];
+      window.location.href = random.url;
+    }
+  });
+
+  // --- LÓGICA DEL MENÚ MÓVIL ---
+  document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
+    const leftPanel = document.querySelector('.left-panel');
+    leftPanel?.classList.toggle('show-mobile-menu');
+  });
+</script>

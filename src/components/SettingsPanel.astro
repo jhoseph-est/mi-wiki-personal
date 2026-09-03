@@ -1,0 +1,123 @@
+---
+---
+<div id="settings-overlay" class="settings-overlay"></div>
+
+<aside id="settings-panel" class="settings-panel">
+  <div class="settings-header">
+    <h3>Apariencia</h3>
+    <button id="close-settings" class="close-btn">✖</button>
+  </div>
+
+  <div class="settings-body">
+    <label>
+      <span>Modo de color</span>
+      <select id="select-modo">
+        <option value="claro">Claro</option>
+        <option value="oscuro">Oscuro</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Estilo visual</span>
+      <select id="select-estilo">
+        <option value="moderno">Moderno</option>
+        <option value="minimalista">Minimalista</option>
+        <option value="academico">Académico</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Tamaño de texto</span>
+      <select id="select-texto">
+        <option value="estandar">Estándar</option>
+        <option value="pequeno">Pequeño</option>
+        <option value="grande">Grande</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Anchura de lectura</span>
+      <select id="select-ancho">
+        <option value="normal">Normal</option>
+        <option value="ancho">Ancho máximo</option>
+      </select>
+    </label>
+  </div>
+</aside>
+
+<style>
+  /* Fondo oscuro semitransparente */
+  .settings-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 199; display: none; opacity: 0; transition: opacity 0.2s;
+  }
+  .settings-overlay.active { display: block; opacity: 1; }
+
+  /* El panel que se desliza */
+  .settings-panel {
+    position: fixed; top: 0; right: -350px; width: 320px; height: 100vh;
+    background: var(--header-bg); border-left: 1px solid var(--border-color);
+    z-index: 200; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column;
+  }
+  .settings-panel.active { right: 0; }
+
+  .settings-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem; border-bottom: 1px solid var(--border-color);
+  }
+  .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-color); }
+  
+  .settings-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  label { display: flex; flex-direction: column; gap: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+  select {
+    padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);
+    background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer;
+  }
+</style>
+
+<script>
+  // Lógica para abrir/cerrar y aplicar los atributos data-
+  const panel = document.getElementById('settings-panel');
+  const overlay = document.getElementById('settings-overlay');
+  const btnOpen = document.getElementById('btn-settings');
+  const btnClose = document.getElementById('close-settings');
+
+  function togglePanel() {
+    panel?.classList.toggle('active');
+    overlay?.classList.toggle('active');
+  }
+
+  btnOpen?.addEventListener('click', togglePanel);
+  btnClose?.addEventListener('click', togglePanel);
+  overlay?.addEventListener('click', togglePanel);
+
+  // Manejo de preferencias
+  const selects = ['modo', 'estilo', 'texto', 'ancho'];
+  
+  selects.forEach(id => {
+    const select = document.getElementById(`select-${id}`) as HTMLSelectElement;
+    
+    // ¡NUEVO!: Verificar si hay un tema forzado
+    const html = document.documentElement;
+    const temaForzado = html.getAttribute('data-tema-forzado');
+    
+    if (id === 'estilo' && temaForzado) {
+      select.value = temaForzado;
+      select.disabled = true; // Bloquea el selector
+      select.title = "Estilo forzado por el documento";
+      select.style.opacity = "0.5";
+    } else {
+      // 1. Cargar valor guardado normal
+      const guardado = localStorage.getItem(`pref-${id}`);
+      if (guardado) select.value = guardado;
+    }
+
+    // 2. Escuchar cambios
+    select?.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      html.setAttribute(`data-${id}`, target.value);
+      localStorage.setItem(`pref-${id}`, target.value);
+    });
+  });
+</script>

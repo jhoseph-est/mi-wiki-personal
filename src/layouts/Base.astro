@@ -1,0 +1,95 @@
+---
+import '../styles/base.css';
+import 'katex/dist/katex.min.css';
+import Header from '../components/Header.astro';
+import LeftSidebar from '../components/LeftSidebar.astro';
+import RightSidebar from '../components/RightSidebar.astro';
+import SettingsPanel from '../components/SettingsPanel.astro';
+
+// 1. Recibimos el frontmatter
+const { title, headings = [], frontmatter = {} } = Astro.props;
+---
+<!DOCTYPE html>
+<!-- 2. Dejamos una "nota" con el tema forzado si es que existe en el YAML -->
+<html lang="es" data-tema-forzado={frontmatter.theme}>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} | Repositorio Personal</title>
+    
+    <!-- 3. Actualizamos el script -->
+    <script is:inline>
+      const html = document.documentElement;
+      const temaForzado = html.getAttribute('data-tema-forzado');
+      
+      const prefs = ['modo', 'estilo', 'texto', 'ancho'];
+      prefs.forEach(id => {
+        // Si estamos evaluando el 'estilo' y hay uno forzado, lo usamos y saltamos lo demás
+        if (id === 'estilo' && temaForzado) {
+          html.setAttribute('data-estilo', temaForzado);
+          return; 
+        }
+        // Si no, cargamos normalmente desde localStorage
+        const guardado = localStorage.getItem(`pref-${id}`);
+        if (guardado) {
+          html.setAttribute(`data-${id}`, guardado);
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <SettingsPanel />
+    <Header />
+    
+    <div class="layout-grid">
+      <!-- Columna 1: Panel Izquierdo Fijo -->
+      <aside class="sticky-panel left-panel hide-on-mobile">
+        <LeftSidebar headings={headings} />
+      </aside>
+
+      <!-- Columna 2: Contenido central -->
+      <main class="main-content">
+        <slot />
+      </main>
+
+      <!-- Columna 3: Panel Derecho Fijo -->
+      <aside class="sticky-panel right-panel hide-on-tablet">
+        <RightSidebar frontmatter={frontmatter} />
+      </aside>
+    </div>
+<!-- SCRIPT PARA COPIAR CÓDIGO -->
+    <script>
+      // Esperamos a que la página cargue
+      document.addEventListener('DOMContentLoaded', () => {
+        const codeBlocks = document.querySelectorAll('.main-content pre');
+        
+        codeBlocks.forEach(block => {
+          // Creamos el botón
+          const btn = document.createElement('button');
+          btn.className = 'copy-code-btn';
+          btn.textContent = 'Copiar';
+          
+          // Lo añadimos al bloque de código
+          block.appendChild(btn);
+          
+          // Lógica de copia al portapapeles
+          btn.addEventListener('click', async () => {
+            const code = block.querySelector('code');
+            if (code) {
+              await navigator.clipboard.writeText(code.innerText);
+              
+              // Efecto visual de éxito
+              btn.textContent = '¡Copiado!';
+              btn.classList.add('copied');
+              
+              setTimeout(() => {
+                btn.textContent = 'Copiar';
+                btn.classList.remove('copied');
+              }, 2000);
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+---
+---
+<div class="theme-selector">
+  <label for="theme-select">Tema:</label>
+  <select id="theme-select">
+    <option value="moderno">Moderno</option>
+    <option value="oscuro">Oscuro</option>
+    <option value="academico">Académico</option>
+    <option value="minimalista">Minimalista</option>
+  </select>
+</div>
+
+<!-- El script de cliente que cambia el tema y lo guarda -->
+<script>
+  // Buscamos el elemento select
+  const select = document.getElementById('theme-select') as HTMLSelectElement;
+
+  // 1. Poner el select en el valor correcto al cargar
+  const temaActual = localStorage.getItem('preferencia-tema') || 'moderno';
+  if (select) select.value = temaActual;
+
+  // 2. Escuchar cuando el usuario cambia de opción
+  select?.addEventListener('change', (e) => {
+    const target = e.target as HTMLSelectElement;
+    const nuevoTema = target.value;
+    
+    // Limpiamos las clases del body y ponemos la nueva
+    document.body.className = '';
+    document.body.classList.add(`theme-${nuevoTema}`);
+    
+    // Guardamos la preferencia en la memoria del navegador
+    localStorage.setItem('preferencia-tema', nuevoTema);
+  });
+</script>
+
+<style>
+  .theme-selector {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  select {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+</style>

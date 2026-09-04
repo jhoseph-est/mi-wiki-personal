@@ -4,6 +4,7 @@ date: 2026-09-03
 author: "Admin"
 tags: ["inicio", "bienvenida", "sistema"]
 orden: 1
+theme: "moderno"
 ---
 
 # Bienvenido a tu Espacio Personal de Documentación 🚀

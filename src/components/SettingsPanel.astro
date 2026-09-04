@@ -116,7 +116,11 @@
     // 2. Escuchar cambios
     select?.addEventListener('change', (e) => {
       const target = e.target as HTMLSelectElement;
+      const html = document.documentElement;
+      
       html.setAttribute(`data-${id}`, target.value);
+      document.body.setAttribute(`data-${id}`, target.value); // Forzar sincronización en body
+      
       localStorage.setItem(`pref-${id}`, target.value);
     });
   });

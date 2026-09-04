@@ -9,10 +9,10 @@ const formatDate = (dateStr: Date | string) => {
 
 <div class="right-sidebar-wrapper" id="right-sidebar">
   <div class="sidebar-tabs">
-    <button class="tab-btn active" data-target="meta-pane" data-tab-id="right-meta">🏷️ Metadatos</button>
+    <button class="tab-btn active" data-target="meta-pane" data-tab-id="right-meta">📌 Metadatos</button>
     <button class="tab-btn" data-target="prefs-pane" data-tab-id="right-prefs">🎨 Apariencia</button>
   </div>
-
+  
   <div class="sidebar-content">
     <div id="meta-pane" class="tab-pane active">
       {frontmatter.date && (
@@ -29,7 +29,7 @@ const formatDate = (dateStr: Date | string) => {
       )}
       {frontmatter.tags && frontmatter.tags.length > 0 && (
         <div class="ficha">
-          <span class="ficha-label">🔖 Etiquetas</span>
+          <span class="ficha-label">🏷️ Etiquetas</span>
           <div class="tags-container">
             {frontmatter.tags.map((tag: string) => (
               <span class="tag">{tag}</span>
@@ -51,14 +51,7 @@ const formatDate = (dateStr: Date | string) => {
             <option value="oscuro">Oscuro</option>
           </select>
         </label>
-        <label>
-          <span>Estilo visual</span>
-          <select id="r-select-estilo" class="pref-select">
-            <option value="moderno">Moderno</option>
-            <option value="minimalista">Minimalista</option>
-            <option value="academico">Académico</option>
-          </select>
-        </label>
+        
         <label>
           <span>Tamaño de texto</span>
           <select id="r-select-texto" class="pref-select">
@@ -67,6 +60,7 @@ const formatDate = (dateStr: Date | string) => {
             <option value="grande">Grande</option>
           </select>
         </label>
+        
         <label>
           <span>Anchura de lectura</span>
           <select id="r-select-ancho" class="pref-select">
@@ -84,16 +78,13 @@ const formatDate = (dateStr: Date | string) => {
   .sidebar-tabs { display: flex; background: rgba(0,0,0,0.05); padding: 3px; border-radius: 8px; margin-bottom: 0.5rem; gap: 2px; }
   .tab-btn { flex: 1; background: none; border: none; padding: 0.4rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-color); opacity: 0.7; transition: all 0.2s; }
   .tab-btn.active { background: var(--header-bg); opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-
   .tab-pane { display: none; flex-direction: column; gap: 0.8rem; }
   .tab-pane.active { display: flex !important; }
-
   .ficha { background: rgba(0,0,0,0.03); padding: 0.8rem; border-radius: 8px; display: flex; flex-direction: column; gap: 0.2rem; border: 1px solid var(--border-color); }
   .ficha-label { font-size: 0.75rem; font-weight: bold; opacity: 0.8; }
   .ficha-value { font-size: 0.85rem; color: var(--text-color); }
   .tags-container { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
   .tag { background: var(--text-color); color: var(--bg-color); padding: 0.1rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: lowercase; }
-  
   .prefs-body { display: flex; flex-direction: column; gap: 0.8rem; }
   .prefs-body label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.85rem; }
   .pref-select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; font-size: 0.85rem; }
@@ -105,6 +96,19 @@ const formatDate = (dateStr: Date | string) => {
     const wrapper = document.getElementById('right-sidebar');
     if (!wrapper) return;
 
+    // Función para actualizar y mostrar el valor real en los selects
+    function updateSelectValues() {
+      const prefs = ['modo', 'texto', 'ancho'];
+      prefs.forEach(id => {
+        const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement;
+        const guardado = localStorage.getItem(`pref-${id}`) || document.documentElement.getAttribute(`data-${id}`);
+        if (select && guardado) {
+          select.value = guardado;
+        }
+      });
+    }
+
+    // 1. Restaurar pestaña activa guardada
     const savedTab = localStorage.getItem('right-active-tab') || 'right-meta';
     const targetPaneId = savedTab.replace('right-', '') + '-pane';
 
@@ -117,6 +121,9 @@ const formatDate = (dateStr: Date | string) => {
       else p.classList.remove('active');
     });
 
+    // Sincronizar selectores visualmente de inmediato
+    updateSelectValues();
+
     wrapper.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const targetId = (e.currentTarget as HTMLElement).getAttribute('data-target');
@@ -125,34 +132,41 @@ const formatDate = (dateStr: Date | string) => {
         wrapper.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         wrapper.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         
-        (e.currentTarget as HTMLElement).classList.add('active');
+        const clickedBtn = e.currentTarget as HTMLElement;
+        clickedBtn.classList.add('active');
         wrapper.querySelector(`#${targetId}`)?.classList.add('active');
 
-        if (tabId) localStorage.setItem('right-active-tab', tabId);
+        if (tabId) {
+          localStorage.setItem('right-active-tab', tabId);
+          if (tabId === 'right-prefs') {
+            updateSelectValues();
+          }
+        }
       });
     });
 
-    const prefs = ['modo', 'estilo', 'texto', 'ancho'];
+    // 2. Manejar cambios de usuario en los selectores
+    const prefs = ['modo', 'texto', 'ancho'];
     prefs.forEach(id => {
       const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement;
-      const html = document.documentElement;
-      const temaForzado = html.getAttribute('data-tema-forzado');
-
       if (select) {
-        if (id === 'estilo' && temaForzado) {
-          select.value = temaForzado;
-          select.disabled = true;
-          select.title = "Estilo forzado por el documento";
-          select.style.opacity = "0.5";
-        } else {
-          const guardado = localStorage.getItem(`pref-${id}`);
-          if (guardado) select.value = guardado;
-        }
+        // Evitar duplicar listeners limpiando con un clon fresco
+        const newSelect = select.cloneNode(true) as HTMLSelectElement;
+        select.replaceWith(newSelect);
 
-        select.addEventListener('change', (e) => {
+        const guardado = localStorage.getItem(`pref-${id}`);
+        if (guardado) newSelect.value = guardado;
+
+        newSelect.addEventListener('change', (e) => {
           const target = e.target as HTMLSelectElement;
-          html.setAttribute(`data-${id}`, target.value);
-          localStorage.setItem(`pref-${id}`, target.value);
+          const val = target.value;
+          const html = document.documentElement;
+          const body = document.body;
+
+          html.setAttribute(`data-${id}`, val);
+          if (id === 'modo') body.setAttribute('data-modo', val);
+
+          localStorage.setItem(`pref-${id}`, val);
         });
       }
     });

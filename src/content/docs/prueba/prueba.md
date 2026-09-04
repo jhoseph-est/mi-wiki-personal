@@ -1,5 +1,6 @@
 ---
 title: "Prueba de Estrés Markdown"
+theme: "minimalista"
 date: 2026-09-03
 author: "Admin"
 tags: ["prueba", "markdown", "componentes"]

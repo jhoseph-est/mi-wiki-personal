@@ -1,6 +1,6 @@
 ---
 title: "Documento de ciencia 2"
-theme: "academico"
+theme: "moderno"
 ---
 
 # Probando el TOC

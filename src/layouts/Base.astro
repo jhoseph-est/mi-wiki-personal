@@ -4,30 +4,59 @@ import 'katex/dist/katex.min.css';
 import Header from '../components/Header.astro';
 import LeftSidebar from '../components/LeftSidebar.astro';
 import RightSidebar from '../components/RightSidebar.astro';
-import { ClientRouter } from 'astro:transitions'; // <-- IMPORTANTE
+import { ClientRouter } from 'astro:transitions';
 
 const { title, headings = [], frontmatter = {} } = Astro.props;
+
+// Extraer el tema definido en el YAML del documento actual (por defecto 'moderno')
+const estiloDoc = frontmatter.theme || 'moderno';
 ---
 <!DOCTYPE html>
-<html lang="es" data-tema-forzado={frontmatter.theme}>
+<html lang="es" data-estilo={estiloDoc}>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} | Repositorio Personal</title>
-    <ClientRouter /> <!-- <-- Mantiene el layout fijo sin recargas bruscas -->
+    <ClientRouter />
     
     <script is:inline>
-      const html = document.documentElement;
-      const temaForzado = html.getAttribute('data-tema-forzado');
-      const prefs = ['modo', 'estilo', 'texto', 'ancho'];
-      prefs.forEach(id => {
-        if (id === 'estilo' && temaForzado) {
-          html.setAttribute('data-estilo', temaForzado);
-          return;
+      (function() {
+        const html = document.documentElement;
+        const body = document.body;
+
+        // Leer preferencias globales del navegador
+        const modo = localStorage.getItem('pref-modo') || 'oscuro';
+        const texto = localStorage.getItem('pref-texto') || 'estandar';
+        const ancho = localStorage.getItem('pref-ancho') || 'normal';
+
+        // Aplicar de inmediato al HTML
+        html.setAttribute('data-modo', modo);
+        html.setAttribute('data-texto', texto);
+        html.setAttribute('data-ancho', ancho);
+
+        if (body) {
+          body.setAttribute('data-modo', modo);
         }
-        const guardado = localStorage.getItem(`pref-${id}`);
-        if (guardado) html.setAttribute(`data-${id}`, guardado);
-      });
+
+        // Interceptar la transición de Astro para actualizar el estilo según el nuevo documento
+        document.addEventListener('astro:before-swap', (ev) => {
+          const m = localStorage.getItem('pref-modo') || 'oscuro';
+          const t = localStorage.getItem('pref-texto') || 'estandar';
+          const a = localStorage.getItem('pref-ancho') || 'normal';
+          
+          // Extraer el data-estilo del documento entrante
+          const nuevoEstilo = ev.newDocument.documentElement.getAttribute('data-estilo') || 'moderno';
+
+          ev.newDocument.documentElement.setAttribute('data-modo', m);
+          ev.newDocument.documentElement.setAttribute('data-estilo', nuevoEstilo);
+          ev.newDocument.documentElement.setAttribute('data-texto', t);
+          ev.newDocument.documentElement.setAttribute('data-ancho', a);
+
+          if (ev.newDocument.body) {
+            ev.newDocument.body.setAttribute('data-modo', m);
+          }
+        });
+      })();
     </script>
   </head>
   <body>
@@ -37,7 +66,9 @@ const { title, headings = [], frontmatter = {} } = Astro.props;
         <LeftSidebar headings={headings} />
       </aside>
       <main class="main-content">
-        <slot />
+        <div class="content-wrapper">
+          <slot />
+        </div>
       </main>
       <aside class="sticky-panel right-panel hide-on-tablet">
         <RightSidebar frontmatter={frontmatter} />

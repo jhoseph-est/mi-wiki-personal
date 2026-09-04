@@ -1,0 +1,76 @@
+---
+title: "Test de Integración MDX"
+date: 2026-09-03
+author: "Admin"
+tags: ["prueba", "mdx", "sistema"]
+orden: 99
+---
+
+# Prueba Definitiva de MDX
+
+Si puedes leer esto y el panel derecho muestra los metadatos correctamente, tu frontmatter y el renderizado básico están funcionando a la perfección.
+
+## 1. Markdown Estándar y Matemáticas
+
+El texto en **negrita** y *cursiva* funciona igual. La fórmula en línea es $E = mc^2$, y en bloque:
+
+```math
+f(x) = \int_{-\infty}^\infty \hat{f}(\xi)\,e^{2 \pi i \xi x} \,d\xi
+```
+
+## 2. JSX: Cajas de Información con Código
+
+En MDX, los contenedores HTML usan objetos para los estilos (`style={{ ... }}`) y requieren líneas en blanco antes y después del Markdown interno (como el bloque de código).
+
+<div style={{ background: 'rgba(59, 130, 246, 0.1)', borderLeft: '4px solid #3b82f6', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+
+  <strong>ℹ️ Bloque Informativo JSX</strong>
+  <p>Si este bloque azul se ve bien y el código Python abajo no rompe la página, la separación de espacios es correcta.</p>
+  
+  ```python
+  def saludar(sistema):
+      print(f"¡Hola, {sistema}! MDX funciona al 100%.")
+  ```
+
+</div>
+
+## 3. SVG Animado (camelCase)
+
+Los atributos compuestos de HTML y SVG deben escribirse en `camelCase` (ejemplo: `strokeWidth` en lugar de `stroke-width`).
+
+<svg width="150" height="150" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', margin: '2rem auto', background: '#1e293b', borderRadius: '12px' }}>
+  <circle cx="100" cy="100" r="60" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4 4" />
+  <circle cx="100" cy="100" r="15" fill="#3b82f6">
+    <animate attributeName="r" values="13; 17; 13" dur="1.5s" repeatCount="indefinite" />
+  </circle>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="4s" repeatCount="indefinite" />
+    <circle cx="100" cy="40" r="6" fill="#60a5fa" />
+  </g>
+</svg>
+
+## 4. Tabla JSX Avanzada
+
+Atributos estructurales de HTML como `rowspan` y `colspan` ahora son `rowSpan` y `colSpan`.
+
+<div style={{ overflowX: 'auto', margin: '2rem 0' }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+    <thead>
+      <tr style={{ backgroundColor: 'rgba(0,0,0,0.05)' }}>
+        <th style={{ border: '1px solid var(--border-color)', padding: '12px' }} rowSpan="2">Tecnología</th>
+        <th style={{ border: '1px solid var(--border-color)', padding: '12px' }} colSpan="2">Estado de Integración</th>
+      </tr>
+      <tr style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}>
+        <th style={{ border: '1px solid var(--border-color)', padding: '12px' }}>Markdown (.md)</th>
+        <th style={{ border: '1px solid var(--border-color)', padding: '12px' }}>JSX / MDX (.mdx)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style={{ border: '1px solid var(--border-color)', padding: '12px', fontWeight: 'bold' }}>Soporte Astro</td>
+        <td style={{ border: '1px solid var(--border-color)', padding: '12px', color: '#10b981', fontWeight: 'bold' }}>Nativo</td>
+        <td style={{ border: '1px solid var(--border-color)', padding: '12px', color: '#10b981', fontWeight: 'bold' }}>Activo</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -32,7 +32,7 @@ const formatDate = (dateStr: Date | string) => {
           <span class="ficha-label">🏷️ Etiquetas</span>
           <div class="tags-container">
             {frontmatter.tags.map((tag: string) => (
-              <span class="tag">{tag}</span>
+              <a href={`/tags/${tag}`} class="tag">{tag}</a>
             ))}
           </div>
         </div>

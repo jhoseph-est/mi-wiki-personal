@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const allDocs = await getCollection('docs');
+  
+  // Extraer todos los tags únicos
+  const uniqueTags = [...new Set(allDocs.map((doc: any) => doc.data.tags || []).flat())];
+
+  return uniqueTags.map((tag) => {
+    const filteredDocs = allDocs.filter((doc: any) => 
+      doc.data.tags?.includes(tag)
+    );
+    return {
+      params: { tag },
+      props: { docs: filteredDocs },
+    };
+  });
+}
+
+const { tag } = Astro.params;
+const { docs } = Astro.props;
+---
+
+<Base title={`Etiqueta: ${tag}`}>
+  <div class="tag-header">
+    <h1>Documentos etiquetados con: <span>#{tag}</span></h1>
+    <p>Se encontraron {docs.length} apuntes.</p>
+  </div>
+
+  <ul class="tag-list">
+    {docs.map((doc: any) => (
+      <li>
+        <a href={`/docs/${doc.id}`} class="tag-link">
+          <h2>{doc.data.title}</h2>
+          <span class="folder-badge">📁 {doc.id.split('/').slice(0, -1).join('/') || 'Raíz'}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .tag-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+  }
+  .tag-header span {
+    color: #3b82f6;
+  }
+  .tag-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .tag-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+  }
+  .tag-link:hover {
+    background: rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .tag-link h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  .folder-badge {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    background: rgba(0,0,0,0.05);
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+  }
+</style>

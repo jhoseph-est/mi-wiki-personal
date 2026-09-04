@@ -4,38 +4,30 @@ import Base from '../../layouts/Base.astro';
 
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
-
   return allDocs.map(doc => {
-    // 1. Identificar en qué carpeta está el archivo actual
     const partes = doc.id.split('/');
     const carpetaActual = partes.length > 1 ? partes.slice(0, -1).join('/') : '';
-
-    // 2. Filtrar SOLO los documentos de esa misma carpeta
+    
     const docsEnCarpeta = allDocs.filter(d => {
       const dPartes = d.id.split('/');
       const dCarpeta = dPartes.length > 1 ? dPartes.slice(0, -1).join('/') : '';
       return dCarpeta === carpetaActual;
     });
-
-    // 3. El TRIPLE FILTRO: orden -> fecha -> alfabético
+    
     docsEnCarpeta.sort((a, b) => {
-      const ordenA = a.data.orden ?? 9999; // Si no hay orden, lo manda al final
+      const ordenA = a.data.orden ?? 9999;
       const ordenB = b.data.orden ?? 9999;
       if (ordenA !== ordenB) return ordenA - ordenB;
-
       const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
       const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
-      if (dateA !== dateB) return dateB - dateA; // Más recientes primero
-
+      if (dateA !== dateB) return dateB - dateA;
       return a.id.localeCompare(b.id);
     });
-
-    // 4. Encontrar el documento anterior y siguiente
+    
     const index = docsEnCarpeta.findIndex(d => d.id === doc.id);
     const prev = index > 0 ? docsEnCarpeta[index - 1] : null;
     const next = index < docsEnCarpeta.length - 1 ? docsEnCarpeta[index + 1] : null;
-
-    // Pasamos todo al layout
+    
     return {
       params: { id: doc.id },
       props: { doc, prev, next },
@@ -43,43 +35,79 @@ export async function getStaticPaths() {
   });
 }
 
-// Recibimos los nuevos props
 const { doc, prev, next } = Astro.props;
 const { Content, headings } = await render(doc);
+
+// --- LÓGICA DE MIGAS DE PAN ---
+const breadcrumbs = doc.id.split('/').slice(0, -1);
+
+// --- LÓGICA DE TIEMPO DE LECTURA ---
+const words = doc.body ? doc.body.split(/\s+/).length : 0;
+const readingTime = Math.max(1, Math.ceil(words / 200)); // 200 palabras por minuto
+
+// Inyectamos el tiempo de lectura en el frontmatter para pasarlo al RightSidebar
+const frontmatterConExtra = { ...doc.data, readingTime };
 ---
 
-<Base title={doc.data.title} headings={headings} frontmatter={doc.data}>
+<Base title={doc.data.title} headings={headings} frontmatter={frontmatterConExtra}>
+  
+  <!-- MIGAS DE PAN (BREADCRUMBS) -->
+  <nav class="breadcrumbs">
+    <a href="/">Inicio</a> 
+    {breadcrumbs.length > 0 && <span> &rsaquo; </span>}
+    {breadcrumbs.map((folder, index) => (
+      <span style="text-transform: capitalize;">
+        {folder} {index < breadcrumbs.length - 1 && ' › '}
+      </span>
+    ))}
+  </nav>
+
   <article>
     <Content />
   </article>
 
-  <!-- NUEVO: Botones de Navegación -->
   <hr class="nav-divider" />
   <div class="doc-nav">
-    
     {prev ? (
       <a href={`/docs/${prev.id}`} class="nav-btn prev">
-        <span class="nav-label">← Anterior</span>
+        <span class="nav-label">« Anterior</span>
         <span class="nav-title">{prev.data.title}</span>
       </a>
     ) : (
       <div class="nav-btn disabled prev">
-        <span class="nav-label">← Anterior</span>
+        <span class="nav-label">« Anterior</span>
         <span class="nav-title">Inicio de sección</span>
       </div>
     )}
-
     {next ? (
       <a href={`/docs/${next.id}`} class="nav-btn next">
-        <span class="nav-label">Siguiente →</span>
+        <span class="nav-label">Siguiente »</span>
         <span class="nav-title">{next.data.title}</span>
       </a>
     ) : (
       <div class="nav-btn disabled next">
-        <span class="nav-label">Siguiente →</span>
+        <span class="nav-label">Siguiente »</span>
         <span class="nav-title">Fin de sección</span>
       </div>
     )}
-
   </div>
 </Base>
+
+<style>
+  .breadcrumbs {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .breadcrumbs a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+</style>

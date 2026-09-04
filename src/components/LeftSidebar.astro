@@ -183,6 +183,42 @@ const tocTree = buildToc(headings);
         localStorage.setItem('folder-states', JSON.stringify(currentStates));
       });
     });
+
+  // --- SCROLL SPY PARA EL ÍNDICE ---
+  const tocItems = document.querySelectorAll('.toc-item');
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -80% 0px', // Detecta cuando el título cruza la parte superior
+    threshold: 1.0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        // Quitamos la clase activa de todos
+        tocItems.forEach(node => {
+          const item = node as HTMLElement;
+          item.style.fontWeight = 'normal';
+          item.style.color = 'var(--text-color)';
+          item.style.opacity = '0.8';
+        });
+        
+        // Resaltamos el elemento actual en el índice
+        const activeItem = document.querySelector(`.toc-item[href="#${entry.target.id}"]`);
+        if (activeItem) {
+          const htmlElement = activeItem as HTMLElement;
+          htmlElement.style.fontWeight = 'bold';
+          htmlElement.style.color = '#3b82f6'; // Azul moderno
+          htmlElement.style.opacity = '1';
+        }
+      }
+    });
+  }, observerOptions);
+  
+  // Observamos todos los encabezados del contenido principal
+  document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3').forEach(h => {
+    observer.observe(h);
+  });
   }
 
   document.addEventListener('astro:page-load', initLeftSidebar);

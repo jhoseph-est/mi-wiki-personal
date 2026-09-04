@@ -139,6 +139,30 @@
         leftPanel?.classList.toggle('show-mobile-menu');
       });
     }
+
+// --- ATAJOS DE TECLADO (BÚSQUEDA) ---
+    document.addEventListener('keydown', (e) => {
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const resultsBox = document.getElementById('search-results');
+      const backdrop = document.getElementById('search-backdrop');
+
+      // Abrir buscador (Cmd/Ctrl + K)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchInput) searchInput.focus();
+      }
+
+      // Cerrar buscador (Esc)
+      if (e.key === 'Escape') {
+        if (resultsBox && backdrop) {
+          resultsBox.style.display = 'none';
+          backdrop.style.display = 'none';
+        }
+        if (searchInput) {
+          searchInput.blur(); // Quita el parpadeo del cursor
+        }
+      }
+    });
   }
 
   // Se ejecuta al cargar la página inicialmente y en cada transición de Astro

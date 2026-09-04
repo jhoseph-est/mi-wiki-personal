@@ -18,7 +18,9 @@
     "astro": "^7.2.10",
     "katex": "^0.18.5",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-github-blockquote-alert": "^2.1.0",
+    "remark-math": "^6.0.0",
+    "remark-wiki-link": "^2.0.1"
   },
   "allowScripts": {
     "esbuild": true

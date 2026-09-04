@@ -80,3 +80,29 @@ Guarda el archivo y ábrelo en tu navegador (`/docs/prueba-total`).
 
 **¿Cómo se renderizó todo en tu pantalla? ¿Hubo algún problema visual con la tabla HTML, la animación del SVG o el código dentro del aviso rojo?**
 ![alt text](image.png)
+
+
+
+
+> [!NOTE]
+> Esto es una nota académica. Mi código fuente ahora se ve limpio y no tuve que usar ni un solo `div`.
+
+> [!WARNING]
+> Ten cuidado, la fase 2 está completada exitosamente.
+
+```python
+# Y este código ahora cambiará de color
+# cuando uses el menú de la derecha
+print("¡El Shiki Dinámico funciona!")
+```
+
+
+Revisa el apunte de [[mates]] para entender la base. Y aquí tienes la arquitectura:
+
+```mermaid
+graph TD;
+    A[Cliente] --> B(Servidor Astro);
+    B --> C{Base de Datos};
+    C -->|Éxito| D[Render HTML];
+    C -->|Error| E[Página 404];
+```

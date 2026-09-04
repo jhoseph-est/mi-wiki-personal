@@ -74,5 +74,113 @@ const estiloDoc = frontmatter.theme || 'moderno';
         <RightSidebar frontmatter={frontmatter} />
       </aside>
     </div>
+<!-- Importamos Mermaid de forma asíncrona y le decimos a Astro que no lo empaquete (is:inline) -->
+<script type="module" is:inline>
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  
+  // Guardaremos una referencia de los contenedores para re-renderizarlos
+  let mermaidContainers = [];
+
+  // Función encargada de dibujar todos los gráficos
+  async function renderizarMermaid() {
+    if (mermaidContainers.length === 0) return;
+
+    // Detectamos el tema actual
+    const currentMode = document.documentElement.getAttribute('data-modo') === 'oscuro' ? 'dark' : 'default';
+    mermaid.initialize({ startOnLoad: false, theme: currentMode });
+
+    // Re-dibujamos cada contenedor
+    for (let i = 0; i < mermaidContainers.length; i++) {
+      const container = mermaidContainers[i];
+      const graphCode = container.getAttribute('data-mermaid-code');
+      
+      try {
+        // Generamos un ID único y renderizamos el SVG
+        const uniqueId = `mermaid-svg-${i}-${Date.now()}`;
+        const { svg } = await mermaid.render(uniqueId, graphCode);
+        container.innerHTML = svg;
+      } catch (error) {
+        console.error("Error al renderizar Mermaid:", error);
+      }
+    }
+  }
+
+  document.addEventListener('astro:page-load', async () => {
+    mermaidContainers = []; // Limpiamos el array al cambiar de página
+    
+    const mermaidCodes = document.querySelectorAll('pre[data-language="mermaid"] code, pre code.language-mermaid');
+    if (mermaidCodes.length === 0) return;
+
+    // Transformamos los bloques y guardamos el código original intacto
+    mermaidCodes.forEach((codeBlock) => {
+      const pre = codeBlock.closest('pre');
+      const graphCode = codeBlock.textContent; 
+      
+      const container = document.createElement('div');
+      container.className = 'mermaid-dynamic-container';
+      container.style.textAlign = 'center';
+      container.style.margin = '2rem 0';
+      // Guardamos el texto original crudo aquí:
+      container.setAttribute('data-mermaid-code', graphCode);
+      
+      if (pre) pre.replaceWith(container);
+      mermaidContainers.push(container);
+    });
+
+    // Primera renderización al cargar la página
+    await renderizarMermaid();
+  });
+
+  // --- EL VIGILANTE DEL MODO OSCURO ---
+  // Observamos si el atributo 'data-modo' cambia en el <html>
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'data-modo') {
+        // Si cambió el modo, re-dibujamos los gráficos al instante
+        renderizarMermaid();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, { attributes: true });
+</script>
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const preElements = document.querySelectorAll('.main-content pre');
+    
+    preElements.forEach((preNode) => {
+      // Le decimos a TypeScript que esto es un elemento HTML
+      const pre = preNode as HTMLElement; 
+      
+      if (pre.querySelector('.copy-code-btn')) return;
+      
+      const btn = document.createElement('button');
+      btn.className = 'copy-code-btn';
+      btn.innerText = 'Copiar';
+      
+      btn.addEventListener('click', async () => {
+        // También tipamos el elemento <code> interno
+        const codeElement = pre.querySelector('code') as HTMLElement | null;
+        
+        // Usamos textContent que es más seguro para extraer código fuente crudo
+        const code = codeElement ? codeElement.textContent : pre.textContent;
+        
+        if (code) {
+          await navigator.clipboard.writeText(code);
+          
+          btn.innerText = '¡Copiado!';
+          btn.classList.add('copied');
+          
+          setTimeout(() => {
+            btn.innerText = 'Copiar';
+            btn.classList.remove('copied');
+          }, 2000);
+        }
+      });
+      
+      pre.appendChild(btn);
+    });
+  });
+</script>
   </body>
 </html>

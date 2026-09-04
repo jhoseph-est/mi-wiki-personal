@@ -236,3 +236,103 @@ a.nav-btn:hover {
 ::view-transition-new(root) {
   animation: 0.15s ease-out both fadeIn;
 }
+
+/* --- NOTAS AL PIE ACADÉMICAS --- */
+.footnotes {
+  margin-top: 4rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+.footnotes ol {
+  padding-left: 1.5rem;
+}
+.footnotes li {
+  margin-bottom: 0.5rem;
+}
+/* Flecha para regresar al texto principal */
+.data-footnote-backref {
+  text-decoration: none;
+  margin-left: 0.5rem;
+  color: var(--text-color);
+  font-weight: bold;
+}
+.data-footnote-backref:hover {
+  text-decoration: underline;
+}
+
+
+/* --- SHIKI DUAL THEME --- */
+/* Cuando el modo es claro */
+html[data-modo="claro"] .astro-code,
+html[data-modo="claro"] .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+/* Cuando el modo es oscuro */
+html[data-modo="oscuro"] .astro-code,
+html[data-modo="oscuro"] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* Ajuste rápido para el botón de copiar en modo claro */
+html[data-modo="claro"] .copy-code-btn {
+  color: #333;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* --- CALLOUTS NATIVOS (ALERTAS) --- */
+.markdown-alert {
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--border-color);
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+/* Agrega un poco de espacio para el icono SVG (si el plugin lo genera) */
+.markdown-alert-title svg {
+  margin-right: 0.5rem;
+  fill: currentColor;
+}
+.markdown-alert p:last-child {
+  margin-bottom: 0;
+}
+
+/* Colores específicos de las alertas */
+.markdown-alert.markdown-alert-note { border-color: #3b82f6; }
+.markdown-alert.markdown-alert-note .markdown-alert-title { color: #3b82f6; }
+
+.markdown-alert.markdown-alert-warning { border-color: #eab308; }
+.markdown-alert.markdown-alert-warning .markdown-alert-title { color: #eab308; }
+
+.markdown-alert.markdown-alert-important { border-color: #8b5cf6; }
+.markdown-alert.markdown-alert-important .markdown-alert-title { color: #8b5cf6; }
+
+.markdown-alert.markdown-alert-caution { border-color: #ef4444; }
+.markdown-alert.markdown-alert-caution .markdown-alert-title { color: #ef4444; }
+
+/* --- ENLACES BIDIRECCIONALES --- */
+a.internal {
+  color: var(--text-color);
+  background: rgba(139, 92, 246, 0.15); /* Morado sutil */
+  border-bottom: 2px solid #8b5cf6;
+  text-decoration: none;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+a.internal:hover {
+  background: #8b5cf6;
+  color: #ffffff;
+}

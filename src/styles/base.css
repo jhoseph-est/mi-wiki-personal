@@ -11,7 +11,6 @@
   --font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* 1. MODO OSCURO */
 html[data-modo="oscuro"] {
   --bg-color: #0f172a;
   --text-color: #e2e8f0;
@@ -19,20 +18,14 @@ html[data-modo="oscuro"] {
   --header-bg: #1e293b;
 }
 
-/* 2. TAMAÑO DE TEXTO */
 html[data-texto="pequeno"] { --font-size: 14px; }
 html[data-texto="grande"] { --font-size: 18px; }
-
-/* 3. ANCHURA */
 html[data-ancho="ancho"] { --max-width: 1800px; }
 
-/* 4. ESTILOS VISUALES (Tipografías) */
-html[data-estilo="academico"] {
-  --font-family: "Times New Roman", Times, serif;
-}
-html[data-estilo="minimalista"] {
-  --font-family: "Courier New", Courier, monospace;
-}
+/* AISLAMIENTO DE ESTILOS: Solo cambian el texto dentro de .main-content */
+html[data-estilo="academico"] .main-content { font-family: "Times New Roman", Times, serif; }
+html[data-estilo="minimalista"] .main-content { font-family: "Courier New", Courier, monospace; }
+html[data-estilo="moderno"] .main-content { font-family: system-ui, -apple-system, sans-serif; }
 
 body {
   margin: 0;
@@ -42,7 +35,7 @@ body {
   font-size: var(--font-size);
   height: 100vh;
   overflow: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease; /* Suaviza el cambio de color */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .layout-grid {
@@ -50,29 +43,26 @@ body {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
   max-width: var(--max-width);
   margin: 0 auto;
-  
-  /* 2. El grid ocupa exactamente lo que sobra debajo del header */
   height: calc(100vh - var(--header-height));
 }
 
 .main-content {
-  padding: 2rem 3rem; /* Lo devolvemos a lo normal */
+  padding: 2rem 3rem;
   height: 100%;
   overflow-y: auto;
 }
 
 .sticky-panel {
   height: 100%;
-  
-  /* 4. Si el menú lateral es muy largo, tendrá su propio scroll interno independiente */
   overflow-y: auto;
-  padding: 1.5rem;
+  overflow-x: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .left-panel { border-right: 1px solid var(--border-color); }
 .right-panel { border-left: 1px solid var(--border-color); }
 
-/* RESPONSIVE (Tablets y Móviles) */
 @media (max-width: 1200px) {
   .layout-grid { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
   .hide-on-tablet { display: none !important; }
@@ -84,8 +74,6 @@ body {
   .main-content { padding: 1.5rem 1rem; }
 }
 
-
-/* Corrección de KaTeX: Ocultar la versión para lectores de pantalla */
 .katex-mathml {
   position: absolute !important;
   clip: rect(1px, 1px, 1px, 1px) !important;
@@ -96,17 +84,12 @@ body {
   overflow: hidden !important;
 }
 
-/* Forzar espacio de scroll extra al final (Overscroll) */
-.main-content::after,
-.sticky-panel::after {
+.main-content::after, .sticky-panel::after {
   content: "";
   display: block;
-  height: 20vh; /* 50% del alto de la pantalla de espacio vacío */
+  height: 20vh;
 }
 
-/* --- FASE 4: MULTIMEDIA Y CÓDIGO --- */
-
-/* Imágenes responsivas */
 .main-content img {
   max-width: 100%;
   height: auto;
@@ -116,16 +99,14 @@ body {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* Contenedor del código */
 .main-content pre {
   padding: 1.5rem;
   border-radius: 8px;
-  position: relative; /* Clave para poder posicionar el botón de copiar */
+  position: relative;
   margin: 1.5rem 0;
   border: 1px solid var(--border-color);
 }
 
-/* Diseño del Botón de Copiar */
 .copy-code-btn {
   position: absolute;
   top: 0.5rem;
@@ -137,19 +118,16 @@ body {
   border-radius: 6px;
   font-size: 0.8rem;
   cursor: pointer;
-  opacity: 0; /* Oculto por defecto */
+  opacity: 0;
   transition: all 0.2s ease;
 }
 
-/* Mostrar botón al pasar el mouse por encima del código */
 .main-content pre:hover .copy-code-btn { opacity: 1; }
 .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
 .copy-code-btn.copied { background: #10b981; color: white; border-color: #10b981; }
 
-/* Dispositivos táctiles (siempre visible) */
 @media (pointer: coarse) { .copy-code-btn { opacity: 1; } }
 
-/* --- NAVEGACIÓN ANTERIOR / SIGUIENTE --- */
 .nav-divider {
   margin: 4rem 0 2rem 0;
   border: none;
@@ -177,7 +155,6 @@ body {
 
 .nav-btn.next { align-items: flex-end; text-align: right; }
 .nav-btn.prev { align-items: flex-start; text-align: left; }
-
 a.nav-btn:hover {
   border-color: var(--text-color);
   background: var(--bg-color);
@@ -186,21 +163,15 @@ a.nav-btn:hover {
 
 .nav-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 0.3rem; }
 .nav-title { font-size: 1.1rem; font-weight: 600; color: var(--text-color); }
-
-/* Estado Deshabilitado (Gris) */
 .nav-btn.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
 
-@media (max-width: 600px) {
-  .doc-nav { grid-template-columns: 1fr; }
-}
+@media (max-width: 600px) { .doc-nav { grid-template-columns: 1fr; } }
 
-
-/* --- BUSCADOR CENTRAL TIPO SPOTLIGHT --- */
 .search-results {
   position: fixed;
-  top: 15vh; /* Lo bajamos un poco desde el techo */
+  top: 15vh;
   left: 50%;
-  transform: translateX(-50%); /* Centrado perfecto */
+  transform: translateX(-50%);
   width: 90%;
   max-width: 650px;
   background: var(--header-bg);
@@ -215,6 +186,7 @@ a.nav-btn:hover {
   display: none;
   z-index: 300;
 }
+
 .search-results li a {
   display: block;
   padding: 1rem 1.5rem;
@@ -223,18 +195,27 @@ a.nav-btn:hover {
   font-size: 1rem;
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
+
 .search-results li a:hover { background: rgba(0,0,0,0.03); font-weight: bold; }
 .search-results li.no-results { padding: 1rem 1.5rem; font-style: italic; opacity: 0.7; }
 
-/* Fondo oscuro cuando buscas */
 .search-backdrop {
   position: fixed; inset: 0; background: rgba(0,0,0,0.4);
   z-index: 299; display: none;
 }
 
-/* --- MENÚ MÓVIL --- */
-.show-mobile-menu { display: block !important; position: fixed; top: var(--header-height); left: 0; width: 80%; max-width: 300px; height: calc(100vh - var(--header-height)); background: var(--bg-color); z-index: 200; border-right: 1px solid var(--border-color); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+.show-mobile-menu {
+  display: block !important;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  width: 80%;
+  max-width: 300px;
+  height: calc(100vh - var(--header-height));
+  background: var(--bg-color);
+  z-index: 200;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+}
 
-@media (max-width: 768px) {
-    .search-bar { width: 160px; font-size: 0.8rem; }
-  }
+@media (max-width: 768px) { .search-bar { width: 160px; font-size: 0.8rem; } }

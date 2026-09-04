@@ -3,14 +3,13 @@ import { getCollection } from 'astro:content';
 const docs = await getCollection('docs');
 const { headings = [] } = Astro.props;
 
-// 1. ÁRBOL DE CARPETAS (Estilo Obsidian)
 const fileTree: any = {};
 docs.forEach(doc => {
   const parts = doc.id.split('/');
   let current = fileTree;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (!current[part]) current[part] = { type: 'folder', children: {} };
+    if (!current[part]) current[part]  = { type: 'folder', children: {} };
     current = current[part].children;
   }
   const fileName = parts[parts.length - 1];
@@ -32,41 +31,30 @@ function buildExplorerHTML(treeNode: any) {
     if (node.type === 'folder') {
       html += `
         <li>
-          <details class="folder" open>
+          <details class="folder">
             <summary class="nav-item"><span class="chevron"></span>${key}</summary>
-            <ul class="nav-nested">
-              ${buildExplorerHTML(node.children)}
-            </ul>
+            <ul class="nav-nested">${buildExplorerHTML(node.children)}</ul>
           </details>
         </li>
       `;
     } else {
-      html += `
-        <li>
-          <a href="/docs/${node.doc.id}" class="nav-item file-item">${node.doc.data.title}</a>
-        </li>
-      `;
+      html += `<li><a href="/docs/${node.doc.id}" class="nav-item file-item">${node.doc.data.title}</a></li>`;
     }
   });
   return html;
 }
 const explorerHTML = buildExplorerHTML(fileTree);
 
-// 2. ÍNDICE (TOC) JERÁRQUICO
 function buildToc(flatHeadings: any[]) {
   const toc: any[] = [];
   const parentStack: any[] = [];
-  
   flatHeadings.forEach(h => {
     const item = { ...h, children: [] };
     while (parentStack.length > 0 && parentStack[parentStack.length - 1].depth >= item.depth) {
       parentStack.pop();
     }
-    if (parentStack.length === 0) {
-      toc.push(item);
-    } else {
-      parentStack[parentStack.length - 1].children.push(item);
-    }
+    if (parentStack.length === 0) toc.push(item);
+    else parentStack[parentStack.length - 1].children.push(item);
     parentStack.push(item);
   });
   return toc;
@@ -74,120 +62,128 @@ function buildToc(flatHeadings: any[]) {
 const tocTree = buildToc(headings);
 ---
 
-<div class="sidebar-content">
-  
-  <div class="mobile-nav hide-on-desktop">
-    <a href="/">🏠 Inicio</a>
-    <a href="/portada">📘 Portada</a>
-    <hr class="divider" />
+<div class="sidebar-wrapper" id="left-sidebar">
+  <div class="sidebar-tabs">
+    <button class="tab-btn active" data-target="explorer-pane" data-tab-id="left-explorer">📂 Explorador</button>
+    <button class="tab-btn" data-target="toc-pane" data-tab-id="left-toc">📑 Índice</button>
   </div>
 
-  <h3 class="panel-title">Explorador</h3>
-  <ul class="nav-tree" set:html={explorerHTML}></ul>
+  <div class="sidebar-content">
+    <div id="explorer-pane" class="tab-pane active">
+      <ul class="nav-tree" set:html={explorerHTML}></ul>
+    </div>
 
-  <hr class="divider" />
-
-  <h3 class="panel-title">En esta página</h3>
-  {tocTree.length > 0 ? (
-    <ul class="nav-tree">
-      {tocTree.map((h1) => (
-        <li>
-          <a href={`#${h1.slug}`} class="nav-item toc-item">{h1.text}</a>
-          {h1.children.length > 0 && (
-            <ul class="nav-nested">
-              {h1.children.map((h2: any) => (
-                <li>
-                  <a href={`#${h2.slug}`} class="nav-item toc-item">{h2.text}</a>
-                  {h2.children.length > 0 && (
-                    <ul class="nav-nested">
-                      {h2.children.map((h3: any) => (
-                        <li><a href={`#${h3.slug}`} class="nav-item toc-item">{h3.text}</a></li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p class="empty-msg">No hay subtítulos.</p>
-  )}
-
+    <div id="toc-pane" class="tab-pane">
+      {tocTree.length > 0 ? (
+        <ul class="nav-tree">
+          {tocTree.map((h1) => (
+            <li>
+              <a href={`#${h1.slug}`} class="nav-item toc-item">{h1.text}</a>
+              {h1.children.length > 0 && (
+                <ul class="nav-nested">
+                  {h1.children.map((h2: any) => (
+                    <li>
+                      <a href={`#${h2.slug}`} class="nav-item toc-item">{h2.text}</a>
+                      {h2.children.length > 0 && (
+                        <ul class="nav-nested">
+                          {h2.children.map((h3: any) => (
+                            <li><a href={`#${h3.slug}`} class="nav-item toc-item">{h3.text}</a></li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty-msg">No hay subtítulos.</p>
+      )}
+    </div>
+  </div>
 </div>
 
 <style>
-  /* 1. RESETEO GLOBAL ABSOLUTO (Elimina todos los puntos y márgenes por defecto) */
-  .sidebar-content :global(ul), 
-  .sidebar-content :global(li) { 
-    list-style: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-  }
+  .sidebar-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
+  .sidebar-tabs { display: flex; background: rgba(0,0,0,0.05); padding: 3px; border-radius: 8px; margin-bottom: 0.5rem; gap: 2px; }
+  .tab-btn { flex: 1; background: none; border: none; padding: 0.4rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-color); opacity: 0.7; transition: all 0.2s; }
+  .tab-btn.active { background: var(--header-bg); opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-  .sidebar-content { display: flex; flex-direction: column; gap: 0.5rem; }
-  .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 0.5rem; }
-  .divider { border: none; border-top: 1px solid var(--border-color); opacity: 0.5; margin: 1rem 0; }
-  .mobile-nav { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-  .mobile-nav a { text-decoration: none; color: var(--text-color); font-weight: bold; padding: 0.5rem; border-radius: 6px; background: rgba(0,0,0,0.03); }
-  @media (min-width: 1025px) { .hide-on-desktop { display: none !important; } }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block !important; }
 
-  /* 2. SISTEMA UNIFICADO DE ÁRBOL (Vence al reseteo usando !important) */
-  .sidebar-content :global(.nav-nested) { 
-    border-left: 1px solid var(--border-color) !important; 
-    margin-left: 0.75rem !important;  
-    padding-left: 0.25rem !important; 
-  }
-
-  /* El bloque interactivo para enlaces y carpetas */
-  .sidebar-content :global(.nav-item) {
-    display: flex; 
-    align-items: center; 
-    padding: 0.3rem 0.5rem !important; 
-    color: var(--text-color);
-    text-decoration: none; 
-    font-size: 0.85rem; 
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.1s ease;
-  }
-  
-  .sidebar-content :global(.nav-item:hover) { 
-    background: rgba(0,0,0,0.05); 
-  }
-
-  .sidebar-content :global(.file-item),
-  .sidebar-content :global(.toc-item) {
-    opacity: 0.8;
-  }
-  
-  .sidebar-content :global(.file-item:hover),
-  .sidebar-content :global(.toc-item:hover) {
-    opacity: 1;
-    color: var(--text-color);
-  }
-
-  /* 3. DETALLES DE CARPETAS Y FLECHAS */
-  .sidebar-content :global(.folder summary::-webkit-details-marker) { display: none !important; }
-  .sidebar-content :global(.folder summary) { font-weight: 500; opacity: 0.9; }
-  .sidebar-content :global(.folder summary:hover) { opacity: 1; }
-  
-  /* Icono minimalista tipo Obsidian */
-  .sidebar-content :global(.chevron) {
-    display: inline-block; 
-    width: 16px; 
-    height: 16px;
-    margin-right: 0.3rem;
+  .sidebar-wrapper :global(ul), .sidebar-wrapper :global(li) { list-style: none !important; padding: 0 !important; margin: 0 !important; }
+  .sidebar-wrapper :global(.nav-nested) { border-left: 1px solid var(--border-color) !important; margin-left: 0.75rem !important; padding-left: 0.25rem !important; }
+  .sidebar-wrapper :global(.nav-item) { display: flex; align-items: center; padding: 0.3rem 0.5rem !important; color: var(--text-color); text-decoration: none; font-size: 0.85rem; border-radius: 6px; cursor: pointer; transition: background 0.1s ease; }
+  .sidebar-wrapper :global(.nav-item:hover) { background: rgba(0,0,0,0.05); }
+  .sidebar-wrapper :global(.file-item), .sidebar-wrapper :global(.toc-item) { opacity: 0.8; }
+  .sidebar-wrapper :global(.file-item:hover), .sidebar-wrapper :global(.toc-item:hover) { opacity: 1; color: var(--text-color); }
+  .sidebar-wrapper :global(.folder summary::-webkit-details-marker) { display: none !important; }
+  .sidebar-wrapper :global(.folder summary) { font-weight: 500; opacity: 0.9; }
+  .sidebar-wrapper :global(.folder summary:hover) { opacity: 1; }
+  .sidebar-wrapper :global(.chevron) {
+    display: inline-block; width: 16px; height: 16px; margin-right: 0.3rem;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'%3E%3C/polyline%3E%3C/svg%3E");
-    background-position: center;
-    background-size: 12px; 
-    background-repeat: no-repeat;
-    transition: transform 0.15s ease; 
-    opacity: 0.6;
+    background-position: center; background-size: 12px; background-repeat: no-repeat; transition: transform 0.15s ease; opacity: 0.6;
   }
-  .sidebar-content :global(.folder[open] > summary .chevron) { transform: rotate(90deg); }
-
+  .sidebar-wrapper :global(.folder[open] > summary .chevron) { transform: rotate(90deg); }
   .empty-msg { font-size: 0.85rem; font-style: italic; opacity: 0.6; }
 </style>
+
+<script>
+  function initLeftSidebar() {
+    const wrapper = document.getElementById('left-sidebar');
+    if (!wrapper) return;
+
+    // Restaurar pestaña activa desde localStorage de forma robusta
+    const savedTab = localStorage.getItem('left-active-tab') || 'left-explorer';
+    const targetPaneId = savedTab.replace('left-', '') + '-pane';
+
+    wrapper.querySelectorAll('.tab-btn').forEach(b => {
+      if (b.getAttribute('data-tab-id') === savedTab) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    wrapper.querySelectorAll('.tab-pane').forEach(p => {
+      if (p.id === targetPaneId) p.classList.add('active');
+      else p.classList.remove('active');
+    });
+
+    // Manejar clics en las pestañas
+    wrapper.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const targetId = (e.currentTarget as HTMLElement).getAttribute('data-target');
+        const tabId = (e.currentTarget as HTMLElement).getAttribute('data-tab-id');
+        
+        wrapper.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        wrapper.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        (e.currentTarget as HTMLElement).classList.add('active');
+        wrapper.querySelector(`#${targetId}`)?.classList.add('active');
+
+        if (tabId) localStorage.setItem('left-active-tab', tabId);
+      });
+    });
+
+    // Restaurar estado de carpetas
+    const folderStates = JSON.parse(localStorage.getItem('folder-states') || '{}');
+    wrapper.querySelectorAll('details.folder').forEach((el, index) => {
+      const details = el as HTMLDetailsElement;
+      const folderName = details.querySelector('summary')?.textContent?.trim() || `folder-${index}`;
+      
+      if (folderStates[folderName] !== undefined) {
+        if (folderStates[folderName]) details.setAttribute('open', '');
+        else details.removeAttribute('open');
+      }
+
+      details.addEventListener('toggle', () => {
+        const currentStates = JSON.parse(localStorage.getItem('folder-states') || '{}');
+        currentStates[folderName] = details.open;
+        localStorage.setItem('folder-states', JSON.stringify(currentStates));
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initLeftSidebar);
+</script>

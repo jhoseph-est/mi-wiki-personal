@@ -1,10 +1,11 @@
 ---
-const { frontmatter = {} } = Astro.props;
+const { frontmatter = {}, docId } = Astro.props;
 const formatDate = (dateStr: Date | string) => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 };
+
 ---
 
 <div class="right-sidebar-wrapper" id="right-sidebar">
@@ -39,6 +40,11 @@ const formatDate = (dateStr: Date | string) => {
       )}
       {(!frontmatter.date && !frontmatter.author && !frontmatter.tags) && (
         <p class="empty-msg">No hay metadatos adicionales.</p>
+      )}
+      {frontmatter.slides && docId && (
+        <a href={`/slides/${docId}`} target="_blank" class="btn-presentar">
+          ▶ Modo Presentación
+        </a>
       )}
     </div>
 
@@ -89,6 +95,22 @@ const formatDate = (dateStr: Date | string) => {
   .prefs-body label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.85rem; }
   .pref-select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; font-size: 0.85rem; }
   .empty-msg { font-size: 0.85rem; font-style: italic; opacity: 0.6; }
+  .btn-presentar {
+    display: block;
+    background: #8b5cf6;
+    color: white;
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-presentar:hover {
+    background: #7c3aed;
+    transform: scale(1.02);
+  }
 </style>
 
 <script>

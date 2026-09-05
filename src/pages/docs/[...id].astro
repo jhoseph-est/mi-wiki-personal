@@ -51,7 +51,7 @@ const readingTime = Math.max(1, Math.ceil(words / 200)); // 200 palabras por min
 const frontmatterConExtra = { ...doc.data, readingTime };
 ---
 
-<Base title={doc.data.title} headings={headings} frontmatter={frontmatterConExtra}>
+<Base title={doc.data.title} headings={headings} frontmatter={frontmatterConExtra} docId={normalizedDocId}>
   
   <!-- MIGAS DE PAN (BREADCRUMBS) -->
   <nav class="breadcrumbs">

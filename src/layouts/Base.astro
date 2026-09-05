@@ -6,7 +6,7 @@ import LeftSidebar from '../components/LeftSidebar.astro';
 import RightSidebar from '../components/RightSidebar.astro';
 import { ClientRouter } from 'astro:transitions';
 
-const { title, headings = [], frontmatter = {} } = Astro.props;
+const { title, headings = [], frontmatter = {}, docId } = Astro.props;
 
 // Extraer el tema definido en el YAML del documento actual (por defecto 'moderno')
 const estiloDoc = frontmatter.theme || 'moderno';
@@ -71,7 +71,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
         </div>
       </main>
       <aside class="sticky-panel right-panel hide-on-tablet">
-        <RightSidebar frontmatter={frontmatter} />
+        <RightSidebar frontmatter={frontmatter} docId={docId} />
       </aside>
     </div>
 <!-- Importamos Mermaid de forma asíncrona y le decimos a Astro que no lo empaquete (is:inline) -->

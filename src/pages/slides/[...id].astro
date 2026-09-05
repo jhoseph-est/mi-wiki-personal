@@ -1,0 +1,149 @@
+---
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allDocs = await getCollection('docs');
+  
+  // SOLO generamos esta página si el doc tiene "slides: true"
+  const slideDocs = allDocs.filter((doc: any) => doc.data.slides === true);
+  
+  return slideDocs.map((doc: any) => ({
+    params: { id: doc.id.replace(/\\/g, '/') },
+    props: { doc },
+  }));
+}
+
+const { doc } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación: {doc.data.title}</title>
+  
+  <!-- CSS Base de Reveal.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+  
+  <!-- Tema de la presentación (puedes cambiar 'night' por 'dracula', 'league', 'simple', etc.) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/night.css">
+  
+  <!-- Resaltado de código y Matemáticas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/highlight/monokai.css">
+
+  <style>
+    /* 1. Cambiar la fuente o color de los títulos globales */
+    .reveal h1, .reveal h2, .reveal h3 {
+      text-transform: none; /* Reveal por defecto pone todo en MAYÚSCULAS */
+      color: #a78bfa; /* Un tono morado suave */
+      font-weight: bold;
+    }
+
+    /* 2. Modificar el tamaño del texto normal */
+    .reveal p, .reveal li {
+      font-size: 1.2em;
+      line-height: 1.6;
+    }
+
+    /* 3. Clases CSS creadas por ti para inyectar en el Markdown */
+    .caja-destacada {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      border: 2px solid #a78bfa;
+      transform: scale(0.9);
+      transition: all 0.4s ease;
+    }
+    /* Esta clase la activaremos con JS */
+    .caja-destacada.animar {
+      transform: scale(1.1);
+      background: rgba(139, 92, 246, 0.5);
+    }
+    /* --- SCROLL PARA BLOQUES DE CÓDIGO --- */
+    .reveal pre {
+      width: 100%;
+      max-height: 65vh; /* Ocupará máximo el 65% del alto de la pantalla */
+      margin: 20px auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+    }
+
+    .reveal pre code {
+      max-height: 65vh !important;
+      overflow-y: auto !important; /* Fuerza el scroll vertical */
+      overflow-x: auto !important; /* Fuerza el scroll horizontal */
+      padding: 20px;
+    }
+
+    /* Estilo moderno para la barra de scroll dentro del código */
+    .reveal pre code::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .reveal pre code::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal pre code::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    .reveal pre code::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <!-- Le pasamos el Markdown crudo a Reveal.js. Usamos "^---$" para indicar que 3 guiones cortan la diapositiva -->
+      <section data-markdown data-separator="^\n---\n$" data-separator-vertical="^\n--\n$">
+        <textarea data-template>{doc.body}</textarea>
+      </section>
+    </div>
+  </div>
+
+  <!-- Scripts de Reveal.js -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js" is:inline></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/markdown/markdown.js" is:inline></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/highlight/highlight.js" is:inline></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/math/math.js" is:inline></script>
+
+  <script is:inline>
+    const esMovil = window.innerWidth < 768;
+
+    Reveal.initialize({
+      controls: true,
+      progress: true,
+      center: true,
+      hash: true,
+      transition: 'zoom',
+      
+      // --- PANTALLA ADAPTATIVA ---
+      width: esMovil ? 960 : 1280,  // Más cuadrado en móviles, panorámico en PC
+      height: esMovil ? 960 : 720,
+      margin: 0.1,
+      minScale: 0.2,
+      maxScale: 1.5,
+      
+      plugins: [ RevealMarkdown, RevealHighlight, RevealMath.KaTeX ]
+    });
+
+    // --- AQUÍ VA TU JAVASCRIPT CUSTOM ---
+    
+    // Evento que se dispara cada vez que cambias de diapositiva
+    Reveal.on('slidechanged', (event) => {
+      // event.previousSlide, event.currentSlide, event.indexh, event.indexv
+      
+      console.log("Acabas de entrar a la diapositiva horizontal número: " + event.indexh);
+
+      // Si la diapositiva tiene un ID específico (ej: <section id="magia">)
+      if (event.currentSlide.id === 'magia') {
+        const caja = event.currentSlide.querySelector('.caja-destacada');
+        if (caja) caja.classList.add('animar');
+      }
+    });
+  </script>
+</body>
+</html>

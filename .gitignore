@@ -1,8 +1,9 @@
-.vscode/
 # build output
 dist/
 # generated types
 .astro/
+.obsidian/
+.vscode/
 
 # dependencies
 node_modules/

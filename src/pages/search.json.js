@@ -6,7 +6,7 @@ export async function GET() {
   // Extraemos solo lo que el buscador necesita: Título, URL y Tags
   const searchList = docs.map(doc => ({
     title: doc.data.title,
-    url: `/docs/${doc.id}`,
+    url: `/docs/${doc.id.replace(/\\/g, '/')}`,
     tags: doc.data.tags || []
   }));
 

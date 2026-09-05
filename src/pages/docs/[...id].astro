@@ -5,11 +5,12 @@ import Base from '../../layouts/Base.astro';
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
   return allDocs.map(doc => {
-    const partes = doc.id.split('/');
+    const normalizedId = doc.id.replace(/\\/g, '/');
+    const partes = normalizedId.split('/');
     const carpetaActual = partes.length > 1 ? partes.slice(0, -1).join('/') : '';
     
     const docsEnCarpeta = allDocs.filter(d => {
-      const dPartes = d.id.split('/');
+      const dPartes = d.id.replace(/\\/g, '/').split('/');
       const dCarpeta = dPartes.length > 1 ? dPartes.slice(0, -1).join('/') : '';
       return dCarpeta === carpetaActual;
     });
@@ -29,7 +30,7 @@ export async function getStaticPaths() {
     const next = index < docsEnCarpeta.length - 1 ? docsEnCarpeta[index + 1] : null;
     
     return {
-      params: { id: doc.id },
+      params: { id: normalizedId },
       props: { doc, prev, next },
     };
   });
@@ -39,7 +40,8 @@ const { doc, prev, next } = Astro.props;
 const { Content, headings } = await render(doc);
 
 // --- LÓGICA DE MIGAS DE PAN ---
-const breadcrumbs = doc.id.split('/').slice(0, -1);
+const normalizedDocId = doc.id.replace(/\\/g, '/');
+const breadcrumbs = normalizedDocId.split('/').slice(0, -1);
 
 // --- LÓGICA DE TIEMPO DE LECTURA ---
 const words = doc.body ? doc.body.split(/\s+/).length : 0;
@@ -69,7 +71,7 @@ const frontmatterConExtra = { ...doc.data, readingTime };
   <hr class="nav-divider" />
   <div class="doc-nav">
     {prev ? (
-      <a href={`/docs/${prev.id}`} class="nav-btn prev">
+      <a href={`/docs/${prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
         <span class="nav-label">« Anterior</span>
         <span class="nav-title">{prev.data.title}</span>
       </a>
@@ -80,7 +82,7 @@ const frontmatterConExtra = { ...doc.data, readingTime };
       </div>
     )}
     {next ? (
-      <a href={`/docs/${next.id}`} class="nav-btn next">
+      <a href={`/docs/${next.id.replace(/\\/g, '/')}`} class="nav-btn next">
         <span class="nav-label">Siguiente »</span>
         <span class="nav-title">{next.data.title}</span>
       </a>

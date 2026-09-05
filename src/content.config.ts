@@ -4,14 +4,16 @@ import { glob } from 'astro/loaders';
 const docs = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/docs' }),
   schema: z.object({
+    // ¡METADATOS OBLIGATORIOS!
     title: z.string(),
-    theme: z.enum(['minimalista', 'academico', 'moderno', 'oscuro']).optional(),
     
-    // ¡NUEVOS METADATOS OPCIONALES!
+    // ¡METADATOS OPCIONALES!
+    theme: z.enum(['minimalista', 'academico', 'moderno', 'oscuro']).optional(),
     date: z.date().optional(),
     author: z.string().optional(),
     tags: z.array(z.string()).optional(),
-    orden: z.number().optional(), 
+    orden: z.number().optional(),
+    slides: z.boolean().optional(),
   }),
 });
 

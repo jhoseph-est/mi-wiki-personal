@@ -95,7 +95,23 @@ a.nav-btn:hover { border-color: var(--text-color); background: var(--bg-color); 
   .main-header { padding: 0 0.8rem; gap: 10px; }
   .search-container { margin: 0; }
   .search-bar { width: 100% !important; font-size: 0.95rem; }
-  .doc-nav { grid-template-columns: 1fr; }
+  
+  /* --- NUEVO: Botones Anterior/Siguiente más compactos --- */
+  .doc-nav { 
+    grid-template-columns: 1fr; /* Uno debajo del otro */
+    gap: 0.5rem; 
+    margin-bottom: 1rem; 
+  }
+  .nav-btn { 
+    padding: 0.6rem 1rem; /* Menos relleno */
+  }
+  .nav-title { 
+    font-size: 0.95rem; /* Texto principal más pequeño */
+  }
+  .nav-label { 
+    font-size: 0.7rem; /* Texto superior más pequeño */
+    margin-bottom: 0.1rem; 
+  }
 }
 
 /* Menús laterales en Móvil */

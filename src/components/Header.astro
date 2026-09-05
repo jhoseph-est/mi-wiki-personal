@@ -83,11 +83,26 @@
       freshInput?.addEventListener('input', newHandler);
     }
 
+    // --- CERRAR BUSCADOR Y PANELES AL TOCAR AFUERA ---
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
+      
+      // Cerrar buscador
       if (resultsBox && backdrop && !target.closest('.search-container') && !target.closest('.search-results')) {
         resultsBox.style.display = 'none';
         backdrop.style.display = 'none';
+      }
+
+      // Cerrar panel izquierdo (Menú)
+      const leftPanel = document.querySelector('.left-panel');
+      if (leftPanel?.classList.contains('show-mobile-menu') && !target.closest('.left-panel') && !target.closest('#btn-mobile-menu')) {
+        leftPanel.classList.remove('show-mobile-menu');
+      }
+
+      // Cerrar panel derecho (Engranaje)
+      const rightPanel = document.querySelector('.right-panel');
+      if (rightPanel?.classList.contains('show-mobile-right') && !target.closest('.right-panel') && !target.closest('#toggle-settings-btn')) {
+        rightPanel.classList.remove('show-mobile-right');
       }
     });
 

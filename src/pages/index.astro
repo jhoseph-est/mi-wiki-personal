@@ -3,16 +3,19 @@ import { getCollection, render } from 'astro:content';
 import Base from '../layouts/Base.astro'; // Importamos el Layout
 
 const docs = await getCollection('docs');
-const doc = docs.find((d: any) => d.id === 'index' || d.id === 'index.md'); 
+const doc = docs.find((d: any) => d.id === 'index' || d.id === 'index.md');
 
 let Content = null;
+let headings: any[] = [];
+
 if (doc) {
   const rendered = await render(doc);
   Content = rendered.Content;
+  headings = rendered.headings;
 }
 ---
 
 <!-- Envolvemos el contenido con el componente Base y le pasamos el título del Markdown -->
-<Base title={doc ? doc.data.title : 'Inicio'}>
+<Base title={doc ? doc.data.title : 'Inicio'} headings={headings}>
   {Content ? <Content /> : <h1>No se encontró el documento</h1>}
 </Base>

@@ -91,8 +91,10 @@ body {
 
 /* 2. Área exclusiva del documento Markdown (Ignora la UI) */
 .main-content {
-  font-family: var(--doc-font) !important; /* TOMA LA FUENTE DEL TEMA */
-  line-height: var(--doc-line-height) !important; /* TOMA EL INTERLINEADO DEL TEMA */
+  font-family: var(--doc-font); 
+}
+.main-content p, .main-content li, .main-content h1, .main-content h2, .main-content h3, .main-content blockquote {
+  line-height: var(--doc-line-height); 
 }
 
 /* --- TAMAÑOS DE TEXTO --- */

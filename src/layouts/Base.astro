@@ -1,6 +1,5 @@
 ---
 import '../styles/base.css';
-import 'katex/dist/katex.min.css';
 import Header from '../components/Header.astro';
 import LeftSidebar from '../components/LeftSidebar.astro';
 import RightSidebar from '../components/RightSidebar.astro';
@@ -16,7 +15,6 @@ const estiloDoc = frontmatter.theme || 'moderno';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} | Repositorio Personal</title>
     <ClientRouter />
-    
     <script is:inline>
       (function() {
         const html = document.documentElement;

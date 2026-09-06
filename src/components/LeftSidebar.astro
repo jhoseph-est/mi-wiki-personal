@@ -173,6 +173,12 @@ const tocTree = buildToc(headings);
   }
   .sidebar-wrapper :global(.folder[open] > summary .chevron) { transform: rotate(90deg); }
   .empty-msg { font-size: 0.85rem; font-style: italic; opacity: 0.6; }
+  /* NUEVO: Clase para el resaltado del TOC */
+  .sidebar-wrapper :global(.toc-active) {
+    color: #3b82f6 !important; /* Azul moderno */
+    font-weight: bold !important;
+    opacity: 1 !important;
+  }
 </style>
 
 <script>
@@ -182,20 +188,21 @@ const tocTree = buildToc(headings);
       sessionStorage.setItem('sidebar-scroll', leftPanel.scrollTop.toString());
     }
   });
+
   function initLeftSidebar() {
-    // NUEVO: Restaurar la posición del scroll al cargar la nueva página
+    // Restaurar la posición del scroll al cargar la nueva página
     const leftPanel = document.querySelector('.left-panel');
     const savedScroll = sessionStorage.getItem('sidebar-scroll');
     if (leftPanel && savedScroll) {
-      // Usamos requestAnimationFrame para asegurar que el DOM ya está dibujado
       requestAnimationFrame(() => {
         leftPanel.scrollTop = parseInt(savedScroll, 10);
       });
     }
+    
     const wrapper = document.getElementById('left-sidebar');
     if (!wrapper) return;
 
-    // Restaurar pestaña activa desde localStorage de forma robusta
+    // Restaurar pestaña activa
     const savedTab = localStorage.getItem('left-active-tab') || 'left-explorer';
     const targetPaneId = savedTab.replace('left-', '') + '-pane';
 
@@ -241,43 +248,36 @@ const tocTree = buildToc(headings);
         localStorage.setItem('folder-states', JSON.stringify(currentStates));
       });
     });
-
-  // --- SCROLL SPY PARA EL ÍNDICE ---
-  const tocItems = document.querySelectorAll('.toc-item');
-  const observerOptions = {
-    root: null,
-    rootMargin: '0px 0px -80% 0px', // Detecta cuando el título cruza la parte superior
-    threshold: 1.0
-  };
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Quitamos la clase activa de todos
-        tocItems.forEach(node => {
-          const item = node as HTMLElement;
-          item.style.fontWeight = 'normal';
-          item.style.color = 'var(--text-color)';
-          item.style.opacity = '0.8';
-        });
-        
-        // Resaltamos el elemento actual en el índice
-        const activeItem = document.querySelector(`.toc-item[href="#${entry.target.id}"]`);
-        if (activeItem) {
-          const htmlElement = activeItem as HTMLElement;
-          htmlElement.style.fontWeight = 'bold';
-          htmlElement.style.color = '#3b82f6'; // Azul moderno
-          htmlElement.style.opacity = '1';
-        }
-      }
-    });
-  }, observerOptions);
-  
-  // Observamos todos los encabezados del contenido principal
-  document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3').forEach(h => {
-    observer.observe(h);
-  });
   }
 
   document.addEventListener('astro:page-load', initLeftSidebar);
+
+  // --- SCRIPT EXACTO DEL TOC QUE PEDISTE ---
+  document.addEventListener('astro:page-load', () => {
+    // 1. Seleccionamos todos los enlaces de tu índice lateral
+    const tocLinks = document.querySelectorAll('.left-panel a[href^="#"]');
+    if (tocLinks.length === 0) return;
+
+    // 2. Configuramos el "Vigilante" (Observer)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Si un título entra en pantalla, quitamos la clase activa a todos
+          tocLinks.forEach(link => link.classList.remove('toc-active'));
+          
+          // Se la ponemos solo al enlace que coincida con el ID del título
+          const activeLink = document.querySelector(`.left-panel a[href="#${entry.target.id}"]`);
+          if (activeLink) activeLink.classList.add('toc-active');
+        }
+      });
+    }, { 
+      // Detecta el título cuando está en el tercio superior de la pantalla
+      rootMargin: '-10% 0px -70% 0px' 
+    });
+
+    // 3. Mandamos a vigilar todos los títulos del documento
+    document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3').forEach(h => {
+      observer.observe(h);
+    });
+  });
 </script>

@@ -189,7 +189,6 @@ a.nav-btn:hover { border-color: var(--text-color); background: var(--bg-color); 
 }
 
 /* --- ESTILOS DE LECTURA DE MARKDOWN --- */
-.katex-mathml { position: absolute !important; clip: rect(1px, 1px, 1px, 1px) !important; padding: 0 !important; border: 0 !important; height: 1px !important; width: 1px !important; overflow: hidden !important; }
 .main-content::after, .sticky-panel::after { content: ""; display: block; height: 20vh; }
 .main-content img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 2rem auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .main-content pre { padding: 1.5rem; border-radius: 8px; position: relative; margin: 1.5rem 0; border: 1px solid var(--border-color); }
@@ -301,4 +300,16 @@ html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0
   .landing-mode .sticky-panel {
     display: none !important;
   }
+}
+
+/* --- RESALTADO DINÁMICO DEL ÍNDICE --- */
+.toc-active {
+  color: #8b5cf6 !important; /* Tu morado característico */
+  font-weight: bold;
+  margin-left: 5px; /* Pequeño salto a la derecha para destacar */
+  transition: all 0.3s ease;
+}
+/* Aumentar el tamaño de todas las matemáticas de MathJax */
+mjx-container {
+  font-size: 1em !important; 
 }

@@ -50,7 +50,9 @@ Representan la precisión de una medida. Incluyen todos los dígitos conocidos c
 
 Cuando una magnitud $z$ depende de variables medidas $x$ e $y$ (donde $z = f(x, y)$), la incertidumbre $\Delta z$ se calcula mediante derivadas parciales:
 
-$$\Delta z = \sqrt{\left( \frac{\partial f}{\partial x} \Delta x \right)^2 + \left( \frac{\partial f}{\partial y} \Delta y \right)^2}$$
+```math
+\Delta z = \sqrt{\left( \frac{\partial f}{\partial x} \Delta x \right)^2 + \left( \frac{\partial f}{\partial y} \Delta y \right)^2}
+```
 
 Donde $\frac{\partial f}{\partial x}$ y $\frac{\partial f}{\partial y}$ son las sensibilidades de la función respecto a cada variable.
 
@@ -75,9 +77,13 @@ Gráficamente, se representa mediante un segmento de recta dirigido (flecha). La
 
 Un vector $\vec{A}$ en el plano puede descomponerse en sus proyecciones sobre los ejes ortogonales:
 
-$A_x = |\vec{A}| \cos \theta$
+$$
+A_x = |\vec{A}| \cos \theta
+$$
 
-$A_y = |\vec{A}| \sin \theta$
+$$
+A_y = |\vec{A}| \sin \theta
+$$
 
 El **vector unitario** es un vector adimensional con módulo igual a la unidad ($|\hat{u}| = 1$). Se utiliza para especificar una dirección en el espacio. Para cualquier vector $\vec{A}$, su vector unitario asociado es:
 

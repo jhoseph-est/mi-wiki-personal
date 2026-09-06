@@ -31,18 +31,23 @@
 </header>
 
 <script>
+  // NUEVO: Función para remover tildes y convertir a minúsculas
+  function limpiarTexto(texto: string) {
+    if (!texto) return "";
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
   function initHeader() {
     let searchData: any[] = [];
     const input = document.getElementById('search-input') as HTMLInputElement;
     const resultsBox = document.getElementById('search-results');
     const backdrop = document.getElementById('search-backdrop');
 
-    // --- LÓGICA DE BÚSQUEDA ---
-// --- LÓGICA DE BÚSQUEDA AVANZADA ---
+    // --- LÓGICA DE BÚSQUEDA AVANZADA ---
     const newHandler = async (e: Event) => {
-      const rawQuery = (e.target as HTMLInputElement).value.toLowerCase();
+      const rawInput = (e.target as HTMLInputElement).value;
       
-      if (rawQuery.trim().length < 1) {
+      if (rawInput.trim().length < 1) {
         if (resultsBox) resultsBox.style.display = 'none';
         if (backdrop) backdrop.style.display = 'none';
         return;
@@ -50,18 +55,29 @@
 
       if (searchData.length === 0) {
         const res = await fetch('/search.json');
-        searchData = await res.json();
+        const rawData = await res.json();
+        
+        // NUEVO: Pre-calculamos las versiones sin tildes de todo el JSON una sola vez
+        searchData = rawData.map((item: any) => ({
+          ...item,
+          cleanTitle: limpiarTexto(item.title),
+          cleanAuthor: limpiarTexto(item.author || ''),
+          cleanTags: (item.tags || []).map((t: string) => limpiarTexto(t))
+        }));
       }
 
+      // Limpiamos el texto que escribió el usuario
+      const queryLimpio = limpiarTexto(rawInput);
+
       // Separar la búsqueda en palabras/comandos
-      const tokens = rawQuery.split(/\s+/).filter(t => t.length > 0);
+      const tokens = queryLimpio.split(/\s+/).filter((t: string) => t.length > 0);
       
       const reqTags: string[] = []; // Etiquetas requeridas (#)
       const excTags: string[] = []; // Etiquetas excluidas (-#)
       let authorQuery = "";         // Autor (@)
       const textTokens: string[] = []; // Texto normal (Título)
 
-      tokens.forEach(token => {
+      tokens.forEach((token: string) => {
         if (token.startsWith('-#')) excTags.push(token.slice(2));
         else if (token.startsWith('#')) reqTags.push(token.slice(1));
         else if (token.startsWith('@')) authorQuery = token.slice(1);
@@ -69,26 +85,26 @@
       });
 
       const filtered = searchData.filter(item => {
-        // 1. Filtro de Etiquetas Requeridas (Debe tener TODAS)
+        // 1. Filtro de Etiquetas Requeridas (Busca en cleanTags)
         if (reqTags.length > 0) {
-          const hasAll = reqTags.every(rt => item.tags.some((t: string) => t.toLowerCase().includes(rt)));
+          const hasAll = reqTags.every(rt => item.cleanTags.some((t: string) => t.includes(rt)));
           if (!hasAll) return false;
         }
 
-        // 2. Filtro de Etiquetas Excluidas (No debe tener NINGUNA)
+        // 2. Filtro de Etiquetas Excluidas (Busca en cleanTags)
         if (excTags.length > 0) {
-          const hasExcluded = excTags.some(et => item.tags.some((t: string) => t.toLowerCase().includes(et)));
+          const hasExcluded = excTags.some(et => item.cleanTags.some((t: string) => t.includes(et)));
           if (hasExcluded) return false;
         }
 
-        // 3. Filtro de Autor
-        if (authorQuery && (!item.author || !item.author.toLowerCase().includes(authorQuery))) {
+        // 3. Filtro de Autor (Busca en cleanAuthor)
+        if (authorQuery && !item.cleanAuthor.includes(authorQuery)) {
           return false;
         }
 
-        // 4. Filtro de Título (Fuzzy match)
+        // 4. Filtro de Título (Busca en cleanTitle)
         const textQuery = textTokens.join(' ');
-        if (textQuery && !item.title.toLowerCase().includes(textQuery)) {
+        if (textQuery && !item.cleanTitle.includes(textQuery)) {
           return false;
         }
 
@@ -98,8 +114,12 @@
       // --- RENDERIZADO VISUAL ---
       if (resultsBox && backdrop) {
         resultsBox.innerHTML = '';
-        if (filtered.length > 0) {
-          filtered.forEach(item => {
+        
+        // NUEVO: Limitamos los resultados a los 15 mejores para rendimiento
+        const topResults = filtered.slice(0, 15);
+
+        if (topResults.length > 0) {
+          topResults.forEach(item => {
             const li = document.createElement('li');
             li.innerHTML = `
               <a href="${item.url}" class="search-item-link">

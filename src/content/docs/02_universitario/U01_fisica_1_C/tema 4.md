@@ -9,7 +9,9 @@ El estudio de la dinámica de una partícula se fundamenta en la capacidad de cu
 
 La **Segunda Ley de Newton** establece que la aceleración de un objeto es directamente proporcional a la fuerza neta que actúa sobre él e inversamente proporcional a su masa. Vectorialmente, se expresa como:
 
-$$\sum \vec{F} = m \vec{a}$$
+$$
+\sum \vec{F} = m \vec{a}
+$$
 
 Donde $\vec{a}$ es la aceleración instantánea y $m$ es la masa inercial del cuerpo. Esta ley es válida únicamente en sistemas de referencia inerciales y para cuerpos de masa constante. En términos de la tasa de cambio del momento lineal, la forma más general de la ley es:
 

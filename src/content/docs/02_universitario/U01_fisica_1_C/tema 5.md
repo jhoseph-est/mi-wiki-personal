@@ -16,7 +16,9 @@ En un sistema de partículas, las fuerzas se clasifican según su origen:
 
 Según la **Tercera Ley de Newton**, $\vec{f}_{ij} = -\vec{f}_{ji}$, lo que implica que la suma de todas las fuerzas internas de un sistema es siempre nula:
 
-$$\sum_{i} \sum_{j, j \neq i} \vec{f}_{ij} = 0$$
+$$
+\sum_{i} \sum_{j, j \neq i} \vec{f}_{ij} = 0
+$$
 
 ## Centro de masa. Cálculo del centro de masa
 

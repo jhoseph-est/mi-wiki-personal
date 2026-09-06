@@ -139,6 +139,19 @@ a.nav-btn:hover { border-color: var(--text-color); background: var(--bg-color); 
   .layout-grid { grid-template-columns: minmax(0, 1fr); }
   .hide-on-mobile { display: none !important; }
   .main-content { padding: 1.5rem 1rem; }
+  
+  /* NUEVO: Reactivar el scroll nativo del Body para el Pull-to-Refresh */
+  body {
+    height: auto;
+    overflow: visible;
+  }
+  .layout-grid {
+    height: auto;
+  }
+  .main-content {
+    overflow-y: visible;
+    height: auto;
+  }
 }
 
 @media (max-width: 768px) {
@@ -274,9 +287,18 @@ html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0
   }
 
 /* --- MODO PORTADA (Sin menús laterales) --- */
+/* --- MODO PORTADA (Sin menús laterales) --- */
 .layout-grid.landing-mode {
   grid-template-columns: 1fr;
 }
 .landing-mode .content-wrapper {
   max-width: 1000px;
+}
+
+/* Ocultamos los paneles solo en PC. 
+   En celular ya se ocultan solos por defecto y el menú de hamburguesa los podrá abrir. */
+@media (min-width: 1025px) {
+  .landing-mode .sticky-panel {
+    display: none !important;
+  }
 }

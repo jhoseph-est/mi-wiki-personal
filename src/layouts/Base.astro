@@ -57,12 +57,12 @@ const estiloDoc = frontmatter.theme || 'moderno';
     <Header />
     
     <!-- ESTA ES LA ESTRUCTURA CORREGIDA (Sin duplicados) -->
+   <!-- ESTA ES LA ESTRUCTURA CORREGIDA -->
     <div class={`layout-grid ${isLanding ? 'landing-mode' : ''}`}>
-      {!isLanding && (
-        <aside class="sticky-panel left-panel hide-on-mobile">
-          <LeftSidebar headings={headings} />
-        </aside>
-      )}
+      
+      <aside class="sticky-panel left-panel hide-on-mobile">
+        <LeftSidebar headings={headings} />
+      </aside>
 
       <main class="main-content">
         <div class="content-wrapper">
@@ -70,11 +70,10 @@ const estiloDoc = frontmatter.theme || 'moderno';
         </div>
       </main>
 
-      {!isLanding && (
-        <aside class="sticky-panel right-panel hide-on-tablet">
-          <RightSidebar frontmatter={frontmatter} docId={docId} />
-        </aside>
-      )}
+      <aside class="sticky-panel right-panel hide-on-tablet">
+        <RightSidebar frontmatter={frontmatter} docId={docId} />
+      </aside>
+      
     </div>
 
     <!-- Importamos Mermaid de forma asíncrona -->

@@ -6,7 +6,9 @@ title: tema 1
 
 El Movimiento Armónico Simple es un movimiento periódico y oscilatorio en ausencia de fricción, producido por una fuerza restauradora directamente proporcional al desplazamiento. Cumple la ley de Hooke y se rige por una ecuación diferencial lineal homogénea de segundo orden.
 
-$$\frac{d^2x}{dt^2} + \omega^2 x = 0$$
+$$
+\frac{d^2x}{dt^2} + \omega^2 x = 0
+$$
 
 ## Cinemática y energía en el M.A.S.
 

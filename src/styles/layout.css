@@ -309,7 +309,22 @@ html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0
   margin-left: 5px; /* Pequeño salto a la derecha para destacar */
   transition: all 0.3s ease;
 }
-/* Aumentar el tamaño de todas las matemáticas de MathJax */
-mjx-container {
-  font-size: 1em !important; 
+
+/* 1. Centrar las fórmulas en bloque ($$ ... $$) */
+mjx-container[display="true"] {
+  display: block !important;
+  text-align: center !important;
+  margin: 1.5rem 0 !important;
+  width: 100%;
+}
+
+/* 2. Ocultar el texto duplicado de accesibilidad en producción (Vercel) */
+mjx-assistive-mathml {
+  position: absolute !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden !important;
 }

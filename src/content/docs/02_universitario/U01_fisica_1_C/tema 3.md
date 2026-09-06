@@ -19,7 +19,9 @@ La **Primera Ley de Newton** formaliza el principio de inercia:
 
 La **fuerza** ($\vec{F}$) se define como una magnitud vectorial que mide la intensidad del intercambio de momento lineal entre dos cuerpos. En el SI, su unidad es el Newton ($N$), definido como:
 
-$$1 \, N = 1 \, kg \cdot m/s^2$$
+$$
+1 \, N = 1 \, kg \cdot m/s^2
+$$
 
 ## Fuerzas básicas en la naturaleza
 

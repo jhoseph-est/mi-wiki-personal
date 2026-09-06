@@ -7,15 +7,27 @@
 
 /* --- ESTRUCTURA BASE --- */
 body {
-  margin: 0; background-color: var(--bg-color); color: var(--text-color);
-  font-family: var(--font-family); font-size: var(--font-size);
-  height: 100vh; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  /* Convertimos el body en Flexbox para que se adapte al header dinámicamente */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .layout-grid {
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
-  max-width: var(--max-grid-width); margin: 0 auto; height: calc(100vh - var(--header-height));
+  margin: 0 auto;
+  width: 100%;
+  /* Reemplazamos el calc() por flex-grow para que ocupe el espacio sobrante exacto */
+  flex: 1;
+  min-height: 0; /* Regla clave para que el scroll funcione dentro de Flexbox */
 }
 
 .main-content {
@@ -26,6 +38,45 @@ body {
 
 .sticky-panel { height: 100%; overflow-y: auto; overflow-x: hidden; padding: 1rem; box-sizing: border-box; }
 .left-panel { border-right: 1px solid var(--border-color); }
+/* --- INDICADORES DE CARPETA (CHEVRONS) --- */
+.left-panel details summary {
+  list-style: none; /* Oculta el triángulo por defecto del navegador */
+  position: relative;
+  cursor: pointer;
+  padding-left: 15px; /* Deja espacio para nuestra nueva flecha */
+}
+
+/* Ocultar marcador en Safari/Chrome antiguos */
+.left-panel details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Nuestra flecha personalizada (Estado Cerrado) */
+/* Nuestra flecha personalizada (Estado Cerrado) */
+.left-panel details summary::before {
+  content: "›"; 
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 15px; /* Creamos una caja fija para la flecha */
+  text-align: center; /* Centramos el icono en su caja */
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  line-height: 1;
+  opacity: 0.5;
+  transition: transform 0.2s ease; 
+}
+
+/* Flecha rotada (Estado Abierto) */
+.left-panel details[open] > summary::before {
+  /* Al rotar 90 grados, ajustar un poco el eje Y (-42%) lo centra mejor visualmente */
+  transform: translateY(-42%) rotate(90deg); 
+}
+
+.left-panel details summary:hover::before {
+  opacity: 1;
+  color: #8b5cf6; /* Morado de tu tema al pasar el ratón */
+}
 .right-panel { border-left: 1px solid var(--border-color); }
 
 /* --- HEADER Y NAVEGACIÓN --- */
@@ -221,3 +272,11 @@ html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0
     text-overflow: ellipsis;
     margin-left: auto;
   }
+
+/* --- MODO PORTADA (Sin menús laterales) --- */
+.layout-grid.landing-mode {
+  grid-template-columns: 1fr;
+}
+.landing-mode .content-wrapper {
+  max-width: 1000px;
+}

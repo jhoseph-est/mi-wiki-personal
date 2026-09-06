@@ -1,3 +1,131 @@
 ---
-return Astro.redirect('/docs/index');
+import Base from '../layouts/Base.astro';
 ---
+
+<Base title="Inicio" isLanding={true}>
+  <div class="hero-section">
+    <span class="hero-icon">📚</span>
+    <h1>Mi Jardín Digital</h1>
+    <p>El núcleo centralizado de apuntes universitarios, documentación IoT y proyectos personales.</p>
+    
+    <div class="hero-buttons">
+      <a href="/docs/index" class="btn-primary">📖 Explorar Apuntes</a>
+      <!-- Botón que activa tu buscador global con Cmd+K -->
+      <button onclick="document.getElementById('search-input').focus()" class="btn-secondary">🔍 Buscar (Cmd+K)</button>
+    </div>
+  </div>
+
+  <div class="quick-links">
+    <a href="/docs/_temario/1. Temario Cálculo Diferencial" class="card">
+      <h3>📐 Universidad</h3>
+      <p>Sílabos, matemáticas, ciencias e ingeniería mecatrónica.</p>
+    </a>
+    
+    <a href="/docs/99_temp/otros/lista del proyecto" class="card">
+      <h3>🤖 Proyectos IoT</h3>
+      <p>Brazos robóticos, ESP32, MQTT y automatización.</p>
+    </a>
+
+    <a href="/docs/portada" class="card">
+      <h3>⚙️ Sistema</h3>
+      <p>Documentación sobre cómo funciona este repositorio Astro.</p>
+    </a>
+  </div>
+</Base>
+
+<style>
+  .hero-section {
+    text-align: center;
+    padding: 6rem 1rem 4rem 1rem;
+  }
+  .hero-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  .hero-section h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+  .hero-section p {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    max-width: 600px;
+    margin: 0 auto 2.5rem auto;
+    line-height: 1.6;
+  }
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: #8b5cf6;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.2s;
+  }
+  .btn-secondary:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  /* Tarjetas */
+  .quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  .card {
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-color);
+    background: rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: #8b5cf6;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  }
+  .card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+  }
+  .card p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+</style>

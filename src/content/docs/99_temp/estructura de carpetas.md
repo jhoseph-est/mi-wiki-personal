@@ -1,5 +1,6 @@
 ---
 title: estructura de carpetas
+tags: ["algo"]
 ---
 
 **\_inbox:** 

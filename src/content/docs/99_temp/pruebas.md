@@ -1,5 +1,6 @@
 ---
 title: pruebas
+tags: ["algo"]
 ---
 
 # ¿Qué se vera aquí?

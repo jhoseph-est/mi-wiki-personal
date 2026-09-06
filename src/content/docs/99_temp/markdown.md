@@ -1,5 +1,6 @@
 ---
 title: markdown
+tags: ["algo"]
 ---
 
 ````markdown

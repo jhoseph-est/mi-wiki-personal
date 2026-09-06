@@ -1,5 +1,6 @@
 ---
 title: Estructura de Temario Educativo
+tags: ["algo"]
 ---
 
 "Actúa como un experto en diseño curricular. Cada vez que te suba un documento (sílabo, plan de estudios o guía de curso), quiero que generes un temario siguiendo estas reglas estrictas:

@@ -53,16 +53,29 @@ const frontmatterConExtra = { ...doc.data, readingTime };
 
 <Base title={doc.data.title} headings={headings} frontmatter={frontmatterConExtra} docId={normalizedDocId}>
   
-  <!-- MIGAS DE PAN (BREADCRUMBS) -->
-  <nav class="breadcrumbs">
-    <a href="/">Inicio</a> 
-    {breadcrumbs.length > 0 && <span> &rsaquo; </span>}
-    {breadcrumbs.map((folder, index) => (
-      <span style="text-transform: capitalize;">
-        {folder} {index < breadcrumbs.length - 1 && ' › '}
-      </span>
-    ))}
-  </nav>
+  <!-- BARRA SUPERIOR: MIGAS DE PAN Y BOTONES -->
+  <div class="top-bar">
+    <nav class="breadcrumbs">
+      <a href="/">Inicio</a> 
+      {breadcrumbs.length > 0 && <span> &rsaquo; </span>}
+      {breadcrumbs.map((folder, index) => (
+        <span style="text-transform: capitalize;">
+          {folder} {index < breadcrumbs.length - 1 && ' › '}
+        </span>
+      ))}
+    </nav>
+
+    <div class="top-actions">
+      {doc.data.slides && (
+        <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Abrir Presentación">
+          ▶ Presentar
+        </a>
+      )}
+      <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
+        ⛶ Leer
+      </button>
+    </div>
+  </div>
 
   <article>
     <Content />
@@ -96,10 +109,35 @@ const frontmatterConExtra = { ...doc.data, readingTime };
 </Base>
 
 <style>
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .top-actions { display: flex; gap: 10px; }
+  .action-btn {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { background: #8b5cf6; color: white; }
   .breadcrumbs {
     font-size: 0.85rem;
     opacity: 0.7;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -113,3 +151,50 @@ const frontmatterConExtra = { ...doc.data, readingTime };
     text-decoration: underline;
   }
 </style>
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const btnFs = document.getElementById('btn-fullscreen');
+    const mainContent = document.querySelector('.main-content'); 
+    const btnPresent = document.querySelector('.presentation-btn'); // Capturamos el botón de presentación
+
+    // Función que maneja la pantalla completa
+    const toggleFullScreen = () => {
+      if (!document.fullscreenElement) {
+        mainContent?.requestFullscreen().catch(err => console.log(err));
+        if(btnFs) btnFs.innerHTML = '✖ Salir';
+      } else {
+        document.exitFullscreen();
+        if(btnFs) btnFs.innerHTML = '⛶ Leer';
+      }
+    };
+
+    // Activar por clic
+    btnFs?.addEventListener('click', toggleFullScreen);
+
+    // Restaurar si el usuario pulsa ESC
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && btnFs) {
+        btnFs.innerHTML = '⛶ Leer';
+      }
+    });
+
+    // --- NUEVO: ATAJOS DE TECLADO ---
+    document.addEventListener('keydown', (e) => {
+      // 1. Ignoramos el atajo si estás escribiendo en el buscador
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      // 2. Tecla 'F' para Pantalla Completa
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullScreen();
+      }
+
+      // 3. Tecla 'P' para Modo Presentación (solo si el botón existe)
+      if (e.key.toLowerCase() === 'p' && btnPresent) {
+        e.preventDefault();
+        (btnPresent as HTMLAnchorElement).click(); 
+      }
+    });
+  });
+</script>

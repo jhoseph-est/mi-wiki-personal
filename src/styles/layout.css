@@ -169,3 +169,55 @@ html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0
 @keyframes fadeIn { from { opacity: 0.8; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 ::view-transition-old(root) { animation: 0.1s ease-in both fadeIn; }
 ::view-transition-new(root) { animation: 0.15s ease-out both fadeIn; }
+
+/* --- COMPORTAMIENTO NATIVO DE PANTALLA COMPLETA --- */
+.main-content:fullscreen {
+  background-color: var(--bg-color); /* Conserva el color de tu tema */
+  padding: 5vh 15vw; /* Añade márgenes a los lados para leer como un libro */
+  overflow-y: auto; /* Permite hacer scroll vertical */
+}
+
+/* Soporte extra para Safari/iOS */
+.main-content:-webkit-full-screen {
+  background-color: var(--bg-color);
+  padding: 5vh 15vw;
+  overflow-y: auto;
+}
+
+/* Diseño Flexbox para cada resultado de búsqueda */
+  .search-item-link {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    padding: 0.8rem 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: var(--text-color);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .search-item-link:hover {
+    background: rgba(0,0,0,0.03);
+  }
+  .search-item-icon {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .search-item-title {
+    flex: 0 1 auto; /* Se encoge si falta espacio */
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search-item-tags {
+    flex: 1 1 auto; /* Absorbe el espacio restante, se encoge más rápido */
+    text-align: right;
+    font-size: 0.75rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: auto;
+  }

@@ -110,7 +110,13 @@ const { doc } = Astro.props;
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/highlight/highlight.js" is:inline></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/math/math.js" is:inline></script>
 
+  <!-- Botón flotante para pantalla completa -->
+  <button id="btn-fs-reveal" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.2s;">
+    ⛶
+  </button>
+
   <script is:inline>
+    // 1. Inicialización adaptativa de Reveal
     const esMovil = window.innerWidth < 768;
 
     Reveal.initialize({
@@ -121,7 +127,7 @@ const { doc } = Astro.props;
       transition: 'zoom',
       
       // --- PANTALLA ADAPTATIVA ---
-      width: esMovil ? 960 : 1280,  // Más cuadrado en móviles, panorámico en PC
+      width: esMovil ? 960 : 1280,
       height: esMovil ? 960 : 720,
       margin: 0.1,
       minScale: 0.2,
@@ -130,18 +136,42 @@ const { doc } = Astro.props;
       plugins: [ RevealMarkdown, RevealHighlight, RevealMath.KaTeX ]
     });
 
-    // --- AQUÍ VA TU JAVASCRIPT CUSTOM ---
-    
-    // Evento que se dispara cada vez que cambias de diapositiva
+    // 2. Eventos Custom (Animaciones mágicas)
     Reveal.on('slidechanged', (event) => {
-      // event.previousSlide, event.currentSlide, event.indexh, event.indexv
-      
-      console.log("Acabas de entrar a la diapositiva horizontal número: " + event.indexh);
-
-      // Si la diapositiva tiene un ID específico (ej: <section id="magia">)
       if (event.currentSlide.id === 'magia') {
         const caja = event.currentSlide.querySelector('.caja-destacada');
         if (caja) caja.classList.add('animar');
+      }
+    });
+
+    // 3. Lógica de Pantalla Completa (Clic y Tecla F)
+    const btnFsReveal = document.getElementById('btn-fs-reveal');
+    
+    const toggleRevealFS = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    };
+
+    // Activar con Clic
+    btnFsReveal.addEventListener('click', toggleRevealFS);
+
+    // Cambiar texto del botón si se sale con ESC
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        btnFsReveal.innerHTML = '✖';
+      } else {
+        btnFsReveal.innerHTML = '⛶';
+      }
+    });
+
+    // Activar con teclado (tecla F)
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleRevealFS();
       }
     });
   </script>

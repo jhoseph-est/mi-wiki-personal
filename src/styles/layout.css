@@ -176,6 +176,10 @@ a.nav-btn:hover { border-color: var(--text-color); background: var(--bg-color); 
     font-size: 0.7rem; /* Texto superior más pequeño */
     margin-bottom: 0.1rem; 
   }
+  .main-content:fullscreen,
+  .main-content:-webkit-full-screen {
+    padding: 5vh 5vw !important; /* Reduce drásticamente el espacio muerto lateral */
+  }
 }
 
 /* Menús laterales en Móvil */

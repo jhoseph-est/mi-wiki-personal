@@ -4,11 +4,21 @@ import Base from '../../layouts/Base.astro';
 
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
-  return allDocs.map(doc => {
+  const paths: any[] = [];
+  const folders = new Set<string>();
+
+  // 1. Recopilar todos los archivos .md y registrar las carpetas
+  allDocs.forEach(doc => {
     const normalizedId = doc.id.replace(/\\/g, '/');
     const partes = normalizedId.split('/');
     const carpetaActual = partes.length > 1 ? partes.slice(0, -1).join('/') : '';
     
+    let currentPath = '';
+    for (let i = 0; i < partes.length - 1; i++) {
+      currentPath = currentPath ? `${currentPath}/${partes[i]}` : partes[i];
+      folders.add(currentPath);
+    }
+
     const docsEnCarpeta = allDocs.filter(d => {
       const dPartes = d.id.replace(/\\/g, '/').split('/');
       const dCarpeta = dPartes.length > 1 ? dPartes.slice(0, -1).join('/') : '';
@@ -28,47 +38,126 @@ export async function getStaticPaths() {
     const index = docsEnCarpeta.findIndex(d => d.id === doc.id);
     const prev = index > 0 ? docsEnCarpeta[index - 1] : null;
     const next = index < docsEnCarpeta.length - 1 ? docsEnCarpeta[index + 1] : null;
-    
-    return {
+
+    paths.push({
       params: { id: normalizedId },
-      props: { doc, prev, next },
-    };
+      props: { type: 'file', doc, prev, next },
+    });
   });
+
+  // 2. Generar rutas MÁGICAS para las carpetas
+  folders.forEach(folder => {
+    const directFiles = allDocs.filter(d => {
+      const id = d.id.replace(/\\/g, '/');
+      return id.startsWith(folder + '/') && id.split('/').length === folder.split('/').length + 1;
+    });
+
+    const subfolders = new Set<string>();
+    Array.from(folders).forEach(f => {
+      if (f.startsWith(folder + '/') && f.split('/').length === folder.split('/').length + 1) {
+        subfolders.add(f);
+      }
+    });
+
+    paths.push({
+      params: { id: folder },
+      props: { 
+        type: 'folder', 
+        folderName: folder.split('/').pop(),
+        folderPath: folder,
+        directFiles,
+        subfolders: Array.from(subfolders)
+      }
+    });
+  });
+
+  // 3. NUEVO: RUTA MÁGICA PARA LA RAÍZ (Directorio Principal)
+  const rootFiles = allDocs.filter(d => !d.id.replace(/\\/g, '/').includes('/'));
+  const rootFolders = Array.from(folders).filter(f => !f.includes('/'));
+
+  paths.push({
+    params: { id: 'explorar' },
+    props: { 
+      type: 'folder', 
+      folderName: 'Directorio Principal',
+      folderPath: 'explorar',
+      directFiles: rootFiles,
+      subfolders: rootFolders
+    }
+  });
+
+  return paths;
 }
 
-const { doc, prev, next } = Astro.props;
-const { Content, headings } = await render(doc);
+const props = Astro.props;
 
-// --- LÓGICA DE MIGAS DE PAN ---
-const normalizedDocId = doc.id.replace(/\\/g, '/');
-const breadcrumbs = normalizedDocId.split('/').slice(0, -1);
+let Content: any;
+let headings: any[] = [];
+let breadcrumbs: string[] = [];
+let title = "";
+let frontmatterConExtra = {};
+let normalizedDocId = "";
 
-// --- LÓGICA DE TIEMPO DE LECTURA ---
-const words = doc.body ? doc.body.split(/\s+/).length : 0;
-const readingTime = Math.max(1, Math.ceil(words / 200)); // 200 palabras por minuto
+if (props.type === 'file') {
+  const rendered = await render(props.doc);
+  Content = rendered.Content;
+  headings = rendered.headings;
+  normalizedDocId = props.doc.id.replace(/\\/g, '/');
+  breadcrumbs = normalizedDocId.split('/').slice(0, -1);
+  
+  const words = props.doc.body ? props.doc.body.split(/\s+/).length : 0;
+  const readingTime = Math.max(1, Math.ceil(words / 200));
+  frontmatterConExtra = { ...props.doc.data, readingTime };
+  title = props.doc.data.title;
+} else {
+  normalizedDocId = props.folderPath;
+  breadcrumbs = props.folderPath === 'explorar' ? [] : normalizedDocId.split('/').slice(0, -1);
+  title = props.folderPath === 'explorar' ? 'Directorio Principal' : `Carpeta: ${props.folderName}`;
+  frontmatterConExtra = { title, theme: 'moderno' };
+}
 
-// Inyectamos el tiempo de lectura en el frontmatter para pasarlo al RightSidebar
-const frontmatterConExtra = { ...doc.data, readingTime };
+// NUEVO: Lógica inteligente para el botón "Volver"
+let linkVolver = "/";
+let textoVolver = "Inicio";
+
+if (props.type === 'folder' && props.folderPath === 'explorar') {
+  linkVolver = "/";
+  textoVolver = "Inicio";
+} else if (breadcrumbs.length > 0) {
+  linkVolver = `/docs/${breadcrumbs.join('/')}`;
+  textoVolver = breadcrumbs[breadcrumbs.length - 1].replace(/_/g, ' ');
+} else {
+  linkVolver = "/docs/explorar";
+  textoVolver = "Directorio Principal";
+}
 ---
 
-<Base title={doc.data.title} headings={headings} frontmatter={frontmatterConExtra} docId={normalizedDocId}>
+<Base title={title} headings={headings} frontmatter={frontmatterConExtra} docId={normalizedDocId}>
   
-  <!-- BARRA SUPERIOR: MIGAS DE PAN Y BOTONES -->
   <div class="top-bar">
     <nav class="breadcrumbs">
-      <a href="/">Inicio</a> 
-      {breadcrumbs.length > 0 && <span> &rsaquo; </span>}
-      {breadcrumbs.map((folder, index) => (
-        <span style="text-transform: capitalize;">
-          {folder} {index < breadcrumbs.length - 1 && ' › '}
-        </span>
-      ))}
+      <a href="/" class="crumb-link" title="Inicio">Inicio</a>
+      <span class="crumb-separator"> &rsaquo; </span>
+      <!-- Raíz estática para acceder siempre al directorio principal -->
+      <a href="/docs/explorar" class="crumb-link" title="Explorador">Explorador</a>
+      {breadcrumbs.length > 0 && <span class="crumb-separator"> &rsaquo; </span>}
+      
+      {breadcrumbs.map((folder, index) => {
+        const path = '/docs/' + breadcrumbs.slice(0, index + 1).join('/');
+        return (
+          <>
+            <a href={path} class="crumb-link" style="text-transform: capitalize;" title={folder}>
+              {folder.replace(/_/g, ' ')}
+            </a>
+            {index < breadcrumbs.length - 1 && <span class="crumb-separator"> &rsaquo; </span>}
+          </>
+        );
+      })}
     </nav>
-
     <div class="top-actions">
-      {doc.data.slides && (
+      {props.type === 'file' && props.doc.data.slides && (
         <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Abrir Presentación">
-          ▶ Presentar
+          📽️ Presentar
         </a>
       )}
       <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
@@ -77,120 +166,125 @@ const frontmatterConExtra = { ...doc.data, readingTime };
     </div>
   </div>
 
-  <article>
-    <Content />
-  </article>
+  {props.type === 'file' ? (
+    <>
+      <article>
+        <Content />
+      </article>
+      <hr class="nav-divider" />
+      <div class="doc-nav">
+        {props.prev ? (
+          <a href={`/docs/${props.prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
+            <span class="nav-label">⬅ Anterior</span>
+            <span class="nav-title">{props.prev.data.title}</span>
+          </a>
+        ) : (
+          <div class="nav-btn disabled prev">
+            <span class="nav-label">⬅ Anterior</span>
+            <span class="nav-title">Inicio de sección</span>
+          </div>
+        )}
+        {props.next ? (
+          <a href={`/docs/${props.next.id.replace(/\\/g, '/')}`} class="nav-btn next">
+            <span class="nav-label">Siguiente ➡</span>
+            <span class="nav-title">{props.next.data.title}</span>
+          </a>
+        ) : (
+          <div class="nav-btn disabled next">
+            <span class="nav-label">Siguiente ➡</span>
+            <span class="nav-title">Fin de sección</span>
+          </div>
+        )}
+      </div>
+    </>
+  ) : (
+    <div class="folder-view">
+      
+      <a href={linkVolver} class="back-link">
+        ⬅ Volver a <span style="text-transform: capitalize;">{textoVolver}</span>
+      </a>
 
-  <hr class="nav-divider" />
-  <div class="doc-nav">
-    {prev ? (
-      <a href={`/docs/${prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
-        <span class="nav-label">« Anterior</span>
-        <span class="nav-title">{prev.data.title}</span>
-      </a>
-    ) : (
-      <div class="nav-btn disabled prev">
-        <span class="nav-label">« Anterior</span>
-        <span class="nav-title">Inicio de sección</span>
+      <div class="folder-header">
+        <span class="folder-icon-large">📂</span>
+        <h1>{props.folderName.replace(/_/g, ' ')}</h1>
       </div>
-    )}
-    {next ? (
-      <a href={`/docs/${next.id.replace(/\\/g, '/')}`} class="nav-btn next">
-        <span class="nav-label">Siguiente »</span>
-        <span class="nav-title">{next.data.title}</span>
-      </a>
-    ) : (
-      <div class="nav-btn disabled next">
-        <span class="nav-label">Siguiente »</span>
-        <span class="nav-title">Fin de sección</span>
+      <p class="folder-desc">Explora los documentos y secciones dentro de esta carpeta.</p>
+      
+      <div class="folder-grid">
+        {props.subfolders.map((sub: string) => (
+          <a href={`/docs/${sub}`} class="folder-card subfolder-card">
+            <span class="icon">📁</span>
+            <span class="name">{sub.split('/').pop()?.replace(/_/g, ' ')}</span>
+          </a>
+        ))}
+        {props.directFiles.map((file: any) => (
+          <a href={`/docs/${file.id.replace(/\\/g, '/')}`} class="folder-card file-card">
+            <span class="icon">📄</span>
+            <span class="name">{file.data.title}</span>
+          </a>
+        ))}
       </div>
-    )}
-  </div>
+    </div>
+  )}
 </Base>
 
 <style>
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .top-actions { display: flex; gap: 10px; }
-  .action-btn {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
-  }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: nowrap; gap: 1rem; }
+  .top-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .action-btn { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
   .action-btn:hover { background: #8b5cf6; color: white; }
-  .breadcrumbs {
-    font-size: 0.85rem;
-    opacity: 0.7;
-    margin-bottom: 0;
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-  .breadcrumbs a {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .breadcrumbs a:hover {
-    text-decoration: underline;
-  }
+  
+  .breadcrumbs { font-size: 0.85rem; opacity: 0.7; margin-bottom: 0; display: flex; flex-wrap: nowrap; gap: 0.4rem; align-items: center; flex: 1; min-width: 0; }
+  .crumb-link { color: var(--text-color); text-decoration: none; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; flex: 0 1 auto; min-width: 0; transition: color 0.2s ease; }
+  .crumb-link:hover { color: #8b5cf6; text-decoration: underline; }
+  .crumb-separator { flex-shrink: 0; opacity: 0.5; font-weight: bold; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-color); opacity: 0.7; text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; padding: 0.4rem 0.8rem; border-radius: 6px; background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: all 0.2s ease; text-transform: capitalize; }
+  .back-link:hover { opacity: 1; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: #8b5cf6; }
+
+  .folder-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .folder-icon-large { font-size: 2.5rem; }
+  .folder-header h1 { margin: 0; font-size: 2rem; text-transform: capitalize; color: var(--text-color); }
+  .folder-desc { opacity: 0.7; margin-bottom: 2rem; font-size: 1.1rem; }
+  
+  .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+  .folder-card { display: flex; align-items: center; gap: 10px; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.2s ease; }
+  .folder-card:hover { transform: translateY(-2px); border-color: #8b5cf6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .subfolder-card .icon { font-size: 1.5rem; }
+  .file-card .icon { font-size: 1.5rem; opacity: 0.8; }
+  .folder-card .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize;}
 </style>
+
 <script>
   document.addEventListener('astro:page-load', () => {
     const btnFs = document.getElementById('btn-fullscreen');
-    const mainContent = document.querySelector('.main-content'); 
-    const btnPresent = document.querySelector('.presentation-btn'); // Capturamos el botón de presentación
+    const mainContent = document.querySelector('.main-content');
+    const btnPresent = document.querySelector('.presentation-btn');
 
-    // Función que maneja la pantalla completa
     const toggleFullScreen = () => {
       if (!document.fullscreenElement) {
         mainContent?.requestFullscreen().catch(err => console.log(err));
-        if(btnFs) btnFs.innerHTML = '✖ Salir';
+        if(btnFs) btnFs.innerHTML = '⛶ Salir';
       } else {
         document.exitFullscreen();
         if(btnFs) btnFs.innerHTML = '⛶ Leer';
       }
     };
 
-    // Activar por clic
     btnFs?.addEventListener('click', toggleFullScreen);
-
-    // Restaurar si el usuario pulsa ESC
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement && btnFs) {
         btnFs.innerHTML = '⛶ Leer';
       }
     });
 
-    // --- NUEVO: ATAJOS DE TECLADO ---
     document.addEventListener('keydown', (e) => {
-      // 1. Ignoramos el atajo si estás escribiendo en el buscador
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
-      // 2. Tecla 'F' para Pantalla Completa
       if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         toggleFullScreen();
       }
-
-      // 3. Tecla 'P' para Modo Presentación (solo si el botón existe)
       if (e.key.toLowerCase() === 'p' && btnPresent) {
         e.preventDefault();
         (btnPresent as HTMLAnchorElement).click(); 

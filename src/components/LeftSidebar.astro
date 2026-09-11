@@ -3,6 +3,19 @@ import { getCollection } from 'astro:content';
 const docs = await getCollection('docs');
 const { headings = [] } = Astro.props;
 
+// Añade esta función al inicio
+function formatName(str: string) {
+  if (!str) return '';
+  // Elimina prefijos numéricos iniciales (ej. "1-", "02_", "99-")
+  let clean = str.replace(/^\d+[-_.\s]+/, '');
+  
+  // Convierte todos los guiones medios y bajos restantes en espacios
+  clean = clean.replace(/[-_]/g, ' ');
+  
+  // Pone la primera letra en mayúscula
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
 const fileTree: any = {};
 docs.forEach(doc => {
   const normalizedId = doc.id.replace(/\\/g, '/');
@@ -33,9 +46,10 @@ function buildExplorerHTML(treeNode: any) {
       html += `
         <li>
           <details class="folder">
-            <summary class="nav-item" title="${key}">
+            <!-- Aplicamos formatName() aquí para limpiar el título y el texto visible -->
+            <summary class="nav-item" title="${formatName(key)}">
               <span class="chevron"></span>
-              <span class="text-truncate">${key}</span>
+              <span class="text-truncate">${formatName(key)}</span>
             </summary>
             <ul class="nav-nested">${buildExplorerHTML(node.children)}</ul>
           </details>

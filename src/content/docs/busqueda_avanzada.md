@@ -1,8 +1,11 @@
 ---
-title: "Guía de Búsqueda Avanzada"
+title: Guía de Búsqueda Avanzada
 date: 2026-09-05
-author: "Admin"
-tags: ["guia", "sistema", "buscador"]
+author: Admindsada
+tags:
+  - guia
+  - sistema
+  - buscador
 ---
 
 # Cómo usar el Buscador Avanzado

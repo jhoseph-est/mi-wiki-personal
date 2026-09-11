@@ -8,6 +8,7 @@ const docs = defineCollection({
     title: z.string(),
     
     // ¡METADATOS OPCIONALES!
+    icon: z.string().optional(),
     theme: z.enum(['minimalista', 'academico', 'moderno', 'oscuro']).optional(),
     date: z.date().optional(),
     author: z.string().optional(),

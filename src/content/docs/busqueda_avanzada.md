@@ -6,6 +6,7 @@ tags:
   - guia
   - sistema
   - buscador
+icon: "🤖"
 ---
 
 # Cómo usar el Buscador Avanzado

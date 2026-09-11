@@ -3,16 +3,10 @@ import { getCollection } from 'astro:content';
 const docs = await getCollection('docs');
 const { headings = [] } = Astro.props;
 
-// Añade esta función al inicio
 function formatName(str: string) {
   if (!str) return '';
-  // Elimina prefijos numéricos iniciales (ej. "1-", "02_", "99-")
-  let clean = str.replace(/^\d+[-_.\s]+/, '');
-  
-  // Convierte todos los guiones medios y bajos restantes en espacios
-  clean = clean.replace(/[-_]/g, ' ');
-  
-  // Pone la primera letra en mayúscula
+  let clean = str.replace(/^\d+-/, '');
+  clean = clean.replace(/-/g, ' ');
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
@@ -27,8 +21,11 @@ docs.forEach(doc => {
     current = current[part].children;
   }
   const fileName = parts[parts.length - 1];
-current[fileName] = { type: 'file', doc: doc, url: `/docs/${normalizedId}` };
+  current[fileName] = { type: 'file', doc: doc, url: `/docs/${normalizedId}` };
 });
+
+const folderSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>`;
+const fileSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>`;
 
 function buildExplorerHTML(treeNode: any) {
   let html = '';
@@ -46,9 +43,9 @@ function buildExplorerHTML(treeNode: any) {
       html += `
         <li>
           <details class="folder">
-            <!-- Aplicamos formatName() aquí para limpiar el título y el texto visible -->
             <summary class="nav-item" title="${formatName(key)}">
               <span class="chevron"></span>
+              <span class="nav-icon folder-icon">${folderSvg}</span>
               <span class="text-truncate">${formatName(key)}</span>
             </summary>
             <ul class="nav-nested">${buildExplorerHTML(node.children)}</ul>
@@ -59,6 +56,7 @@ function buildExplorerHTML(treeNode: any) {
       html += `
         <li>
           <a href="${node.url || `/docs/${node.doc.id}`}" class="nav-item file-item" title="${node.doc.data.title}">
+            <span class="nav-icon file-icon">${fileSvg}</span>
             <span class="text-truncate">${node.doc.data.title}</span>
           </a>
         </li>`;
@@ -193,6 +191,16 @@ const tocTree = buildToc(headings);
     font-weight: bold !important;
     opacity: 1 !important;
   }
+  .sidebar-wrapper :global(.nav-icon) {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  .sidebar-wrapper :global(.folder-icon) { color: #8b5cf6; } /* Carpetas moradas */
+  .sidebar-wrapper :global(.nav-item:hover .nav-icon) { opacity: 1; }
 </style>
 
 <script>

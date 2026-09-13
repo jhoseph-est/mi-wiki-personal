@@ -5,7 +5,22 @@ const formatDate = (dateStr: Date | string) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 };
+import { getCollection } from 'astro:content';
 
+// --- LÓGICA DE BACKLINKS PARA LA BARRA LATERAL ---
+let backlinks: any[] = [];
+if (docId && docId !== 'explorar') {
+  const allDocs = await getCollection('docs');
+  backlinks = allDocs.filter(d => {
+    // No enlazarse a sí mismo
+    if (d.id.replace(/\\/g, '/') === docId) return false;
+    // Verificar si el contenido menciona la ruta actual
+    return d.body && d.body.includes(docId);
+  }).map(d => ({
+    title: d.data.title,
+    url: `/docs/${d.id.replace(/\\/g, '/')}`
+  }));
+}
 ---
 
 <div class="right-sidebar-wrapper" id="right-sidebar">
@@ -22,6 +37,7 @@ const formatDate = (dateStr: Date | string) => {
           <span class="ficha-value">{formatDate(frontmatter.date)}</span>
         </div>
       )}
+      
       {frontmatter.author && (
         <div class="ficha">
           <span class="ficha-label">✍️ Autor</span>
@@ -38,6 +54,20 @@ const formatDate = (dateStr: Date | string) => {
           </div>
         </div>
       )}
+      {backlinks.length > 0 && (
+  <div class="sidebar-backlinks">
+    <h4 class="sidebar-subtitle">🔗 Conexiones</h4>
+    <ul class="sidebar-backlink-list">
+      {backlinks.map(link => (
+        <li>
+          <a href={link.url} class="sidebar-backlink-item" title={link.title}>
+            {link.title}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
       {(!frontmatter.date && !frontmatter.author && !frontmatter.tags) && (
         <p class="empty-msg">No hay metadatos adicionales.</p>
       )}

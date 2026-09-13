@@ -274,5 +274,6 @@ $\displaystyle \sum_{i=1}^{n} i = \frac{n(n+1)}{2}$ (esto fuerza estilo display 
 Este archivo cubre una amplia gama de casos. Si tu lector soporta todo esto sin errores, ¡está muy bien preparado!
 
 ---
+Revisa la estructura en [Carpetas](/docs/99-temp/estructura-de-carpetas)
 
 **Fin del archivo de pruebas.**

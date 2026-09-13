@@ -448,3 +448,56 @@ html[data-modo="oscuro"] .main-content th {
   border-radius: 3px;
   font-weight: bold;
 }
+
+/* ==========================================================
+   BACKLINKS EN EL PANEL DERECHO (RightSidebar)
+   ========================================================== */
+.sidebar-backlinks {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.sidebar-subtitle {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8b5cf6; /* Morado del tema */
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+.sidebar-backlink-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-backlink-item {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0.5rem 0.8rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+}
+
+html[data-modo="oscuro"] .sidebar-backlink-item {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-backlink-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  transform: translateX(3px);
+}

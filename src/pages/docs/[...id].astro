@@ -4,15 +4,8 @@ import Base from '../../layouts/Base.astro';
 
 function formatName(str: string) {
   if (!str) return '';
-  
-  // 1. Elimina el prefijo numérico inicial (ej. "1-")
   let clean = str.replace(/^\d+-/, '');
-  
-  // 2. Protege el doble guion ("--") aislando las palabras, 
-  // convierte guiones simples ("-") en espacios, y luego une todo con un guion real.
   clean = clean.split('--').map(word => word.replace(/-/g, ' ')).join('-');
-  
-  // 3. Pone la primera letra en mayúscula
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
@@ -63,14 +56,12 @@ export async function getStaticPaths() {
       const id = d.id.replace(/\\/g, '/');
       return id.startsWith(folder + '/') && id.split('/').length === folder.split('/').length + 1;
     });
-
     const subfolders = new Set<string>();
     Array.from(folders).forEach(f => {
       if (f.startsWith(folder + '/') && f.split('/').length === folder.split('/').length + 1) {
         subfolders.add(f);
       }
     });
-
     paths.push({
       params: { id: folder },
       props: { 
@@ -85,7 +76,6 @@ export async function getStaticPaths() {
 
   const rootFiles = allDocs.filter(d => !d.id.replace(/\\/g, '/').includes('/'));
   const rootFolders = Array.from(folders).filter(f => !f.includes('/'));
-
   paths.push({
     params: { id: 'explorar' },
     props: { 
@@ -101,7 +91,6 @@ export async function getStaticPaths() {
 }
 
 const props = Astro.props;
-
 let Content: any;
 let headings: any[] = [];
 let breadcrumbs: string[] = [];
@@ -109,13 +98,32 @@ let title = "";
 let frontmatterConExtra = {};
 let normalizedDocId = "";
 
+// --- LÓGICA DEL GRAFO GLOBAL ---
+const allDocsGraph = await getCollection('docs');
+const nodes = allDocsGraph.map(d => ({
+  id: `/docs/${d.id.replace(/\\/g, '/')}`,
+  name: d.data.title || 'Sin título',
+  val: 1,
+  group: d.id.split('/')[0]
+}));
+const links: any[] = [];
+allDocsGraph.forEach(d => {
+  const sourceId = `/docs/${d.id.replace(/\\/g, '/')}`;
+  allDocsGraph.forEach(t => {
+    const targetId = `/docs/${t.id.replace(/\\/g, '/')}`;
+    if (d.body && d.body.includes(targetId) && sourceId !== targetId) {
+      links.push({ source: sourceId, target: targetId });
+    }
+  });
+});
+const graphData = JSON.stringify({ nodes, links });
+
 if (props.type === 'file') {
   const rendered = await render(props.doc);
   Content = rendered.Content;
   headings = rendered.headings;
   normalizedDocId = props.doc.id.replace(/\\/g, '/');
   breadcrumbs = normalizedDocId.split('/').slice(0, -1);
-  
   const words = props.doc.body ? props.doc.body.split(/\s+/).length : 0;
   const readingTime = Math.max(1, Math.ceil(words / 200));
   frontmatterConExtra = { ...props.doc.data, readingTime };
@@ -129,7 +137,6 @@ if (props.type === 'file') {
 
 let linkVolver = "/";
 let textoVolver = "Inicio";
-
 if (props.type === 'folder' && props.folderPath === 'explorar') {
   linkVolver = "/";
   textoVolver = "Inicio";
@@ -141,7 +148,6 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
   textoVolver = "Directorio Principal";
 }
 ---
-
 <Base title={title} headings={headings} frontmatter={frontmatterConExtra} docId={normalizedDocId}>
   
   <div class="top-bar">
@@ -163,52 +169,83 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         );
       })}
     </nav>
-<div class="top-actions">
-  {props.type === 'file' && props.doc.data.slides && (
-    <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Abrir Presentación">
-      📽️ Presentar
-    </a>
-  )}
-  <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
-    ⛶ Leer
-  </button>
-</div>
+
+    <div class="top-actions">
+      {props.type === 'file' && (
+        <>
+          {props.doc.data.slides && (
+            <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Presentación estándar">
+              📽️ Presentar
+            </a>
+          )}
+          <!-- BOTÓN PARA ALTERNAR EL GRAFO -->
+          <button id="btn-toggle-graph" class="action-btn" title="Ver red de conocimiento">
+            🕸️ Grafo
+          </button>
+        </>
+      )}
+      <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
+        ⛶ Leer
+      </button>
+    </div>
   </div>
 
   {props.type === 'file' ? (
     <>
-      <article>
-        <Content />
-      </article>
-      <hr class="nav-divider" />
-      <div class="doc-nav">
-        {props.prev ? (
-          <a href={`/docs/${props.prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
-            <span class="nav-label">⬅ Anterior</span>
-            <span class="nav-title">{props.prev.data.title}</span>
-          </a>
-        ) : (
-          <div class="nav-btn disabled prev">
-            <span class="nav-label">⬅ Anterior</span>
-            <span class="nav-title">Inicio de sección</span>
+      <!-- CONTENEDOR DEL TEXTO MARKDOWN -->
+      <div id="document-view">
+        <article>
+          <Content />
+        </article>
+
+        <hr class="nav-divider" />
+        
+        <div class="doc-nav">
+          {props.prev ? (
+            <a href={`/docs/${props.prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
+              <span class="nav-label">← Anterior</span>
+              <span class="nav-title">{props.prev.data.title}</span>
+            </a>
+          ) : (
+            <div class="nav-btn disabled prev">
+              <span class="nav-label">← Anterior</span>
+              <span class="nav-title">Inicio de sección</span>
+            </div>
+          )}
+          
+          {props.next ? (
+            <a href={`/docs/${props.next.id.replace(/\\/g, '/')}`} class="nav-btn next">
+              <span class="nav-label">Siguiente →</span>
+              <span class="nav-title">{props.next.data.title}</span>
+            </a>
+          ) : (
+            <div class="nav-btn disabled next">
+              <span class="nav-label">Siguiente →</span>
+              <span class="nav-title">Fin de sección</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- NUEVO MODAL FLOTANTE DEL GRAFO -->
+      <div id="graph-modal" class="graph-modal-overlay" data-graph={graphData}>
+        <div class="graph-modal-content">
+          <div class="graph-modal-header">
+            <div>
+              <h3 style="margin: 0; color: #8b5cf6;">🕸️ Red de Conocimiento</h3>
+              <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Haz clic en un nodo para navegar a ese apunte.</p>
+            </div>
+            <button id="close-graph-btn" class="action-btn" style="border-color: #ef4444; color: #ef4444;">
+              ✖ Cerrar
+            </button>
           </div>
-        )}
-        {props.next ? (
-          <a href={`/docs/${props.next.id.replace(/\\/g, '/')}`} class="nav-btn next">
-            <span class="nav-label">Siguiente ➡</span>
-            <span class="nav-title">{props.next.data.title}</span>
-          </a>
-        ) : (
-          <div class="nav-btn disabled next">
-            <span class="nav-label">Siguiente ➡</span>
-            <span class="nav-title">Fin de sección</span>
-          </div>
-        )}
+          <div id="graph-container"></div>
+        </div>
       </div>
     </>
   ) : (
     <div class="folder-view">
-      
+      <!-- VISTA DE CARPETAS -->
       <a href={linkVolver} class="back-link">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Volver a <span>{textoVolver}</span>
@@ -220,6 +257,7 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         </span>
         <h1>{props.folderPath === 'explorar' ? 'Directorio Principal' : formatName(props.folderName)}</h1>
       </div>
+      
       <p class="folder-desc">Explora los documentos y secciones dentro de esta carpeta.</p>
       
       <div class="folder-grid">
@@ -234,6 +272,7 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
             </a>
           );
         })}
+        
         {props.directFiles.map((file: any) => (
           <a href={`/docs/${file.id.replace(/\\/g, '/')}`} class="folder-card">
             <span class="icon file-svg">
@@ -257,49 +296,82 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
   .crumb-link { color: var(--text-color); text-decoration: none; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; flex: 0 1 auto; min-width: 0; transition: color 0.2s ease; }
   .crumb-link:hover { color: #8b5cf6; text-decoration: underline; }
   .crumb-separator { flex-shrink: 0; opacity: 0.5; font-weight: bold; }
-
+  
   .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-color); opacity: 0.7; text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; padding: 0.4rem 0.8rem; border-radius: 6px; background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: all 0.2s ease; }
   .back-link:hover { opacity: 1; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: #8b5cf6; }
-
+  
   .folder-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
   .folder-icon-large { display: flex; align-items: center; color: #8b5cf6; } 
   .folder-header h1 { margin: 0; font-size: 2rem; color: var(--text-color); }
   .folder-desc { opacity: 0.7; margin-bottom: 2rem; font-size: 1.1rem; }
   
   .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
-  .folder-card { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    padding: 1.2rem; 
-    border-radius: 8px; 
-    border: 1px solid var(--border-color); 
-    background: rgba(0,0,0,0.02); 
-    text-decoration: none; 
-    color: var(--text-color); 
-    transition: all 0.2s ease; 
-  }
-  .folder-card .icon { 
-    display: flex; 
-    align-items: center; 
-    color: #8b5cf6; /* Morado fijo por defecto */
-    transition: all 0.2s ease;
-  }
-  .folder-card:hover { 
-    transform: translateY(-2px); 
-    border-color: #8b5cf6; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-  }
+  .folder-card { display: flex; align-items: center; gap: 12px; padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.2s ease; }
+  .folder-card .icon { display: flex; align-items: center; color: #8b5cf6; transition: all 0.2s ease; }
+  .folder-card:hover { transform: translateY(-2px); border-color: #8b5cf6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
   .folder-card .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  
+
+/* ==========================================================
+     MODAL FLOTANTE DEL GRAFO
+     ========================================================== */
+  .graph-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .graph-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .graph-modal-content {
+    width: 95vw;
+    height: 90vh;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .graph-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--header-bg);
+  }
+  #graph-container {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%; /* El JS medirá este contenedor exacto */
+    cursor: grab;
+  }
+  #graph-container:active {
+    cursor: grabbing;
+  }
 </style>
+
+<!-- LIBRERÍA DE GRAFOS -->
+<script src="//unpkg.com/force-graph" is:inline></script>
 
 <script>
   document.addEventListener('astro:page-load', () => {
+    
+    // --- LÓGICA DE PANTALLA COMPLETA ---
     const btnFs = document.getElementById('btn-fullscreen');
     const mainContent = document.querySelector('.main-content');
     const btnPresent = document.querySelector('.presentation-btn');
-
+    
     const toggleFullScreen = () => {
       if (!document.fullscreenElement) {
         mainContent?.requestFullscreen().catch(err => console.log(err));
@@ -309,25 +381,121 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         if(btnFs) btnFs.innerHTML = '⛶ Leer';
       }
     };
-
+    
     btnFs?.addEventListener('click', toggleFullScreen);
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement && btnFs) {
-        btnFs.innerHTML = '⛶ Leer';
-      }
-    });
 
+    // --- LÓGICA DEL MODAL DEL GRAFO FLOTANTE ---
+    const btnToggleGraph = document.getElementById('btn-toggle-graph');
+    const graphModal = document.getElementById('graph-modal');
+    const closeGraphBtn = document.getElementById('close-graph-btn');
+    const graphContainer = document.getElementById('graph-container');
+    
+    let graphInitialized = false;
+    let Graph: any = null;
+
+    const openGraphModal = () => {
+      if (!graphModal || !graphContainer) return;
+      graphModal.classList.add('active');
+
+      if (!graphInitialized) {
+        const data = JSON.parse(graphModal.getAttribute('data-graph') || '{}');
+        const isDark = document.documentElement.getAttribute('data-modo') === 'oscuro';
+        const bgColor = isDark ? 'var(--bg-color)' : '#ffffff';
+        const lineColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+        const textColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+        let hoverNode: any = null;
+
+        // @ts-ignore
+        Graph = ForceGraph()(graphContainer)
+          .graphData(data)
+          .nodeAutoColorBy('group')
+          .linkColor(() => lineColor)
+          .backgroundColor(bgColor)
+          .nodeRelSize(5)
+          .nodeCanvasObject((node: any, ctx: any, globalScale: number) => {
+            const size = node === hoverNode ? 7 : 5;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+            ctx.fillStyle = node.color;
+            ctx.fill();
+
+            if (globalScale >= 1.5 || node === hoverNode) {
+              const label = node.name;
+              const fontSize = 12 / globalScale; 
+              ctx.font = `${fontSize}px Sans-Serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'top';
+              ctx.fillStyle = node === hoverNode ? node.color : textColor;
+              
+              if (node === hoverNode) {
+                const textWidth = ctx.measureText(label).width;
+                const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y + size + 1, bckgDimensions[0], bckgDimensions[1]);
+                ctx.fillStyle = node.color;
+              }
+              ctx.fillText(label, node.x, node.y + size + 2);
+            }
+          })
+          .onNodeHover((node: any) => {
+            hoverNode = node || null;
+            graphContainer.style.cursor = node ? 'pointer' : 'grab';
+          })
+          .onNodeClick((node: any) => {
+            if (node.id) window.location.href = node.id; 
+          });
+
+        // Suavizar el zoom
+        Graph.d3Zoom().wheelDelta((event: any) => {
+          const defaultDelta = event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+          return -defaultDelta * 0.2; 
+        });
+
+        // Ajuste dinámico de tamaño al redimensionar ventana
+        window.addEventListener('resize', () => {
+          if(graphModal.classList.contains('active')) {
+            Graph.width(graphContainer.clientWidth);
+            Graph.height(graphContainer.clientHeight);
+          }
+        });
+
+        graphInitialized = true;
+      }
+
+      // IMPORTANTE: Darle tamaño al canvas e invocar zoomToFit cuando el modal ya es visible
+      setTimeout(() => {
+        Graph.width(graphContainer.clientWidth);
+        Graph.height(graphContainer.clientHeight);
+        Graph.zoomToFit(600, 40);
+      }, 50);
+    };
+
+    const closeGraphModal = () => {
+      if (graphModal) graphModal.classList.remove('active');
+    };
+
+    if (btnToggleGraph) btnToggleGraph.addEventListener('click', openGraphModal);
+    if (closeGraphBtn) closeGraphBtn.addEventListener('click', closeGraphModal);
+
+    // Cerrar grafo con Escape o abrir fullscreen
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-      if (e.key.toLowerCase() === 'f') {
+
+      if (e.key === 'Escape' && graphModal?.classList.contains('active')) {
+        closeGraphModal();
+        return;
+      }
+      
+      if (e.key.toLowerCase() === 'f' && !graphModal?.classList.contains('active')) {
         e.preventDefault();
         toggleFullScreen();
       }
-      if (e.key.toLowerCase() === 'p' && btnPresent) {
+      if (e.key.toLowerCase() === 'p' && btnPresent && !graphModal?.classList.contains('active')) {
         e.preventDefault();
         (btnPresent as HTMLAnchorElement).click(); 
       }
     });
+
   });
 </script>

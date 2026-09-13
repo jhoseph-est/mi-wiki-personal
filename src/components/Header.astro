@@ -1,5 +1,4 @@
 <header class="main-header">
-  <!-- 1. MENÚ HAMBURGUESA (Solo en celular) -->
   <button id="btn-mobile-menu" class="icon-btn hide-on-desktop">
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -8,211 +7,109 @@
     </svg>
   </button>
 
-  <!-- 2. LOGO (Botón de Inicio) -->
   <a href="/" class="logo-container">
     <span class="site-logo" style="font-size: 24px;">📚</span>
     <span class="site-title hide-on-mobile">Mi Repositorio</span>
   </a>
 
-  <!-- 3. BUSCADOR -->
-  <div class="search-container">
-    <input type="text" id="search-input" class="search-bar" placeholder="Buscar (Cmd+K)..." autocomplete="off" />
-    <div id="search-backdrop" class="search-backdrop"></div>
-    <ul id="search-results" class="search-results"></ul>
+  <!-- BUSCADOR: transition:persist mantiene tu texto al cambiar de página -->
+  <div class="search-container" id="search-container" transition:persist="search-box">
+    <div id="search"></div>
   </div>
 
-  <!-- 4. ENGRANAJE (Panel Derecho) -->
   <button id="toggle-settings-btn" class="icon-btn hide-on-desktop" title="Configuración">
     <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h-.09A1.65 1.65 0 0 0-1.51 1z"></path>
     </svg>
   </button>
 </header>
 
+<!-- CARGA DE PAGEFIND (Fuera del elemento persistente para evitar bugs de CSS) -->
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js" is:inline></script>
+
 <script>
-  // NUEVO: Función para remover tildes y convertir a minúsculas
-  function limpiarTexto(texto: string) {
-    if (!texto) return "";
-    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  }
+  let isPagefindInitialized = false;
 
-  function initHeader() {
-    let searchData: any[] = [];
-    const input = document.getElementById('search-input') as HTMLInputElement;
-    const resultsBox = document.getElementById('search-results');
-    const backdrop = document.getElementById('search-backdrop');
-
-    // --- LÓGICA DE BÚSQUEDA AVANZADA ---
-    const newHandler = async (e: Event) => {
-      const rawInput = (e.target as HTMLInputElement).value;
-      
-      if (rawInput.trim().length < 1) {
-        if (resultsBox) resultsBox.style.display = 'none';
-        if (backdrop) backdrop.style.display = 'none';
-        return;
+  document.addEventListener('astro:page-load', () => {
+    
+    // 1. INICIALIZAR PAGEFIND (Solo se ejecuta una vez en la vida de la pestaña)
+    if (!isPagefindInitialized) {
+      const searchDiv = document.getElementById('search');
+      if (searchDiv) {
+        // @ts-ignore
+        new PagefindUI({ 
+          element: "#search", 
+          showSubResults: true,
+          showImages: false,
+          resetStyles: false 
+        });
+        isPagefindInitialized = true;
       }
-
-      if (searchData.length === 0) {
-        const res = await fetch('/search.json');
-        const rawData = await res.json();
-        
-        // NUEVO: Pre-calculamos las versiones sin tildes de todo el JSON una sola vez
-        searchData = rawData.map((item: any) => ({
-          ...item,
-          cleanTitle: limpiarTexto(item.title),
-          cleanAuthor: limpiarTexto(item.author || ''),
-          cleanTags: (item.tags || []).map((t: string) => limpiarTexto(t))
-        }));
-      }
-
-      // Limpiamos el texto que escribió el usuario
-      const queryLimpio = limpiarTexto(rawInput);
-
-      // Separar la búsqueda en palabras/comandos
-      const tokens = queryLimpio.split(/\s+/).filter((t: string) => t.length > 0);
-      
-      const reqTags: string[] = []; // Etiquetas requeridas (#)
-      const excTags: string[] = []; // Etiquetas excluidas (-#)
-      let authorQuery = "";         // Autor (@)
-      const textTokens: string[] = []; // Texto normal (Título)
-
-      tokens.forEach((token: string) => {
-        if (token.startsWith('-#')) excTags.push(token.slice(2));
-        else if (token.startsWith('#')) reqTags.push(token.slice(1));
-        else if (token.startsWith('@')) authorQuery = token.slice(1);
-        else textTokens.push(token);
-      });
-
-      const filtered = searchData.filter(item => {
-        // 1. Filtro de Etiquetas Requeridas (Busca en cleanTags)
-        if (reqTags.length > 0) {
-          const hasAll = reqTags.every(rt => item.cleanTags.some((t: string) => t.includes(rt)));
-          if (!hasAll) return false;
-        }
-
-        // 2. Filtro de Etiquetas Excluidas (Busca en cleanTags)
-        if (excTags.length > 0) {
-          const hasExcluded = excTags.some(et => item.cleanTags.some((t: string) => t.includes(et)));
-          if (hasExcluded) return false;
-        }
-
-        // 3. Filtro de Autor (Busca en cleanAuthor)
-        if (authorQuery && !item.cleanAuthor.includes(authorQuery)) {
-          return false;
-        }
-
-        // 4. Filtro de Título (Busca en cleanTitle)
-        const textQuery = textTokens.join(' ');
-        if (textQuery && !item.cleanTitle.includes(textQuery)) {
-          return false;
-        }
-
-        return true;
-      });
-
-      // --- RENDERIZADO VISUAL ---
-      if (resultsBox && backdrop) {
-        resultsBox.innerHTML = '';
-        
-        // NUEVO: Limitamos los resultados a los 15 mejores para rendimiento
-        const topResults = filtered.slice(0, 15);
-
-        if (topResults.length > 0) {
-          topResults.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-              <a href="${item.url}" class="search-item-link">
-                <span class="search-item-icon">📄</span>
-                <span class="search-item-title">${item.title}</span>
-                ${item.tags.length > 0 ? `<span class="search-item-tags">#${item.tags.join(' #')}</span>` : ''}
-              </a>
-            `;
-            resultsBox.appendChild(li);
-          });
-        } else {
-          resultsBox.innerHTML = '<li class="no-results">No se encontraron apuntes.</li>';
-        }
-        resultsBox.style.display = 'block';
-        backdrop.style.display = 'block';
-      }
-    };
-
-    if (input) {
-      input.replaceWith(input.cloneNode(true));
-      const freshInput = document.getElementById('search-input') as HTMLInputElement;
-      freshInput?.addEventListener('input', newHandler);
     }
 
-    // --- CERRAR BUSCADOR Y PANELES AL TOCAR AFUERA ---
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+    // 2. REABRIR RESULTADOS AL HACER CLIC
+    const searchContainer = document.getElementById('search-container');
+    if (searchContainer) {
+      searchContainer.onclick = () => {
+        const input = document.querySelector('.pagefind-ui__search-input') as HTMLInputElement | null;
+        const drawer = document.querySelector('.pagefind-ui__drawer');
+        if (input && input.value.trim() !== '' && drawer) {
+          drawer.classList.remove('pagefind-ui__hidden');
+        }
+      };
+    }
+
+    // 3. EVENTOS GLOBALES (Protegidos para que no se dupliquen al navegar)
+    // @ts-ignore
+    if (!window.searchListenersAdded) {
       
-      // Cerrar buscador
-      if (resultsBox && backdrop && !target.closest('.search-container') && !target.closest('.search-results')) {
-        resultsBox.style.display = 'none';
-        backdrop.style.display = 'none';
-      }
+      // Cerrar al hacer clic fuera
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const container = document.getElementById('search-container');
+        const drawer = document.querySelector('.pagefind-ui__drawer');
+        
+        if (container && !container.contains(target)) {
+          if (drawer) drawer.classList.add('pagefind-ui__hidden');
+        }
+      });
 
-      // Cerrar panel izquierdo (Menú)
-      const leftPanel = document.querySelector('.left-panel');
-      if (leftPanel?.classList.contains('show-mobile-menu') && !target.closest('.left-panel') && !target.closest('#btn-mobile-menu')) {
-        leftPanel.classList.remove('show-mobile-menu');
-      }
+      // Atajos de teclado
+      document.addEventListener('keydown', (e) => {
+        const input = document.querySelector('.pagefind-ui__search-input') as HTMLInputElement | null;
+        const drawer = document.querySelector('.pagefind-ui__drawer');
+        
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          if (input) input.focus();
+        }
+        
+        if (e.key === 'Escape') {
+          if (input) {
+            input.value = '';
+            input.blur();
+            // Disparamos un evento para que Pagefind sepa que vaciamos el texto
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          if (drawer) drawer.classList.add('pagefind-ui__hidden');
+        }
+      });
 
-      // Cerrar panel derecho (Engranaje)
-      const rightPanel = document.querySelector('.right-panel');
-      if (rightPanel?.classList.contains('show-mobile-right') && !target.closest('.right-panel') && !target.closest('#toggle-settings-btn')) {
-        rightPanel.classList.remove('show-mobile-right');
-      }
+      // @ts-ignore
+      window.searchListenersAdded = true;
+    }
+
+    // 4. MENÚS MÓVILES
+    document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
+      document.querySelector('.left-panel')?.classList.toggle('show-mobile-menu');
+      document.querySelector('.right-panel')?.classList.remove('show-mobile-right');
     });
 
-    // --- MENÚ MÓVIL IZQUIERDO ---
-    const btnMobileMenu = document.getElementById('btn-mobile-menu');
-    if (btnMobileMenu) {
-      btnMobileMenu.replaceWith(btnMobileMenu.cloneNode(true));
-      const freshBtnMobile = document.getElementById('btn-mobile-menu');
-      freshBtnMobile?.addEventListener('click', () => {
-        const leftPanel = document.querySelector('.left-panel');
-        leftPanel?.classList.toggle('show-mobile-menu');
-        // Cerrar el derecho si estaba abierto
-        document.querySelector('.right-panel')?.classList.remove('show-mobile-right');
-      });
-    }
-
-    // --- MENÚ MÓVIL DERECHO (ENGRANAJE) ---
-    const settingsBtn = document.getElementById('toggle-settings-btn');
-    if (settingsBtn) {
-      settingsBtn.replaceWith(settingsBtn.cloneNode(true));
-      const freshSettingsBtn = document.getElementById('toggle-settings-btn');
-      freshSettingsBtn?.addEventListener('click', () => {
-        const rightPanel = document.querySelector('.right-panel');
-        rightPanel?.classList.toggle('show-mobile-right');
-        // Cerrar el izquierdo si estaba abierto
-        document.querySelector('.left-panel')?.classList.remove('show-mobile-menu');
-      });
-    }
-
-    // --- ATAJOS DE TECLADO ---
-    document.addEventListener('keydown', (e) => {
-      const searchInput = document.getElementById('search-input') as HTMLInputElement;
-      const resultsBox = document.getElementById('search-results');
-      const backdrop = document.getElementById('search-backdrop');
-
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        if (searchInput) searchInput.focus();
-      }
-
-      if (e.key === 'Escape') {
-        if (resultsBox && backdrop) {
-          resultsBox.style.display = 'none';
-          backdrop.style.display = 'none';
-        }
-        if (searchInput) searchInput.blur();
-      }
+    document.getElementById('toggle-settings-btn')?.addEventListener('click', () => {
+      document.querySelector('.right-panel')?.classList.toggle('show-mobile-right');
+      document.querySelector('.left-panel')?.classList.remove('show-mobile-menu');
     });
-  }
-
-  document.addEventListener('astro:page-load', initHeader);
+  });
 </script>

@@ -11,7 +11,7 @@ import Base from '../layouts/Base.astro';
     <div class="hero-buttons">
       <a href="/docs/explorar" class="btn-primary">📖 Explorar Directorio</a>
       <!-- Botón que activa tu buscador global con Cmd+K -->
-      <button onclick="document.getElementById('search-input').focus()" class="btn-secondary">🔍 Buscar (Cmd+K)</button>
+      <button onclick="document.querySelector('.pagefind-ui__search-input')?.focus()" class="btn-secondary"> Búsqueda (Cmd+K)</button>
     </div>
   </div>
 

@@ -51,6 +51,11 @@ for(let i = 0; i < 15; i++) {
 console.log("¡Todo conectado y funcionando!");
 ```
 
+<aside class="notes">
+Recordar mencionar que el voltaje de entrada es 5V pero opera a 3.3V.
+No olvidar sonreír al público.
+</aside>
+
 ---
 
 ## Modificadores de Elementos

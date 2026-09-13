@@ -163,16 +163,16 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         );
       })}
     </nav>
-    <div class="top-actions">
-      {props.type === 'file' && props.doc.data.slides && (
-        <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Abrir Presentación">
-          📽️ Presentar
-        </a>
-      )}
-      <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
-        ⛶ Leer
-      </button>
-    </div>
+<div class="top-actions">
+  {props.type === 'file' && props.doc.data.slides && (
+    <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Abrir Presentación">
+      📽️ Presentar
+    </a>
+  )}
+  <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
+    ⛶ Leer
+  </button>
+</div>
   </div>
 
   {props.type === 'file' ? (
@@ -291,6 +291,7 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
   }
   .folder-card .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  
 </style>
 
 <script>

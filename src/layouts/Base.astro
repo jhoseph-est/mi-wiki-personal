@@ -74,65 +74,40 @@ const estiloDoc = frontmatter.theme || 'moderno';
       
     </div>
 
-    <!-- Importamos Mermaid de forma asíncrona -->
-    <script type="module" is:inline>
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+<script type="module" is:inline>
+  document.addEventListener('astro:page-load', async () => {
+    const mermaidCodes = document.querySelectorAll('pre[data-language="mermaid"] code, pre code.language-mermaid');
+    
+    // Si no hay diagramas, detenemos la ejecución y ahorramos recursos
+    if (mermaidCodes.length === 0) return;
+
+    // Importación dinámica: Solo se descarga si pasó la validación anterior
+    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+    
+    const currentMode = document.documentElement.getAttribute('data-modo') === 'oscuro' ? 'dark' : 'default';
+    mermaid.initialize({ startOnLoad: false, theme: currentMode });
+
+    mermaidCodes.forEach(async (codeBlock, i) => {
+      const pre = codeBlock.closest('pre');
+      const graphCode = codeBlock.textContent;
       
-      let mermaidContainers = [];
-
-      async function renderizarMermaid() {
-        if (mermaidContainers.length === 0) return;
-
-        const currentMode = document.documentElement.getAttribute('data-modo') === 'oscuro' ? 'dark' : 'default';
-        mermaid.initialize({ startOnLoad: false, theme: currentMode });
-
-        for (let i = 0; i < mermaidContainers.length; i++) {
-          const container = mermaidContainers[i];
-          const graphCode = container.getAttribute('data-mermaid-code');
-          
-          try {
-            const uniqueId = `mermaid-svg-${i}-${Date.now()}`;
-            const { svg } = await mermaid.render(uniqueId, graphCode);
-            container.innerHTML = svg;
-          } catch (error) {
-            console.error("Error al renderizar Mermaid:", error);
-          }
-        }
+      const container = document.createElement('div');
+      container.className = 'mermaid-dynamic-container';
+      container.style.textAlign = 'center';
+      container.style.margin = '2rem 0';
+      
+      if (pre) pre.replaceWith(container);
+      
+      try {
+        const uniqueId = `mermaid-svg-${i}-${Date.now()}`;
+        const { svg } = await mermaid.render(uniqueId, graphCode);
+        container.innerHTML = svg;
+      } catch (error) {
+        console.error("Error al renderizar Mermaid:", error);
       }
-
-      document.addEventListener('astro:page-load', async () => {
-        mermaidContainers = []; 
-        
-        const mermaidCodes = document.querySelectorAll('pre[data-language="mermaid"] code, pre code.language-mermaid');
-        if (mermaidCodes.length === 0) return;
-
-        mermaidCodes.forEach((codeBlock) => {
-          const pre = codeBlock.closest('pre');
-          const graphCode = codeBlock.textContent; 
-          
-          const container = document.createElement('div');
-          container.className = 'mermaid-dynamic-container';
-          container.style.textAlign = 'center';
-          container.style.margin = '2rem 0';
-          container.setAttribute('data-mermaid-code', graphCode);
-          
-          if (pre) pre.replaceWith(container);
-          mermaidContainers.push(container);
-        });
-
-        await renderizarMermaid();
-      });
-
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === 'data-modo') {
-            renderizarMermaid();
-          }
-        });
-      });
-
-      observer.observe(document.documentElement, { attributes: true });
-    </script>
+    });
+  });
+</script>
 
     <!-- Script de Botón Copiar -->
     <script>

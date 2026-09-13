@@ -2,11 +2,17 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 
-// Único estándar: "1-texto-texto". Elimina número+guion inicial y reemplaza guiones por espacios.
 function formatName(str: string) {
   if (!str) return '';
+  
+  // 1. Elimina el prefijo numérico inicial (ej. "1-")
   let clean = str.replace(/^\d+-/, '');
-  clean = clean.replace(/-/g, ' ');
+  
+  // 2. Protege el doble guion ("--") aislando las palabras, 
+  // convierte guiones simples ("-") en espacios, y luego une todo con un guion real.
+  clean = clean.split('--').map(word => word.replace(/-/g, ' ')).join('-');
+  
+  // 3. Pone la primera letra en mayúscula
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 

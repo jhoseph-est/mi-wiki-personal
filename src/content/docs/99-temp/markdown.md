@@ -196,7 +196,7 @@ No se muestran en el render: %% dasdasd %%
 # 15. Emojis (si el motor lo permite)
 
 😀 😎 🚀
-```markdown
+
 # Guía Completa de Markdown (Parte 2)
 Markdown extendido con HTML y estructuras avanzadas para documentación académica y web.
 
@@ -362,6 +362,4 @@ Markdown es contenido estructurado.
 
 # FIN PARTE 2
 Markdown completo: estructura + HTML + metadata.
-```
-
 

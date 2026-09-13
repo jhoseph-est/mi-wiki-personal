@@ -5,8 +5,15 @@ const { headings = [] } = Astro.props;
 
 function formatName(str: string) {
   if (!str) return '';
+  
+  // 1. Elimina el prefijo numérico inicial (ej. "1-")
   let clean = str.replace(/^\d+-/, '');
-  clean = clean.replace(/-/g, ' ');
+  
+  // 2. Protege el doble guion ("--") aislando las palabras, 
+  // convierte guiones simples ("-") en espacios, y luego une todo con un guion real.
+  clean = clean.split('--').map(word => word.replace(/-/g, ' ')).join('-');
+  
+  // 3. Pone la primera letra en mayúscula
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 

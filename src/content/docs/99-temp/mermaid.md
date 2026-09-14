@@ -215,7 +215,7 @@ Animal <|-- Perro
 Máquinas de estado.
 
 ```mermaid
-stateDiagram
+stateDiagram-v2
 A --> B
 B --> C
 ```
@@ -226,7 +226,7 @@ Bases de datos.
 
 ```mermaid
 erDiagram
-USUARIO ||--o{ PEDIDO
+USUARIO ||--o{ PEDIDO : "realiza"
 ```
 
 ## Gantt

@@ -8,7 +8,7 @@ title: git con SSH
 
 Tu archivo `~/.ssh/config` define 3 cuentas distintas:
 
-```ssh
+```bash
 # Cuenta 1 - prueba-1
 Host user-1
   HostName github.com

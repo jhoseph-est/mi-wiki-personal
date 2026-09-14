@@ -183,7 +183,7 @@ B --> C
 
 # 13. Comentarios
 
-No se muestran en el render: %% dasdasd %%
+No se muestran en el render: %%dasdasd%%
 
 ---
 

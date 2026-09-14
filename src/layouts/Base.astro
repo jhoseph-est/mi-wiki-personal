@@ -74,40 +74,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
       
     </div>
 
-<script type="module" is:inline>
-  document.addEventListener('astro:page-load', async () => {
-    const mermaidCodes = document.querySelectorAll('pre[data-language="mermaid"] code, pre code.language-mermaid');
-    
-    // Si no hay diagramas, detenemos la ejecución y ahorramos recursos
-    if (mermaidCodes.length === 0) return;
 
-    // Importación dinámica: Solo se descarga si pasó la validación anterior
-    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
-    
-    const currentMode = document.documentElement.getAttribute('data-modo') === 'oscuro' ? 'dark' : 'default';
-    mermaid.initialize({ startOnLoad: false, theme: currentMode });
-
-    mermaidCodes.forEach(async (codeBlock, i) => {
-      const pre = codeBlock.closest('pre');
-      const graphCode = codeBlock.textContent;
-      
-      const container = document.createElement('div');
-      container.className = 'mermaid-dynamic-container';
-      container.style.textAlign = 'center';
-      container.style.margin = '2rem 0';
-      
-      if (pre) pre.replaceWith(container);
-      
-      try {
-        const uniqueId = `mermaid-svg-${i}-${Date.now()}`;
-        const { svg } = await mermaid.render(uniqueId, graphCode);
-        container.innerHTML = svg;
-      } catch (error) {
-        console.error("Error al renderizar Mermaid:", error);
-      }
-    });
-  });
-</script>
 
     <!-- Script de Botón Copiar -->
     <script>
@@ -144,5 +111,36 @@ const estiloDoc = frontmatter.theme || 'moderno';
         });
       });
     </script>
+<script src="/mermaid.min.js" is:inline></script>
+<script is:inline>
+  document.addEventListener('astro:page-load', async () => {
+    const mermaidCodes = document.querySelectorAll('pre[data-language="mermaid"] code, pre code.language-mermaid');
+    
+    if (mermaidCodes.length === 0) return;
+    
+    const currentMode = document.documentElement.getAttribute('data-modo') === 'oscuro' ? 'dark' : 'default';
+    mermaid.initialize({ startOnLoad: false, theme: currentMode });
+    
+    mermaidCodes.forEach(async (codeBlock, i) => {
+      const pre = codeBlock.closest('pre');
+      const graphCode = codeBlock.textContent;
+      
+      const container = document.createElement('div');
+      container.className = 'mermaid-dynamic-container';
+      container.style.textAlign = 'center';
+      container.style.margin = '2rem 0';
+      
+      if (pre) pre.replaceWith(container);
+      
+      try {
+        const uniqueId = `mermaid-svg-${i}-${Date.now()}`;
+        const { svg } = await mermaid.render(uniqueId, graphCode);
+        container.innerHTML = svg;
+      } catch (error) {
+        console.error("Error al renderizar Mermaid:", error);
+      }
+    });
+  });
+</script>
   </body>
 </html>

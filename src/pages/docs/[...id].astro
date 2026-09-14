@@ -1,93 +1,12 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-
-function formatName(str: string) {
-  if (!str) return '';
-  let clean = str.replace(/^\d+-/, '');
-  clean = clean.split('--').map(word => word.replace(/-/g, ' ')).join('-');
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
-}
+import GraphModal from '../../components/GraphModal.astro'; // <-- AÑADE ESTA LÍNEA
+import { formatName, generateDocPaths } from '../../utils/fileTree';
 
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
-  const paths: any[] = [];
-  const folders = new Set<string>();
-
-  allDocs.forEach(doc => {
-    const normalizedId = doc.id.replace(/\\/g, '/');
-    const partes = normalizedId.split('/');
-    const carpetaActual = partes.length > 1 ? partes.slice(0, -1).join('/') : '';
-    
-    let currentPath = '';
-    for (let i = 0; i < partes.length - 1; i++) {
-      currentPath = currentPath ? `${currentPath}/${partes[i]}` : partes[i];
-      folders.add(currentPath);
-    }
-
-    const docsEnCarpeta = allDocs.filter(d => {
-      const dPartes = d.id.replace(/\\/g, '/').split('/');
-      const dCarpeta = dPartes.length > 1 ? dPartes.slice(0, -1).join('/') : '';
-      return dCarpeta === carpetaActual;
-    });
-    
-    docsEnCarpeta.sort((a, b) => {
-      const ordenA = a.data.orden ?? 9999;
-      const ordenB = b.data.orden ?? 9999;
-      if (ordenA !== ordenB) return ordenA - ordenB;
-      const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
-      const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
-      if (dateA !== dateB) return dateB - dateA;
-      return a.id.localeCompare(b.id);
-    });
-    
-    const index = docsEnCarpeta.findIndex(d => d.id === doc.id);
-    const prev = index > 0 ? docsEnCarpeta[index - 1] : null;
-    const next = index < docsEnCarpeta.length - 1 ? docsEnCarpeta[index + 1] : null;
-
-    paths.push({
-      params: { id: normalizedId },
-      props: { type: 'file', doc, prev, next },
-    });
-  });
-
-  folders.forEach(folder => {
-    const directFiles = allDocs.filter(d => {
-      const id = d.id.replace(/\\/g, '/');
-      return id.startsWith(folder + '/') && id.split('/').length === folder.split('/').length + 1;
-    });
-    const subfolders = new Set<string>();
-    Array.from(folders).forEach(f => {
-      if (f.startsWith(folder + '/') && f.split('/').length === folder.split('/').length + 1) {
-        subfolders.add(f);
-      }
-    });
-    paths.push({
-      params: { id: folder },
-      props: { 
-        type: 'folder', 
-        folderName: folder.split('/').pop(),
-        folderPath: folder,
-        directFiles,
-        subfolders: Array.from(subfolders)
-      }
-    });
-  });
-
-  const rootFiles = allDocs.filter(d => !d.id.replace(/\\/g, '/').includes('/'));
-  const rootFolders = Array.from(folders).filter(f => !f.includes('/'));
-  paths.push({
-    params: { id: 'explorar' },
-    props: { 
-      type: 'folder', 
-      folderName: 'Directorio Principal',
-      folderPath: 'explorar',
-      directFiles: rootFiles,
-      subfolders: rootFolders
-    }
-  });
-
-  return paths;
+  return generateDocPaths(allDocs);
 }
 
 const props = Astro.props;
@@ -97,26 +16,6 @@ let breadcrumbs: string[] = [];
 let title = "";
 let frontmatterConExtra = {};
 let normalizedDocId = "";
-
-// --- LÓGICA DEL GRAFO GLOBAL ---
-const allDocsGraph = await getCollection('docs');
-const nodes = allDocsGraph.map(d => ({
-  id: `/docs/${d.id.replace(/\\/g, '/')}`,
-  name: d.data.title || 'Sin título',
-  val: 1,
-  group: d.id.split('/')[0]
-}));
-const links: any[] = [];
-allDocsGraph.forEach(d => {
-  const sourceId = `/docs/${d.id.replace(/\\/g, '/')}`;
-  allDocsGraph.forEach(t => {
-    const targetId = `/docs/${t.id.replace(/\\/g, '/')}`;
-    if (d.body && d.body.includes(targetId) && sourceId !== targetId) {
-      links.push({ source: sourceId, target: targetId });
-    }
-  });
-});
-const graphData = JSON.stringify({ nodes, links });
 
 if (props.type === 'file') {
   const rendered = await render(props.doc);
@@ -175,24 +74,26 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         <>
           {props.doc.data.slides && (
             <a href={`/slides/${normalizedDocId}`} target="_blank" class="action-btn presentation-btn" title="Presentación estándar">
-              📽️ Presentar
+                Presentar
             </a>
           )}
-          <!-- BOTÓN PARA ALTERNAR EL GRAFO -->
-          <button id="btn-toggle-graph" class="action-btn" title="Ver red de conocimiento">
-            🕸️ Grafo
+          
+          <!-- ESTE ES EL BOTÓN QUE FALTABA -->
+          <button id="btn-toggle-graph" class="action-btn" title="Ver Red de Conocimiento">
+             Grafo
           </button>
+
+          <GraphModal />
         </>
       )}
       <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
-        ⛶ Leer
+          Leer
       </button>
     </div>
   </div>
 
   {props.type === 'file' ? (
     <>
-      <!-- CONTENEDOR DEL TEXTO MARKDOWN -->
       <div id="document-view">
         <article>
           <Content />
@@ -224,22 +125,6 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
               <span class="nav-title">Fin de sección</span>
             </div>
           )}
-        </div>
-      </div>
-
-      <!-- NUEVO MODAL FLOTANTE DEL GRAFO -->
-      <div id="graph-modal" class="graph-modal-overlay" data-graph={graphData}>
-        <div class="graph-modal-content">
-          <div class="graph-modal-header">
-            <div>
-              <h3 style="margin: 0; color: #8b5cf6;">🕸️ Red de Conocimiento</h3>
-              <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Haz clic en un nodo para navegar a ese apunte.</p>
-            </div>
-            <button id="close-graph-btn" class="action-btn" style="border-color: #ef4444; color: #ef4444;">
-              ✖ Cerrar
-            </button>
-          </div>
-          <div id="graph-container"></div>
         </div>
       </div>
     </>
@@ -310,64 +195,10 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
   .folder-card .icon { display: flex; align-items: center; color: #8b5cf6; transition: all 0.2s ease; }
   .folder-card:hover { transform: translateY(-2px); border-color: #8b5cf6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
   .folder-card .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* ==========================================================
-     MODAL FLOTANTE DEL GRAFO
-     ========================================================== */
-  .graph-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-  .graph-modal-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .graph-modal-content {
-    width: 95vw;
-    height: 90vh;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-    overflow: hidden;
-  }
-  .graph-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--header-bg);
-  }
-  #graph-container {
-    flex-grow: 1;
-    width: 100%;
-    height: 100%; /* El JS medirá este contenedor exacto */
-    cursor: grab;
-  }
-  #graph-container:active {
-    cursor: grabbing;
-  }
 </style>
-
-<!-- LIBRERÍA DE GRAFOS -->
-<script src="//unpkg.com/force-graph" is:inline></script>
 
 <script>
   document.addEventListener('astro:page-load', () => {
-    
-    // --- LÓGICA DE PANTALLA COMPLETA ---
     const btnFs = document.getElementById('btn-fullscreen');
     const mainContent = document.querySelector('.main-content');
     const btnPresent = document.querySelector('.presentation-btn');
@@ -375,127 +206,34 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
     const toggleFullScreen = () => {
       if (!document.fullscreenElement) {
         mainContent?.requestFullscreen().catch(err => console.log(err));
-        if(btnFs) btnFs.innerHTML = '⛶ Salir';
+        if(btnFs) btnFs.innerHTML = ' Salir';
       } else {
         document.exitFullscreen();
-        if(btnFs) btnFs.innerHTML = '⛶ Leer';
+        if(btnFs) btnFs.innerHTML = ' Leer';
       }
     };
     
-    btnFs?.addEventListener('click', toggleFullScreen);
-
-    // --- LÓGICA DEL MODAL DEL GRAFO FLOTANTE ---
-    const btnToggleGraph = document.getElementById('btn-toggle-graph');
-    const graphModal = document.getElementById('graph-modal');
-    const closeGraphBtn = document.getElementById('close-graph-btn');
-    const graphContainer = document.getElementById('graph-container');
+    if (btnFs) btnFs.addEventListener('click', toggleFullScreen);
     
-    let graphInitialized = false;
-    let Graph: any = null;
-
-    const openGraphModal = () => {
-      if (!graphModal || !graphContainer) return;
-      graphModal.classList.add('active');
-
-      if (!graphInitialized) {
-        const data = JSON.parse(graphModal.getAttribute('data-graph') || '{}');
-        const isDark = document.documentElement.getAttribute('data-modo') === 'oscuro';
-        const bgColor = isDark ? 'var(--bg-color)' : '#ffffff';
-        const lineColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-        const textColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-        let hoverNode: any = null;
-
-        // @ts-ignore
-        Graph = ForceGraph()(graphContainer)
-          .graphData(data)
-          .nodeAutoColorBy('group')
-          .linkColor(() => lineColor)
-          .backgroundColor(bgColor)
-          .nodeRelSize(5)
-          .nodeCanvasObject((node: any, ctx: any, globalScale: number) => {
-            const size = node === hoverNode ? 7 : 5;
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
-            ctx.fillStyle = node.color;
-            ctx.fill();
-
-            if (globalScale >= 1.5 || node === hoverNode) {
-              const label = node.name;
-              const fontSize = 12 / globalScale; 
-              ctx.font = `${fontSize}px Sans-Serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'top';
-              ctx.fillStyle = node === hoverNode ? node.color : textColor;
-              
-              if (node === hoverNode) {
-                const textWidth = ctx.measureText(label).width;
-                const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y + size + 1, bckgDimensions[0], bckgDimensions[1]);
-                ctx.fillStyle = node.color;
-              }
-              ctx.fillText(label, node.x, node.y + size + 2);
-            }
-          })
-          .onNodeHover((node: any) => {
-            hoverNode = node || null;
-            graphContainer.style.cursor = node ? 'pointer' : 'grab';
-          })
-          .onNodeClick((node: any) => {
-            if (node.id) window.location.href = node.id; 
-          });
-
-        // Suavizar el zoom
-        Graph.d3Zoom().wheelDelta((event: any) => {
-          const defaultDelta = event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
-          return -defaultDelta * 0.2; 
-        });
-
-        // Ajuste dinámico de tamaño al redimensionar ventana
-        window.addEventListener('resize', () => {
-          if(graphModal.classList.contains('active')) {
-            Graph.width(graphContainer.clientWidth);
-            Graph.height(graphContainer.clientHeight);
-          }
-        });
-
-        graphInitialized = true;
-      }
-
-      // IMPORTANTE: Darle tamaño al canvas e invocar zoomToFit cuando el modal ya es visible
-      setTimeout(() => {
-        Graph.width(graphContainer.clientWidth);
-        Graph.height(graphContainer.clientHeight);
-        Graph.zoomToFit(600, 40);
-      }, 50);
-    };
-
-    const closeGraphModal = () => {
-      if (graphModal) graphModal.classList.remove('active');
-    };
-
-    if (btnToggleGraph) btnToggleGraph.addEventListener('click', openGraphModal);
-    if (closeGraphBtn) closeGraphBtn.addEventListener('click', closeGraphModal);
-
-    // Cerrar grafo con Escape o abrir fullscreen
+    // Atajos de teclado fijos
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
-      if (e.key === 'Escape' && graphModal?.classList.contains('active')) {
-        closeGraphModal();
-        return;
-      }
       
-      if (e.key.toLowerCase() === 'f' && !graphModal?.classList.contains('active')) {
+      const graphModal = document.getElementById('graph-modal');
+      const isGraphOpen = graphModal?.classList.contains('active');
+
+      if (e.key === 'Escape' && isGraphOpen) {
+        graphModal?.classList.remove('active');
+      }
+      if (e.key.toLowerCase() === 'f' && !isGraphOpen) {
         e.preventDefault();
         toggleFullScreen();
       }
-      if (e.key.toLowerCase() === 'p' && btnPresent && !graphModal?.classList.contains('active')) {
+      if (e.key.toLowerCase() === 'p' && btnPresent && !isGraphOpen) {
         e.preventDefault();
         (btnPresent as HTMLAnchorElement).click(); 
       }
     });
-
   });
 </script>

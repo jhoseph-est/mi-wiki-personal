@@ -50,15 +50,16 @@
 <script>
   import ForceGraph from 'force-graph';
 
+  let Graph: any = null;
+
   function setupGraphModal() {
     const btnToggleGraph = document.getElementById('btn-toggle-graph');
     const graphModal = document.getElementById('graph-modal');
     const closeGraphBtn = document.getElementById('close-graph-btn');
     const graphContainer = document.getElementById('graph-container');
-    
+         
     if (!btnToggleGraph || !graphModal || !graphContainer) return;
 
-    let Graph: any = null;
     let isFetching = false;
 
     const closeGraphModal = () => {
@@ -73,7 +74,6 @@
     const openGraphModal = () => {
       graphModal.classList.add('active');
       if (Graph || isFetching) return;
-
       isFetching = true;
       graphContainer.innerHTML = '';
 
@@ -92,13 +92,12 @@
           Graph = ForceGraph()(graphContainer)
             .graphData(data)
             .nodeAutoColorBy('group')
-            .nodeLabel(() => '') // <-- ESTO DESACTIVA EL TOOLTIP NATIVO FLOTANTE
+            .nodeLabel(() => '')
             .linkColor(() => lineColor)
             .linkWidth(2.5)
             .backgroundColor(bgColor)
             .nodeCanvasObject((node: any, ctx: any, globalScale: number) => {
               const nodeSize = 4;
-              
               ctx.beginPath();
               ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI, false);
               ctx.fillStyle = node.color || '#8b5cf6';
@@ -116,7 +115,7 @@
             .onNodeClick((node: any) => {
               if (node && node.id) window.location.href = node.id;
             });
-            
+
           setTimeout(() => {
             if (graphContainer) {
               Graph.width(graphContainer.clientWidth);
@@ -131,6 +130,14 @@
     btnToggleGraph.onclick = openGraphModal;
     if (closeGraphBtn) closeGraphBtn.onclick = closeGraphModal;
   }
+
+  // Limpieza automática del motor de físicas antes de un cambio de página en Astro
+  document.addEventListener('astro:before-swap', () => {
+    if (Graph) {
+      Graph._destructor && Graph._destructor();
+      Graph = null;
+    }
+  });
 
   document.addEventListener('astro:page-load', setupGraphModal);
 </script>

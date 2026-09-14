@@ -70,7 +70,7 @@ Horizontal arriba, vertical abajo.
 ## ✔ Ejemplo inverso: vertical dentro de horizontal
 
 ```mermaid
-graph LR
+flowchart LR
 
 A --> B
 
@@ -164,7 +164,7 @@ Sirven para:
 Ejemplo real:
 
 ```mermaid
-graph TB
+flowchart TB
 
 subgraph Backend
 direction TB
@@ -258,7 +258,7 @@ Mermaid no dibuja. Describe sistemas.
 Esto mezcla horizontal y vertical de forma académica:
 
 ```mermaid
-graph TB
+flowchart TB
 
 subgraph Entrada
 direction LR

@@ -501,12 +501,11 @@ html[data-modo="oscuro"] .sidebar-backlink-item {
   color: #8b5cf6;
   transform: translateX(3px);
 }
-.mermaid {
-  display: flex;
-  justify-content: center;
-  margin: 2rem 0;
+
+
+
+/* Eliminamos el parpadeo del texto crudo */
+pre[data-language="mermaid"], pre:has(code.language-mermaid) {
+  display: none !important;
 }
-.mermaid svg {
-  max-width: 100%;
-  height: auto;
-}
+

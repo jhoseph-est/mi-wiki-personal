@@ -15,8 +15,21 @@ Mermaid usa estas direcciones:
 |RL|derecha → izquierda|
 
 Ejemplo vertical:
+```mermaid
+%%width: 1200%%
+sequenceDiagram
+    autonumber
+    actor U as Usuario
+    participant FE as Frontend
+    participant API as Backend REST
+    participant DB as Postgres
+    U->>FE: Click
+    FE->>API: Request
+    API->>DB: Query
+```
 
 ```mermaid
+%%width: 12%%
 graph TB
 A --> B
 B --> C

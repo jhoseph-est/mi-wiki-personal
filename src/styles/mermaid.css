@@ -118,3 +118,17 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
   font-size: 11px !important;
 }
 
+/* Soporte de scroll horizontal para cualquier diagrama con ancho personalizado */
+.main-content .mermaid-native.has-custom-width {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  padding-bottom: 0.75rem;
+}
+
+.main-content .mermaid-native.has-custom-width svg {
+  display: block;
+  margin: 0 auto;
+  max-width: none !important;
+  height: auto !important;
+}

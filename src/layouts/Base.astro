@@ -172,7 +172,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
         };
       }
 
-      async function renderMermaid(forceReRender = false) {
+async function renderMermaid(forceReRender = false) {
         // 1. Registrar bloques originales
         const codeBlocks = Array.from(
           document.querySelectorAll('pre[data-language="mermaid"], pre:has(code.language-mermaid)')
@@ -198,7 +198,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
         mermaid.initialize(getMermaidConfig());
 
         const containers = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-native'));
-        const standardNodes: HTMLElement[] = [];
+        const standardNodes: { el: HTMLElement; customWidth: number | null }[] = [];
 
         for (const [index, container] of containers.entries()) {
           const code = container.dataset.sourceCode;
@@ -206,32 +206,31 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
           if (container.dataset.renderedMode && !forceReRender) continue;
 
-          const cleanCode = code.replace(/%%[\s\S]*?%%/g, '').trim();
-          const isGantt = cleanCode.startsWith('gantt');
+          // 1. Extraer si especificaste un ancho manual (ej: %%width: 1400px%% o %%width: 900%%)
+          const widthMatch = code.match(/%%width:\s*(\d+)(?:px)?%%/i);
+          const customWidth = widthMatch ? parseInt(widthMatch[1], 10) : null;
+
+          // 2. Limpiar la directiva del código fuente
+          const cleanCode = code.replace(/%%width:\s*(\d+)(?:px)?%%/i, '').trim();
+          const cleanWithoutComments = cleanCode.replace(/%%[\s\S]*?%%/g, '').trim();
+          const isGantt = cleanWithoutComments.startsWith('gantt');
 
           if (isGantt) {
+            // --- GANTT (motor D3 con directiva nativa) ---
             container.className = 'mermaid-native is-gantt';
             const renderId = `mermaid-gantt-${Date.now()}-${index}`;
+            const targetWidth = customWidth || 1000;
 
-            // 1. Detectar si pusiste %%width: 750%% o %%width: 1400%%
-            const widthMatch = code.match(/%%width:\s*(\d+)(?:px)?%%/i);
-            const customWidth = widthMatch ? parseInt(widthMatch[1], 10) : 1000;
-
-            // 2. Limpiar la directiva %%width%%
-            let cleanGanttCode = code.replace(/%%width:\s*(\d+)(?:px)?%%/i, '').trim();
-
-            // 3. Inyectar directiva oficial interna
-            cleanGanttCode = `%%{init: { 'gantt': { 'useWidth': ${customWidth} } } }%%\n` + cleanGanttCode;
+            const ganttCode = `%%{init: { 'gantt': { 'useWidth': ${targetWidth} } } }%%\n` + cleanCode;
 
             try {
-              const { svg } = await mermaid.render(renderId, cleanGanttCode);
+              const { svg } = await mermaid.render(renderId, ganttCode);
               container.innerHTML = svg;
 
               const svgEl = container.querySelector('svg');
               if (svgEl) {
-                // Forzar el ancho específico de este diagrama
-                svgEl.style.setProperty('width', `${customWidth}px`, 'important');
-                svgEl.style.setProperty('min-width', `${customWidth}px`, 'important');
+                svgEl.style.setProperty('width', `${targetWidth}px`, 'important');
+                svgEl.style.setProperty('min-width', `${targetWidth}px`, 'important');
                 svgEl.style.maxWidth = 'none';
                 svgEl.style.height = 'auto';
               }
@@ -240,22 +239,33 @@ const estiloDoc = frontmatter.theme || 'moderno';
               console.error('Error renderizando Gantt:', err);
             }
           } else {
-            // Para evitar que se lea el texto en crudo, ocultamos el contenedor mientras se computa
-            container.className = 'mermaid-native';
-            container.style.visibility = 'hidden'; 
-            container.textContent = code;
+            // --- FLOWCHART, SEQUENCE, CLASS, ER, ETC. ---
+            container.className = 'mermaid-native' + (customWidth ? ' has-custom-width' : '');
+            container.style.visibility = 'hidden';
+            container.textContent = cleanCode;
             container.removeAttribute('data-processed');
-            standardNodes.push(container);
+
+            standardNodes.push({ el: container, customWidth });
           }
         }
 
+        // Ejecutar los diagramas estándar
         if (standardNodes.length > 0) {
           try {
-            await mermaid.run({ nodes: standardNodes });
+            await mermaid.run({ nodes: standardNodes.map(n => n.el) });
             const currentMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
-            standardNodes.forEach((node) => {
-              node.style.visibility = 'visible'; // Se vuelve a mostrar ya dibujado
-              node.dataset.renderedMode = currentMode;
+
+            standardNodes.forEach(({ el, customWidth }) => {
+              const svgEl = el.querySelector('svg');
+              if (svgEl && customWidth) {
+                // Si definiste un ancho manual, se lo aplica directamente al SVG
+                svgEl.style.setProperty('width', `${customWidth}px`, 'important');
+                svgEl.style.setProperty('min-width', `${customWidth}px`, 'important');
+                svgEl.style.maxWidth = 'none';
+                svgEl.style.height = 'auto';
+              }
+              el.style.visibility = 'visible';
+              el.dataset.renderedMode = currentMode;
             });
           } catch (error) {
             console.error('Error en mermaid.run():', error);

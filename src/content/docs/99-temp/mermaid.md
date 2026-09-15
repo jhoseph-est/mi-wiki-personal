@@ -27,9 +27,17 @@ sequenceDiagram
     FE->>API: Request
     API->>DB: Query
 ```
+```mermaid
+%%width: 10%%
+%%max-width: 1000%%
+flowchart TB
+A --> B
+B --> C
+```
 
 ```mermaid
-%%width: 12%%
+%%width: 100%%
+%%max-width: 1000%%
 graph TB
 A --> B
 B --> C
@@ -38,6 +46,7 @@ B --> C
 Ejemplo horizontal:
 
 ```mermaid
+%%max-width: 1000%%
 graph LR
 A --> B
 B --> C

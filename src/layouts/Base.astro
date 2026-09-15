@@ -108,7 +108,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
       });
     </script>
 
-<!-- MERMAID CON RE-RENDERIZADO REACTIVO Y CONTROLES -->
+    <!-- MERMAID CON RE-RENDERIZADO REACTIVO Y CONTROLES ROBUSTOS -->
     <script>
       import mermaid, { type MermaidConfig } from 'mermaid';
 
@@ -190,8 +190,8 @@ const estiloDoc = frontmatter.theme || 'moderno';
       }
 
       function attachMermaidControls(wrapper: HTMLElement, code: string) {
-        const svg = wrapper.querySelector('svg');
-        const viewport = wrapper.querySelector('.mermaid-viewport') as HTMLElement;
+        const svg = wrapper.querySelector('svg') as SVGElement | null;
+        const viewport = wrapper.querySelector('.mermaid-viewport') as HTMLElement | null;
         if (!svg || !viewport) return;
 
         let currentScale = 1;
@@ -203,10 +203,10 @@ const estiloDoc = frontmatter.theme || 'moderno';
         let translateY = 0;
 
         function updateTransform() {
+          if (!svg) return;
           svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
         }
 
-        // --- CONTROLES DE ZOOM ---
         wrapper.querySelector('.btn-zoom-in')?.addEventListener('click', () => {
           currentScale = Math.min(currentScale + scaleStep, 3);
           updateTransform();
@@ -221,14 +221,11 @@ const estiloDoc = frontmatter.theme || 'moderno';
           currentScale = 1;
           translateX = 0;
           translateY = 0;
-          svg.style.transform = 'none';
+          if (svg) svg.style.transform = 'none';
         });
 
-        // --- LÓGICA DE ARRASTRE (PAN) ---
         viewport.addEventListener('mousedown', (e) => {
-          // Solo permitir arrastre si hay zoom
           if (currentScale === 1 && !wrapper.classList.contains('has-custom-width') && !wrapper.classList.contains('is-gantt')) return;
-          
           isDragging = true;
           viewport.style.cursor = 'grabbing';
           startX = e.clientX - translateX;
@@ -243,12 +240,12 @@ const estiloDoc = frontmatter.theme || 'moderno';
           updateTransform();
         });
 
-        window.addEventListener('mouseup', () => {
+        const stopDrag = () => {
           isDragging = false;
-          viewport.style.cursor = 'default';
-        });
+          if (viewport) viewport.style.cursor = 'default';
+        };
+        window.addEventListener('mouseup', stopDrag);
 
-        // --- HERRAMIENTAS ADICIONALES ---
         wrapper.querySelector('.btn-copy-code')?.addEventListener('click', async (e) => {
           const btn = e.currentTarget as HTMLElement;
           await navigator.clipboard.writeText(code);
@@ -290,11 +287,15 @@ const estiloDoc = frontmatter.theme || 'moderno';
             });
           }
 
-          const modalBody = modal.querySelector('.mermaid-modal-body')!;
-          // Clonamos el SVG y le quitamos la transformación de arrastre que tenía en la página
+          const modalBody = modal.querySelector('.mermaid-modal-body') as HTMLElement;
           const clonedSvg = svg.cloneNode(true) as SVGElement;
-          clonedSvg.style.transform = 'none';
           
+          // Limpiar estilos forzados para que en el modal encaje con su tamaño natural
+          clonedSvg.style.transform = 'none';
+          clonedSvg.style.width = 'auto';
+          clonedSvg.style.maxWidth = '100%';
+          clonedSvg.style.height = 'auto';
+
           modalBody.innerHTML = '';
           modalBody.appendChild(clonedSvg);
           modal.classList.add('is-active');
@@ -326,7 +327,14 @@ const estiloDoc = frontmatter.theme || 'moderno';
         mermaid.initialize(getMermaidConfig());
 
         const containers = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-native, .mermaid-wrapper'));
-        const standardNodes: { el: HTMLElement; customWidth: number | null; rawCode: string }[] = [];
+        
+        interface NodeItem {
+          el: HTMLElement;
+          width: string | null;
+          maxWidth: string | null;
+          rawCode: string;
+        }
+        const standardNodes: NodeItem[] = [];
 
         for (const [index, item] of containers.entries()) {
           const code = item.dataset.sourceCode;
@@ -334,16 +342,29 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
           if (item.dataset.renderedMode && !forceReRender) continue;
 
-          // Extraer directiva %%width: NNNpx%%
-          const widthMatch = code.match(/%%width:\s*(\d+)(?:px)?%%/i);
-          const customWidth = widthMatch ? parseInt(widthMatch[1], 10) : null;
-          const cleanCode = code.replace(/%%width:\s*(\d+)(?:px)?%%/i, '').trim();
-          const cleanWithoutComments = cleanCode.replace(/%%[\s\S]*?%%/g, '').trim();
-          const isGantt = cleanWithoutComments.startsWith('gantt');
+          // Parser seguro de directivas %%width: ...%% y %%max-width: ...%%
+          const widthMatch = code.match(/%%width:\s*(\d+(?:px|%)?)\s*%%/i);
+          const maxWidthMatch = code.match(/%%max-width:\s*(\d+(?:px|%)?)\s*%%/i);
+
+          const parseUnit = (val: string | null) => {
+            if (!val) return null;
+            return val.endsWith('%') || val.endsWith('px') ? val : `${val}px`;
+          };
+
+          const parsedWidth = parseUnit(widthMatch ? widthMatch[1] : null);
+          const parsedMaxWidth = parseUnit(maxWidthMatch ? maxWidthMatch[1] : null);
+
+          // Limpiar directivas del código a renderizar
+          const cleanCode = code
+            .replace(/%%width:.*?%%/gi, '')
+            .replace(/%%max-width:.*?%%/gi, '')
+            .trim();
+
+          const isGantt = cleanCode.replace(/%%[\s\S]*?%%/g, '').trim().startsWith('gantt');
 
           if (isGantt) {
-            const targetWidth = customWidth || 1000;
-            const ganttCode = `%%{init: { 'gantt': { 'useWidth': ${targetWidth} } } }%%\n` + cleanCode;
+            const numericWidth = widthMatch ? parseInt(widthMatch[1], 10) : 1000;
+            const ganttCode = `%%{init: { 'gantt': { 'useWidth': ${numericWidth} } } }%%\n` + cleanCode;
             const renderId = `mermaid-gantt-${Date.now()}-${index}`;
 
             try {
@@ -352,10 +373,10 @@ const estiloDoc = frontmatter.theme || 'moderno';
               wrapper.classList.add('is-gantt');
               wrapper.dataset.sourceCode = code;
 
-              const svgEl = wrapper.querySelector('svg');
+              const svgEl = wrapper.querySelector('svg') as SVGElement | null;
               if (svgEl) {
-                svgEl.style.setProperty('width', `${targetWidth}px`, 'important');
-                svgEl.style.setProperty('min-width', `${targetWidth}px`, 'important');
+                if (parsedWidth) svgEl.style.setProperty('width', parsedWidth, 'important');
+                if (parsedMaxWidth) svgEl.style.setProperty('max-width', parsedMaxWidth, 'important');
               }
 
               item.replaceWith(wrapper);
@@ -365,35 +386,31 @@ const estiloDoc = frontmatter.theme || 'moderno';
               console.error('Error renderizando Gantt:', err);
             }
           } else {
-            // Diagrama normal: Lo ocultamos de forma segura para que Mermaid lo procese sin estresarse
             const tempDiv = document.createElement('div');
             tempDiv.className = 'mermaid-native';
-            tempDiv.style.visibility = 'hidden';
-            tempDiv.style.position = 'absolute';
             tempDiv.textContent = cleanCode;
             tempDiv.dataset.sourceCode = code;
 
             item.replaceWith(tempDiv);
-            standardNodes.push({ el: tempDiv, customWidth, rawCode: code });
+            standardNodes.push({ el: tempDiv, width: parsedWidth, maxWidth: parsedMaxWidth, rawCode: code });
           }
         }
 
         if (standardNodes.length > 0) {
           try {
-            await mermaid.run({ nodes: standardNodes.map(n => n.el) });
+            await mermaid.run({ nodes: standardNodes.map((n) => n.el) });
             const currentMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
 
-            standardNodes.forEach(({ el, customWidth, rawCode }) => {
-              const svgEl = el.querySelector('svg');
-              if (svgEl && customWidth) {
-                // SOLO tocamos el width si tú pusiste la directiva manual. Si no, Mermaid manda.
-                svgEl.style.setProperty('width', `${customWidth}px`, 'important');
-                svgEl.style.setProperty('min-width', `${customWidth}px`, 'important');
+            standardNodes.forEach(({ el, width, maxWidth, rawCode }) => {
+              const svgEl = el.querySelector('svg') as SVGElement | null;
+              if (svgEl) {
+                if (width) svgEl.style.setProperty('width', width, 'important');
+                if (maxWidth) svgEl.style.setProperty('max-width', maxWidth, 'important');
               }
 
               const wrapper = buildWrapperStructure(svgEl ? svgEl.outerHTML : '');
               wrapper.dataset.sourceCode = rawCode;
-              if (customWidth) wrapper.classList.add('has-custom-width');
+              if (width || maxWidth) wrapper.classList.add('has-custom-width');
 
               el.replaceWith(wrapper);
               attachMermaidControls(wrapper, rawCode);

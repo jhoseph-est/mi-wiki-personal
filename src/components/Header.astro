@@ -1,5 +1,8 @@
+---
+// src/components/Header.astro
+---
 <header class="main-header">
-  <button id="btn-mobile-menu" class="icon-btn hide-on-desktop">
+  <button id="btn-mobile-menu" class="icon-btn hide-on-desktop" aria-label="Abrir explorador">
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -8,16 +11,16 @@
   </button>
 
   <a href="/" class="logo-container">
-    <span class="site-logo" style="font-size: 24px;">📚</span>
+    <span class="site-logo">📚</span>
     <span class="site-title hide-on-mobile">Mi Repositorio</span>
   </a>
 
-  <!-- BUSCADOR: transition:persist mantiene tu texto al cambiar de página -->
+  <!-- BUSCADOR: transition:persist mantiene el input montado entre páginas -->
   <div class="search-container" id="search-container" transition:persist="search-box">
     <div id="search"></div>
   </div>
 
-  <button id="toggle-settings-btn" class="icon-btn hide-on-desktop" title="Configuración">
+  <button id="toggle-settings-btn" class="icon-btn hide-on-desktop" title="Configuración" aria-label="Abrir configuración">
     <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"></circle>
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h-.09A1.65 1.65 0 0 0-1.51 1z"></path>
@@ -25,91 +28,104 @@
   </button>
 </header>
 
-<!-- CARGA DE PAGEFIND (Fuera del elemento persistente para evitar bugs de CSS) -->
-<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
-<script src="/pagefind/pagefind-ui.js" is:inline></script>
+<style>
+  .site-logo {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+</style>
 
 <script>
-  let isPagefindInitialized = false;
+  declare global {
+    interface Window {
+      PagefindUI?: new (options: Record<string, unknown>) => void;
+      _searchListenersAdded?: boolean;
+    }
+  }
 
-  document.addEventListener('astro:page-load', () => {
-    
-    // 1. INICIALIZAR PAGEFIND (Solo se ejecuta una vez en la vida de la pestaña)
-    if (!isPagefindInitialized) {
-      const searchDiv = document.getElementById('search');
-      if (searchDiv) {
-        // @ts-ignore
-        new PagefindUI({ 
-          element: "#search", 
+  function initHeader() {
+    // 1. Inicialización única de Pagefind en el contenedor persistente
+    const searchDiv = document.getElementById('search');
+    if (searchDiv && !searchDiv.hasAttribute('data-pagefind-ready')) {
+      if (typeof window.PagefindUI !== 'undefined') {
+        new window.PagefindUI({
+          element: '#search',
           showSubResults: true,
           showImages: false,
-          resetStyles: false 
+          resetStyles: false
         });
-        isPagefindInitialized = true;
+        searchDiv.setAttribute('data-pagefind-ready', 'true');
       }
     }
 
-    // 2. REABRIR RESULTADOS AL HACER CLIC
+    // 2. Cerrar el drawer tras navegar a otra página
+    const drawer = document.querySelector('.pagefind-ui__drawer');
+    if (drawer) {
+      drawer.classList.add('pagefind-ui__hidden');
+    }
+
+    // 3. Reapertura del drawer al hacer click si ya hay texto
     const searchContainer = document.getElementById('search-container');
     if (searchContainer) {
       searchContainer.onclick = () => {
         const input = document.querySelector('.pagefind-ui__search-input') as HTMLInputElement | null;
-        const drawer = document.querySelector('.pagefind-ui__drawer');
-        if (input && input.value.trim() !== '' && drawer) {
-          drawer.classList.remove('pagefind-ui__hidden');
+        const currentDrawer = document.querySelector('.pagefind-ui__drawer');
+        if (input && input.value.trim() !== '' && currentDrawer) {
+          currentDrawer.classList.remove('pagefind-ui__hidden');
         }
       };
     }
 
-    // 3. EVENTOS GLOBALES (Protegidos para que no se dupliquen al navegar)
-    // @ts-ignore
-    if (!window.searchListenersAdded) {
-      
-      // Cerrar al hacer clic fuera
+    // 4. Botones móviles (usando onclick directo para evitar acumulación de listeners)
+    const btnMobile = document.getElementById('btn-mobile-menu');
+    if (btnMobile) {
+      btnMobile.onclick = () => {
+        document.querySelector('.left-panel')?.classList.toggle('show-mobile-menu');
+        document.querySelector('.right-panel')?.classList.remove('show-mobile-right');
+      };
+    }
+
+    const btnSettings = document.getElementById('toggle-settings-btn');
+    if (btnSettings) {
+      btnSettings.onclick = () => {
+        document.querySelector('.right-panel')?.classList.toggle('show-mobile-right');
+        document.querySelector('.left-panel')?.classList.remove('show-mobile-menu');
+      };
+    }
+
+    // 5. Listeners globales en window (solo una vez en la sesión)
+    if (!window._searchListenersAdded) {
       document.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
         const container = document.getElementById('search-container');
-        const drawer = document.querySelector('.pagefind-ui__drawer');
-        
-        if (container && !container.contains(target)) {
-          if (drawer) drawer.classList.add('pagefind-ui__hidden');
+        const activeDrawer = document.querySelector('.pagefind-ui__drawer');
+        if (container && !container.contains(target) && activeDrawer) {
+          activeDrawer.classList.add('pagefind-ui__hidden');
         }
       });
 
-      // Atajos de teclado
       document.addEventListener('keydown', (e) => {
         const input = document.querySelector('.pagefind-ui__search-input') as HTMLInputElement | null;
-        const drawer = document.querySelector('.pagefind-ui__drawer');
-        
+        const activeDrawer = document.querySelector('.pagefind-ui__drawer');
+
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          if (input) input.focus();
+          input?.focus();
         }
-        
+
         if (e.key === 'Escape') {
           if (input) {
             input.value = '';
             input.blur();
-            // Disparamos un evento para que Pagefind sepa que vaciamos el texto
             input.dispatchEvent(new Event('input', { bubbles: true }));
           }
-          if (drawer) drawer.classList.add('pagefind-ui__hidden');
+          if (activeDrawer) activeDrawer.classList.add('pagefind-ui__hidden');
         }
       });
 
-      // @ts-ignore
-      window.searchListenersAdded = true;
+      window._searchListenersAdded = true;
     }
+  }
 
-    // 4. MENÚS MÓVILES
-    document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
-      document.querySelector('.left-panel')?.classList.toggle('show-mobile-menu');
-      document.querySelector('.right-panel')?.classList.remove('show-mobile-right');
-    });
-
-    document.getElementById('toggle-settings-btn')?.addEventListener('click', () => {
-      document.querySelector('.right-panel')?.classList.toggle('show-mobile-right');
-      document.querySelector('.left-panel')?.classList.remove('show-mobile-menu');
-    });
-  });
+  document.addEventListener('astro:page-load', initHeader);
 </script>

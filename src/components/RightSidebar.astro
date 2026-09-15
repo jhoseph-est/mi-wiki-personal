@@ -1,25 +1,39 @@
 ---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+interface Props {
+  frontmatter?: {
+    date?: Date | string;
+    author?: string;
+    tags?: string[];
+    [key: string]: unknown;
+  };
+  docId?: string;
+}
+
 const { frontmatter = {}, docId } = Astro.props;
-const formatDate = (dateStr: Date | string) => {
+
+const formatDate = (dateStr?: Date | string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 };
-import { getCollection } from 'astro:content';
 
-// --- LÓGICA DE BACKLINKS PARA LA BARRA LATERAL ---
-let backlinks: any[] = [];
+// Backlinks
+let backlinks: Array<{ title: string; url: string }> = [];
 if (docId && docId !== 'explorar') {
   const allDocs = await getCollection('docs');
-  backlinks = allDocs.filter(d => {
-    // No enlazarse a sí mismo
-    if (d.id.replace(/\\/g, '/') === docId) return false;
-    // Verificar si el contenido menciona la ruta actual
-    return d.body && d.body.includes(docId);
-  }).map(d => ({
-    title: d.data.title,
-    url: `/docs/${d.id.replace(/\\/g, '/')}`
-  }));
+  backlinks = allDocs
+    .filter((d: CollectionEntry<'docs'>) => {
+      if (d.data.draft === true) return false;
+      const normalized = d.id.replace(/\\/g, '/');
+      if (normalized === docId) return false;
+      return d.body && d.body.includes(docId);
+    })
+    .map((d: CollectionEntry<'docs'>) => ({
+      title: d.data.title,
+      url: `/docs/${d.id.replace(/\\/g, '/')}`
+    }));
 }
 ---
 
@@ -28,7 +42,7 @@ if (docId && docId !== 'explorar') {
     <button class="tab-btn active" data-target="meta-pane" data-tab-id="right-meta">📌 Metadatos</button>
     <button class="tab-btn" data-target="prefs-pane" data-tab-id="right-prefs">🎨 Apariencia</button>
   </div>
-  
+
   <div class="sidebar-content">
     <div id="meta-pane" class="tab-pane active">
       {frontmatter.date && (
@@ -37,13 +51,14 @@ if (docId && docId !== 'explorar') {
           <span class="ficha-value">{formatDate(frontmatter.date)}</span>
         </div>
       )}
-      
+
       {frontmatter.author && (
         <div class="ficha">
           <span class="ficha-label">✍️ Autor</span>
           <span class="ficha-value">{frontmatter.author}</span>
         </div>
       )}
+
       {frontmatter.tags && frontmatter.tags.length > 0 && (
         <div class="ficha">
           <span class="ficha-label">🏷️ Etiquetas</span>
@@ -54,24 +69,25 @@ if (docId && docId !== 'explorar') {
           </div>
         </div>
       )}
+
       {backlinks.length > 0 && (
-  <div class="sidebar-backlinks">
-    <h4 class="sidebar-subtitle">🔗 Conexiones</h4>
-    <ul class="sidebar-backlink-list">
-      {backlinks.map(link => (
-        <li>
-          <a href={link.url} class="sidebar-backlink-item" title={link.title}>
-            {link.title}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-      {(!frontmatter.date && !frontmatter.author && !frontmatter.tags) && (
-        <p class="empty-msg">No hay metadatos adicionales.</p>
+        <div class="sidebar-backlinks">
+          <h4 class="sidebar-subtitle">🔗 Conexiones</h4>
+          <ul class="sidebar-backlink-list">
+            {backlinks.map((link) => (
+              <li>
+                <a href={link.url} class="sidebar-backlink-item" title={link.title}>
+                  {link.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
+      {!frontmatter.date && !frontmatter.author && (!frontmatter.tags || frontmatter.tags.length === 0) && (
+        <p class="empty-msg">No hay metadatos adicionales.</p>
+      )}
     </div>
 
     <div id="prefs-pane" class="tab-pane">
@@ -83,7 +99,7 @@ if (docId && docId !== 'explorar') {
             <option value="oscuro">Oscuro</option>
           </select>
         </label>
-        
+
         <label>
           <span>Tamaño de texto</span>
           <select id="r-select-texto" class="pref-select">
@@ -92,7 +108,7 @@ if (docId && docId !== 'explorar') {
             <option value="grande">Grande</option>
           </select>
         </label>
-        
+
         <label>
           <span>Anchura de lectura</span>
           <select id="r-select-ancho" class="pref-select">
@@ -110,32 +126,45 @@ if (docId && docId !== 'explorar') {
   .sidebar-tabs { display: flex; background: rgba(0,0,0,0.05); padding: 3px; border-radius: 8px; margin-bottom: 0.5rem; gap: 2px; }
   .tab-btn { flex: 1; background: none; border: none; padding: 0.4rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-color); opacity: 0.7; transition: all 0.2s; }
   .tab-btn.active { background: var(--header-bg); opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
   .tab-pane { display: none; flex-direction: column; gap: 0.8rem; }
   .tab-pane.active { display: flex !important; }
+
   .ficha { background: rgba(0,0,0,0.03); padding: 0.8rem; border-radius: 8px; display: flex; flex-direction: column; gap: 0.2rem; border: 1px solid var(--border-color); }
   .ficha-label { font-size: 0.75rem; font-weight: bold; opacity: 0.8; }
   .ficha-value { font-size: 0.85rem; color: var(--text-color); }
+
   .tags-container { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
-  .tag { background: var(--text-color); color: var(--bg-color); padding: 0.1rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: lowercase; }
+  .tag { background: var(--text-color); color: var(--bg-color); padding: 0.1rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: lowercase; text-decoration: none; }
+
   .prefs-body { display: flex; flex-direction: column; gap: 0.8rem; }
   .prefs-body label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.85rem; }
   .pref-select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; font-size: 0.85rem; }
   .empty-msg { font-size: 0.85rem; font-style: italic; opacity: 0.6; }
-  .btn-presentar {
+
+  /* Estilos encapsulados de Backlinks */
+  .sidebar-backlinks { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border-color); }
+  .sidebar-subtitle { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #8b5cf6; margin: 0 0 0.8rem 0; font-weight: 700; }
+  .sidebar-backlink-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .sidebar-backlink-item {
     display: block;
-    background: #8b5cf6;
-    color: white;
-    text-align: center;
-    padding: 0.8rem;
-    border-radius: 8px;
-    font-weight: bold;
+    font-size: 0.85rem;
+    color: var(--text-color);
     text-decoration: none;
-    margin-top: 1rem;
-    transition: background 0.2s, transform 0.1s;
+    padding: 0.4rem 0.6rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s ease;
   }
-  .btn-presentar:hover {
-    background: #7c3aed;
-    transform: scale(1.02);
+  .sidebar-backlink-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+    transform: translateX(3px);
   }
 </style>
 
@@ -144,78 +173,57 @@ if (docId && docId !== 'explorar') {
     const wrapper = document.getElementById('right-sidebar');
     if (!wrapper) return;
 
-    // Función para actualizar y mostrar el valor real en los selects
     function updateSelectValues() {
-      const prefs = ['modo', 'texto', 'ancho'];
-      prefs.forEach(id => {
-        const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement;
+      ['modo', 'texto', 'ancho'].forEach((id) => {
+        const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement | null;
         const guardado = localStorage.getItem(`pref-${id}`) || document.documentElement.getAttribute(`data-${id}`);
-        if (select && guardado) {
-          select.value = guardado;
-        }
+        if (select && guardado) select.value = guardado;
       });
     }
 
-    // 1. Restaurar pestaña activa guardada
+    // Pestaña activa
     const savedTab = localStorage.getItem('right-active-tab') || 'right-meta';
     const targetPaneId = savedTab.replace('right-', '') + '-pane';
 
-    wrapper.querySelectorAll('.tab-btn').forEach(b => {
-      if (b.getAttribute('data-tab-id') === savedTab) b.classList.add('active');
-      else b.classList.remove('active');
+    wrapper.querySelectorAll('.tab-btn').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-tab-id') === savedTab);
     });
-    wrapper.querySelectorAll('.tab-pane').forEach(p => {
-      if (p.id === targetPaneId) p.classList.add('active');
-      else p.classList.remove('active');
+    wrapper.querySelectorAll('.tab-pane').forEach((p) => {
+      p.classList.toggle('active', p.id === targetPaneId);
     });
 
-    // Sincronizar selectores visualmente de inmediato
     updateSelectValues();
 
-    wrapper.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const targetId = (e.currentTarget as HTMLElement).getAttribute('data-target');
-        const tabId = (e.currentTarget as HTMLElement).getAttribute('data-tab-id');
-        
-        wrapper.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        wrapper.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        
-        const clickedBtn = e.currentTarget as HTMLElement;
-        clickedBtn.classList.add('active');
+    // Eventos de Pestaña
+    wrapper.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', (e: MouseEvent) => {
+        const target = e.currentTarget as HTMLElement;
+        const targetId = target.getAttribute('data-target');
+        const tabId = target.getAttribute('data-tab-id');
+
+        wrapper.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+        wrapper.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
+
+        target.classList.add('active');
         wrapper.querySelector(`#${targetId}`)?.classList.add('active');
 
         if (tabId) {
           localStorage.setItem('right-active-tab', tabId);
-          if (tabId === 'right-prefs') {
-            updateSelectValues();
-          }
+          if (tabId === 'right-prefs') updateSelectValues();
         }
       });
     });
 
-    // 2. Manejar cambios de usuario en los selectores
-    const prefs = ['modo', 'texto', 'ancho'];
-    prefs.forEach(id => {
-      const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement;
+    // Manejo directo de selects sin cloneNode
+    ['modo', 'texto', 'ancho'].forEach((id) => {
+      const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement | null;
       if (select) {
-        // Evitar duplicar listeners limpiando con un clon fresco
-        const newSelect = select.cloneNode(true) as HTMLSelectElement;
-        select.replaceWith(newSelect);
-
-        const guardado = localStorage.getItem(`pref-${id}`);
-        if (guardado) newSelect.value = guardado;
-
-        newSelect.addEventListener('change', (e) => {
-          const target = e.target as HTMLSelectElement;
-          const val = target.value;
-          const html = document.documentElement;
-          const body = document.body;
-
-          html.setAttribute(`data-${id}`, val);
-          if (id === 'modo') body.setAttribute('data-modo', val);
-
+        select.onchange = (e) => {
+          const val = (e.target as HTMLSelectElement).value;
+          document.documentElement.setAttribute(`data-${id}`, val);
+          if (id === 'modo') document.body?.setAttribute('data-modo', val);
           localStorage.setItem(`pref-${id}`, val);
-        });
+        };
       }
     });
   }

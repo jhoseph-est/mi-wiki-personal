@@ -1,18 +1,28 @@
+/* ==========================================================
+   LAYOUT, ESTRUCTURA Y COMPONENTES GLOBALES DE UI
+   ========================================================== */
+
 /* --- SCROLLBARS --- */
-* { scrollbar-width: thin; scrollbar-color: rgba(150, 150, 150, 0.3) transparent; }
+* { 
+  scrollbar-width: thin; 
+  scrollbar-color: rgba(150, 150, 150, 0.3) transparent; 
+}
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 10px; transition: background 0.2s ease; }
+::-webkit-scrollbar-thumb { 
+  background: rgba(150, 150, 150, 0.3); 
+  border-radius: 10px; 
+  transition: background 0.2s ease; 
+}
 ::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 150, 0.5); }
 
 /* --- ESTRUCTURA BASE --- */
 body {
   margin: 0;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: var(--font-family);
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  font-family: var(--ui-font) !important;
   font-size: var(--font-size);
-  /* Convertimos el body en Flexbox para que se adapte al header dinámicamente */
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -25,487 +35,211 @@ body {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
   margin: 0 auto;
   width: 100%;
-  /* Reemplazamos el calc() por flex-grow para que ocupe el espacio sobrante exacto */
   flex: 1;
-  min-height: 0; /* Regla clave para que el scroll funcione dentro de Flexbox */
+  min-height: 0;
 }
 
 .main-content {
-  padding: var(--content-padding, 2rem 3rem); height: 100%; overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
+  padding: var(--content-padding, 2rem 3rem);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-.content-wrapper { max-width: var(--content-max-width, 900px); margin: 0 auto; box-sizing: border-box; }
+.content-wrapper {
+  max-width: var(--content-max-width, 900px);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
 
-.sticky-panel { height: 100%; overflow-y: auto; overflow-x: hidden; padding: 1rem; box-sizing: border-box; }
+.sticky-panel {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
 .left-panel { border-right: 1px solid var(--border-color); }
+.right-panel { border-left: 1px solid var(--border-color); }
+
 /* --- INDICADORES DE CARPETA (CHEVRONS) --- */
 .left-panel details summary {
-  list-style: none; /* Oculta el triángulo por defecto del navegador */
+  list-style: none;
   position: relative;
   cursor: pointer;
-  padding-left: 15px; /* Deja espacio para nuestra nueva flecha */
+  padding-left: 15px;
 }
-
-/* Ocultar marcador en Safari/Chrome antiguos */
-.left-panel details summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Nuestra flecha personalizada (Estado Cerrado) */
-/* Nuestra flecha personalizada (Estado Cerrado) */
+.left-panel details summary::-webkit-details-marker { display: none; }
 .left-panel details summary::before {
-  content: "›"; 
+  content: "›";
   position: absolute;
   left: 0;
   top: 50%;
-  width: 15px; /* Creamos una caja fija para la flecha */
-  text-align: center; /* Centramos el icono en su caja */
+  width: 15px;
+  text-align: center;
   transform: translateY(-50%);
   font-size: 1.4rem;
   line-height: 1;
   opacity: 0.5;
-  transition: transform 0.2s ease; 
+  transition: transform 0.2s ease;
 }
-
-/* Flecha rotada (Estado Abierto) */
 .left-panel details[open] > summary::before {
-  /* Al rotar 90 grados, ajustar un poco el eje Y (-42%) lo centra mejor visualmente */
-  transform: translateY(-42%) rotate(90deg); 
+  transform: translateY(-42%) rotate(90deg);
 }
-
 .left-panel details summary:hover::before {
   opacity: 1;
-  color: #8b5cf6; /* Morado de tu tema al pasar el ratón */
+  color: #8b5cf6;
 }
-.right-panel { border-left: 1px solid var(--border-color); }
 
 /* --- HEADER Y NAVEGACIÓN --- */
 .main-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; height: var(--header-height); background: var(--header-bg);
-  border-bottom: 1px solid var(--border-color); z-index: 100; position: sticky; top: 0; gap: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: var(--header-height);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+  position: sticky;
+  top: 0;
+  gap: 15px;
 }
 
 .logo-container {
-  display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-color);
-  font-weight: bold; font-size: 1.1rem; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
-/* Contenedor base en el Header */
 .search-container {
   flex-grow: 1;
   max-width: 500px;
-  margin: 0 auto; /* <-- Esto fuerza el centrado perfecto */
-  position: relative; /* Ancla la ventana flotante aquí */
+  margin: 0 auto;
+  position: relative;
   z-index: 1000;
 }
+
 .search-bar {
-  padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--border-color);
-  width: 100%; max-width: 500px; background: var(--bg-color); color: var(--text-color);
-  font-size: 0.9rem; z-index: 301; position: relative;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 500px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  z-index: 301;
+  position: relative;
 }
 
 .icon-btn {
-  background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.3rem;
-  border-radius: 6px; color: var(--text-color); display: flex; align-items: center; justify-content: center;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .icon-btn:hover { background: rgba(0,0,0,0.05); }
 
-
-
-
-/* Botones Anterior/Siguiente */
-.nav-divider { margin: 4rem 0 2rem 0; border: none; border-top: 1px solid var(--border-color); opacity: 0.5; }
-.doc-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
-.nav-btn { display: flex; flex-direction: column; padding: 1rem 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; transition: all 0.2s ease; background: rgba(0,0,0,0.02); overflow: hidden; }
-.nav-btn.next { align-items: flex-end; text-align: right; }
-.nav-btn.prev { align-items: flex-start; text-align: left; }
-a.nav-btn:hover { border-color: var(--text-color); background: var(--bg-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.nav-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 0.3rem; }
-.nav-title { font-size: 1.1rem; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-.nav-btn.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
-
-/* --- RESPONSIVIDAD (TABLETS Y MÓVILES) --- */
-@media (min-width: 1025px) { .hide-on-desktop { display: none !important; } }
-
-@media (max-width: 1200px) {
-  .layout-grid { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
-  .hide-on-tablet { display: none !important; }
-}
-
-@media (max-width: 1024px) {
-  .layout-grid { grid-template-columns: minmax(0, 1fr); }
-  .hide-on-mobile { display: none !important; }
-  .main-content { padding: 1.5rem 1rem; }
-  
-  /* NUEVO: Reactivar el scroll nativo del Body para el Pull-to-Refresh */
-  body {
-    height: auto;
-    overflow: visible;
-  }
-  .layout-grid {
-    height: auto;
-  }
-  .main-content {
-    overflow-y: visible;
-    height: auto;
-  }
-}
-
-@media (max-width: 768px) {
-  .hide-on-desktop { display: flex !important; }
-  .main-header { padding: 0 0.8rem; gap: 10px; }
-  .search-container { margin: 0; }
-  .search-bar { width: 100% !important; font-size: 0.95rem; }
-  
-  /* --- NUEVO: Botones Anterior/Siguiente más compactos --- */
-  .doc-nav { 
-    grid-template-columns: 1fr; /* Uno debajo del otro */
-    gap: 0.5rem; 
-    margin-bottom: 1rem; 
-  }
-  .nav-btn { 
-    padding: 0.6rem 1rem; /* Menos relleno */
-  }
-  .nav-title { 
-    font-size: 0.95rem; /* Texto principal más pequeño */
-  }
-  .nav-label { 
-    font-size: 0.7rem; /* Texto superior más pequeño */
-    margin-bottom: 0.1rem; 
-  }
-  .main-content:fullscreen,
-  .main-content:-webkit-full-screen {
-    padding: 5vh 5vw !important; /* Reduce drásticamente el espacio muerto lateral */
-  }
-}
-
-/* Menús laterales en Móvil */
-.show-mobile-menu {
-  display: block !important; position: fixed; top: var(--header-height); left: 0; width: 80%; max-width: 300px;
-  height: calc(100vh - var(--header-height)); background: var(--bg-color); z-index: 200; border-right: 1px solid var(--border-color); box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-}
-.show-mobile-right {
-  display: block !important; position: fixed; top: var(--header-height); right: 0; width: 80%; max-width: 300px;
-  height: calc(100vh - var(--header-height)); background: var(--bg-color); z-index: 200; border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-}
-
-/* --- ESTILOS DE LECTURA DE MARKDOWN --- */
-.main-content::after, .sticky-panel::after { content: ""; display: block; height: 20vh; }
-.main-content img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 2rem auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.main-content pre { padding: 1.5rem; border-radius: 8px; position: relative; margin: 1.5rem 0; border: 1px solid var(--border-color); }
-.copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255, 255, 255, 0.1); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; opacity: 0; transition: all 0.2s ease; }
-.main-content pre:hover .copy-code-btn { opacity: 1; }
-.copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
-.copy-code-btn.copied { background: #10b981; color: white; border-color: #10b981; }
-@media (pointer: coarse) { .copy-code-btn { opacity: 1; } }
-
-/* Notas al pie */
-.footnotes { margin-top: 4rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; font-size: 0.9em; opacity: 0.85; }
-.footnotes ol { padding-left: 1.5rem; }
-.footnotes li { margin-bottom: 0.5rem; }
-.data-footnote-backref { text-decoration: none; margin-left: 0.5rem; color: var(--text-color); font-weight: bold; }
-.data-footnote-backref:hover { text-decoration: underline; }
-
-/* Enlaces */
-a.internal { color: var(--text-color); background: rgba(139, 92, 246, 0.15); border-bottom: 2px solid #8b5cf6; text-decoration: none; padding: 0 4px; border-radius: 4px; font-weight: 500; transition: all 0.2s ease; }
-a.internal:hover { background: #8b5cf6; color: #ffffff; }
-
-/* Callouts */
-.markdown-alert { padding: 1rem 1.5rem; margin: 1.5rem 0; border-left: 4px solid var(--border-color); border-radius: 4px; background-color: rgba(0, 0, 0, 0.02); }
-.markdown-alert-title { display: flex; align-items: center; font-weight: 600; margin-bottom: 0.5rem; font-size: 1.05rem; }
-.markdown-alert-title svg { margin-right: 0.5rem; fill: currentColor; }
-.markdown-alert p:last-child { margin-bottom: 0; }
-.markdown-alert.markdown-alert-note { border-color: #3b82f6; }
-.markdown-alert.markdown-alert-note .markdown-alert-title { color: #3b82f6; }
-.markdown-alert.markdown-alert-warning { border-color: #eab308; }
-.markdown-alert.markdown-alert-warning .markdown-alert-title { color: #eab308; }
-.markdown-alert.markdown-alert-important { border-color: #8b5cf6; }
-.markdown-alert.markdown-alert-important .markdown-alert-title { color: #8b5cf6; }
-.markdown-alert.markdown-alert-caution { border-color: #ef4444; }
-.markdown-alert.markdown-alert-caution .markdown-alert-title { color: #ef4444; }
-
-/* Shiki Dual Theme */
-html[data-modo="claro"] .astro-code, html[data-modo="claro"] .astro-code span { color: var(--shiki-light) !important; background-color: var(--shiki-light-bg) !important; }
-html[data-modo="oscuro"] .astro-code, html[data-modo="oscuro"] .astro-code span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
-html[data-modo="claro"] .copy-code-btn { color: #333; border-color: rgba(0, 0, 0, 0.2); }
-
-/* View Transitions */
-@keyframes fadeIn { from { opacity: 0.8; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
-::view-transition-old(root) { animation: 0.1s ease-in both fadeIn; }
-::view-transition-new(root) { animation: 0.15s ease-out both fadeIn; }
-
-/* --- COMPORTAMIENTO NATIVO DE PANTALLA COMPLETA --- */
-.main-content:fullscreen {
-  background-color: var(--bg-color); /* Conserva el color de tu tema */
-  padding: 5vh 15vw; /* Añade márgenes a los lados para leer como un libro */
-  overflow-y: auto; /* Permite hacer scroll vertical */
-}
-
-/* Soporte extra para Safari/iOS */
-.main-content:-webkit-full-screen {
-  background-color: var(--bg-color);
-  padding: 5vh 15vw;
-  overflow-y: auto;
-}
-
-
-  .search-item-icon {
-    flex-shrink: 0;
-    opacity: 0.6;
-  }
-  .search-item-title {
-    flex: 0 1 auto; /* Se encoge si falta espacio */
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .search-item-tags {
-    flex: 1 1 auto; /* Absorbe el espacio restante, se encoge más rápido */
-    text-align: right;
-    font-size: 0.75rem;
-    opacity: 0.5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-left: auto;
-  }
-
-/* --- MODO PORTADA (Sin menús laterales) --- */
-/* --- MODO PORTADA (Sin menús laterales) --- */
+/* --- MODO PORTADA (Sin menús laterales en PC) --- */
 .layout-grid.landing-mode {
   grid-template-columns: 1fr;
 }
 .landing-mode .content-wrapper {
   max-width: 1000px;
 }
-
-/* Ocultamos los paneles solo en PC. 
-   En celular ya se ocultan solos por defecto y el menú de hamburguesa los podrá abrir. */
 @media (min-width: 1025px) {
   .landing-mode .sticky-panel {
     display: none !important;
   }
 }
 
-/* --- RESALTADO DINÁMICO DEL ÍNDICE --- */
-.toc-active {
-  color: #8b5cf6 !important; /* Tu morado característico */
-  font-weight: bold;
-  margin-left: 5px; /* Pequeño salto a la derecha para destacar */
-  transition: all 0.3s ease;
+/* --- RESPONSIVIDAD BASE --- */
+@media (min-width: 1025px) {
+  .hide-on-desktop { display: none !important; }
+}
+@media (max-width: 1200px) {
+  .layout-grid { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+  .hide-on-tablet { display: none !important; }
+}
+@media (max-width: 1024px) {
+  .layout-grid { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .hide-on-mobile { display: none !important; }
+  .main-content { padding: 1.5rem 1rem; height: auto; overflow-y: visible; }
+  body { height: auto; overflow: visible; }
+}
+@media (max-width: 768px) {
+  .hide-on-desktop { display: flex !important; }
+  .main-header { padding: 0 0.8rem; gap: 10px; }
+  .search-container { margin: 0; }
+  .search-bar { width: 100% !important; font-size: 0.95rem; }
 }
 
-/* 1. Centrar las fórmulas en bloque ($$ ... $$) */
-mjx-container[display="true"] {
+/* Menús laterales en Móvil */
+.show-mobile-menu {
   display: block !important;
-  text-align: center !important;
-  margin: 1.5rem 0 !important;
-  width: 100%;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  width: 80%;
+  max-width: 300px;
+  height: calc(100vh - var(--header-height));
+  background: var(--bg-color);
+  z-index: 200;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
 }
-
-/* 2. Ocultar el texto duplicado de accesibilidad en producción (Vercel) */
-mjx-assistive-mathml {
-  position: absolute !important;
-  clip: rect(1px, 1px, 1px, 1px) !important;
-  padding: 0 !important;
-  border: 0 !important;
-  height: 1px !important;
-  width: 1px !important;
-  overflow: hidden !important;
+.show-mobile-right {
+  display: block !important;
+  position: fixed;
+  top: var(--header-height);
+  right: 0;
+  width: 80%;
+  max-width: 300px;
+  height: calc(100vh - var(--header-height));
+  background: var(--bg-color);
+  z-index: 200;
+  border-left: 1px solid var(--border-color);
+  box-shadow: -5px 0 15px rgba(0,0,0,0.1);
 }
-
-/* --- ESTILOS DE TABLAS EN MARKDOWN --- */
-.main-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  display: block;
-  overflow-x: auto; /* Evita que la tabla rompa la pantalla en celulares */
-  white-space: nowrap; /* Mantiene la tabla legible al hacer scroll horizontal */
-}
-
-.main-content th,
-.main-content td {
-  border: 1px solid var(--border-color);
-  padding: 0.75rem 1rem;
-  text-align: left;
-}
-
-.main-content th {
-  background-color: rgba(0, 0, 0, 0.04);
-  font-weight: 600;
-}
-
-html[data-modo="oscuro"] .main-content th {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-
-/* ==========================================================
-   BUSCADOR PAGEFIND (ESTILOS NATIVOS Y DROPDOWN)
-   ========================================================== */
-
-/* Contenedor base en el Header */
-.search-container {
-  flex-grow: 1;
-  max-width: 500px;
-  position: relative; /* Ancla la ventana flotante aquí */
-  z-index: 1000;
-}
-
-#search {
-  width: 100%;
-}
-
-/* Variables dinámicas para Modo Oscuro/Claro */
-.pagefind-ui {
-  --pagefind-ui-scale: 0.9;
-  --pagefind-ui-primary: #8b5cf6;
-  --pagefind-ui-text: var(--text-color);
-  --pagefind-ui-background: var(--bg-color);
-  --pagefind-ui-border: var(--border-color);
-  --pagefind-ui-tag: rgba(139, 92, 246, 0.1);
-  --pagefind-ui-font: var(--ui-font);
-  width: 100%;
-}
-
-/* Input integrado en la cabecera */
-.pagefind-ui__search-input {
-  border-radius: 20px !important;
-  background-color: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
-  color: var(--text-color) !important;
-  font-weight: normal !important;
-  padding-right: 1.5rem !important; /* Ajustamos el espacio interior */
-}
-
-/* Ocultar botón Limpiar definitivamente */
-.pagefind-ui__search-clear {
-  display: none !important;
-}
-
-/* Caja de resultados flotante (Dropdown) */
-.pagefind-ui__drawer {
-  position: absolute !important;
-  top: calc(100% + 10px) !important;
-  left: 0 !important;
-  right: 0 !important;
-  background-color: var(--header-bg) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.3) !important;
-  max-height: 60vh !important;
-  overflow-y: auto !important;
-  padding: 1.5rem !important;
-  margin-top: 0 !important;
-}
-
-/* Alineación de resultados a la izquierda */
-.pagefind-ui__result-inner {
-  margin-top: 0 !important;
-  padding-left: 0 !important;
-}
-
-.pagefind-ui__message {
-  padding: 0 !important;
-  margin-bottom: 1rem !important;
-  font-weight: bold;
-}
-
-.pagefind-ui__result {
-  padding: 1rem 0 !important;
-  border-bottom: 1px solid rgba(150,150,150,0.1) !important;
-}
-
-.pagefind-ui__result:last-child {
-  border-bottom: none !important;
-}
-
-/* Tipografía de los resultados */
-.pagefind-ui__result-title, 
-.pagefind-ui__result-excerpt {
-  color: var(--text-color) !important;
-}
-
-.pagefind-ui__result-link {
-  color: var(--text-color) !important;
-  text-decoration: none !important;
-  font-weight: 600 !important;
-  font-size: 1.05rem !important;
-}
-
-.pagefind-ui__result-link:hover {
+.toc-active {
   color: #8b5cf6 !important;
-}
-
-/* Resaltado del texto coincidente */
-.pagefind-ui__result-excerpt mark {
-  background-color: rgba(139, 92, 246, 0.3) !important;
-  color: inherit !important;
-  padding: 0 3px;
-  border-radius: 3px;
-  font-weight: bold;
-}
-
-/* ==========================================================
-   BACKLINKS EN EL PANEL DERECHO (RightSidebar)
-   ========================================================== */
-.sidebar-backlinks {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px dashed var(--border-color);
-}
-
-.sidebar-subtitle {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #8b5cf6; /* Morado del tema */
-  margin: 0 0 1rem 0;
-  font-weight: 700;
-}
-
-.sidebar-backlink-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sidebar-backlink-item {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--text-color);
-  text-decoration: none;
-  padding: 0.5rem 0.8rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700 !important;
+  transform: translateX(4px);
+  opacity: 1 !important;
   transition: all 0.2s ease;
 }
-
-html[data-modo="oscuro"] .sidebar-backlink-item {
-  background: rgba(255, 255, 255, 0.02);
+/* ==========================================================
+   COMPORTAMIENTO NATIVO DE PANTALLA COMPLETA (MODO LEER)
+   ========================================================== */
+.main-content:fullscreen,
+.main-content:-webkit-full-screen {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  padding: 5vh 15vw !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
-.sidebar-backlink-item:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: #8b5cf6;
-  color: #8b5cf6;
-  transform: translateX(3px);
+/* Ajuste de lectura en fullscreen para pantallas pequeñas */
+@media (max-width: 768px) {
+  .main-content:fullscreen,
+  .main-content:-webkit-full-screen {
+    padding: 3vh 5vw !important;
+  }
 }
-
-
-
-/* Eliminamos el parpadeo del texto crudo */
-pre[data-language="mermaid"], pre:has(code.language-mermaid) {
-  display: none !important;
-}
-

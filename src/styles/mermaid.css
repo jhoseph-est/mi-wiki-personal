@@ -1,0 +1,79 @@
+/* ==========================================================
+   AISLAMIENTO DE MERMAID
+   ========================================================== */
+.main-content .mermaid-native {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 2rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.main-content .mermaid-native svg {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.main-content .mermaid-native, 
+.main-content .mermaid-native svg {
+  line-height: normal;
+}
+
+.main-content .mermaid-native .label, 
+.main-content .mermaid-native .nodeLabel, 
+.main-content .mermaid-native .entityLabel, 
+.main-content .mermaid-native .edgeLabel, 
+.main-content .mermaid-native .relationshipLabel {
+  line-height: normal;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--mermaid-font-size, 14px);
+}
+
+.main-content .mermaid-native foreignObject {
+  overflow: visible;
+}
+
+.main-content .mermaid-native foreignObject p {
+  margin: 0;
+  color: var(--mermaid-node-text, #ffffff);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: var(--mermaid-font-size, 14px);
+  line-height: normal;
+}
+/* Colores dinámicos para los nodos según el modo */
+html[data-modo="claro"] .main-content .mermaid-native .node rect,
+html[data-modo="claro"] .main-content .mermaid-native .node polygon,
+html[data-modo="claro"] .main-content .mermaid-native .node circle {
+  fill: #f8fafc !important;
+  stroke: #6366f1 !important;
+}
+
+html[data-modo="claro"] .main-content .mermaid-native .nodeLabel,
+html[data-modo="claro"] .main-content .mermaid-native foreignObject p {
+  color: #0f172a !important;
+  fill: #0f172a !important;
+}
+
+html[data-modo="oscuro"] .main-content .mermaid-native .node rect,
+html[data-modo="oscuro"] .main-content .mermaid-native .node polygon,
+html[data-modo="oscuro"] .main-content .mermaid-native .node circle {
+  fill: #0f172a !important;
+  stroke: #38bdf8 !important;
+}
+
+html[data-modo="oscuro"] .main-content .mermaid-native .nodeLabel,
+html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
+  color: #f8fafc !important;
+  fill: #f8fafc !important;
+}
+
+/* Conexiones / Flechas */
+.main-content .mermaid-native .edgePath path {
+  stroke: var(--border-color, #64748b) !important;
+}

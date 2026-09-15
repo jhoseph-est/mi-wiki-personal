@@ -1,0 +1,117 @@
+/* --- ESTILOS DE LECTURA DE MARKDOWN (AISLADOS) --- */
+.main-content article {
+  color: var(--text-color);
+  font-family: var(--doc-font);
+  line-height: var(--doc-line-height);
+}
+
+.main-content::after, .sticky-panel::after { 
+  content: ""; 
+  display: block; 
+  height: 20vh; 
+}
+
+.main-content img { 
+  max-width: 100%; 
+  height: auto; 
+  border-radius: 8px; 
+  display: block; 
+  margin: 2rem auto; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+}
+
+.main-content pre { 
+  padding: 1.5rem; 
+  border-radius: 8px; 
+  position: relative; 
+  margin: 1.5rem 0; 
+  border: 1px solid var(--border-color); 
+}
+
+/* Enlaces internos y externos en Markdown */
+.main-content a.internal { 
+  color: var(--text-color); 
+  background: rgba(139, 92, 246, 0.15); 
+  border-bottom: 2px solid #8b5cf6; 
+  text-decoration: none; 
+  padding: 0 4px; 
+  border-radius: 4px; 
+  font-weight: 500; 
+  transition: all 0.2s ease; 
+}
+.main-content a.internal:hover { 
+  background: #8b5cf6; 
+  color: #ffffff; 
+}
+
+/* Tablas en Markdown */
+.main-content table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin: 1.5rem 0; 
+  display: block; 
+  overflow-x: auto; 
+  white-space: nowrap; 
+}
+.main-content th, .main-content td { 
+  border: 1px solid var(--border-color); 
+  padding: 0.75rem 1rem; 
+  text-align: left; 
+}
+.main-content th { 
+  background-color: rgba(0, 0, 0, 0.04); 
+  font-weight: 600; 
+}
+html[data-modo="oscuro"] .main-content th { 
+  background-color: rgba(255, 255, 255, 0.05); 
+}
+
+/* Callouts (GitHub Blockquote Alerts) */
+.markdown-alert { 
+  padding: 1rem 1.5rem; 
+  margin: 1.5rem 0; 
+  border-left: 4px solid var(--border-color); 
+  border-radius: 4px; 
+  background-color: rgba(0, 0, 0, 0.02); 
+}
+.markdown-alert-title { 
+  display: flex; 
+  align-items: center; 
+  font-weight: 600; 
+  margin-bottom: 0.5rem; 
+  font-size: 1.05rem; 
+}
+.markdown-alert-title svg { 
+  margin-right: 0.5rem; 
+  fill: currentColor; 
+}
+.markdown-alert p:last-child { 
+  margin-bottom: 0; 
+}
+.markdown-alert.markdown-alert-note { border-color: #3b82f6; }
+.markdown-alert.markdown-alert-note .markdown-alert-title { color: #3b82f6; }
+.markdown-alert.markdown-alert-warning { border-color: #eab308; }
+.markdown-alert.markdown-alert-warning .markdown-alert-title { color: #eab308; }
+.markdown-alert.markdown-alert-important { border-color: #8b5cf6; }
+.markdown-alert.markdown-alert-important .markdown-alert-title { color: #8b5cf6; }
+.markdown-alert.markdown-alert-caution { border-color: #ef4444; }
+.markdown-alert.markdown-alert-caution .markdown-alert-title { color: #ef4444; }
+
+/* Botón de copiar código */
+.copy-code-btn { 
+  position: absolute; 
+  top: 0.5rem; 
+  right: 0.5rem; 
+  background: rgba(255, 255, 255, 0.1); 
+  color: #f8fafc; 
+  border: 1px solid rgba(255, 255, 255, 0.2); 
+  padding: 0.3rem 0.6rem; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  cursor: pointer; 
+  opacity: 0; 
+  transition: all 0.2s ease; 
+}
+.main-content pre:hover .copy-code-btn { opacity: 1; }
+.copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.copy-code-btn.copied { background: #10b981; color: white; border-color: #10b981; }

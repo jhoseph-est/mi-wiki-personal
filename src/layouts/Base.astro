@@ -18,685 +18,180 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
 <!DOCTYPE html>
 <html lang="es" data-estilo={estiloDoc}>
-
   <head>
-
     <meta charset="UTF-8">
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} | Repositorio Personal</title>
-
     <ClientRouter />
-
-    <!-- ==========================================================
-         PREFERENCIAS DEL USUARIO
-         ========================================================== -->
-
+    <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+    <script src="/pagefind/pagefind-ui.js" is:inline></script>
     <script is:inline>
       (function () {
-
         const html = document.documentElement;
         const body = document.body;
-
-        const modo =
-          localStorage.getItem('pref-modo') || 'oscuro';
-
-        const texto =
-          localStorage.getItem('pref-texto') || 'estandar';
-
-        const ancho =
-          localStorage.getItem('pref-ancho') || 'normal';
+        const modo = localStorage.getItem('pref-modo') || 'oscuro';
+        const texto = localStorage.getItem('pref-texto') || 'estandar';
+        const ancho = localStorage.getItem('pref-ancho') || 'normal';
 
         html.setAttribute('data-modo', modo);
         html.setAttribute('data-texto', texto);
         html.setAttribute('data-ancho', ancho);
+        if (body) body.setAttribute('data-modo', modo);
 
-        if (body) {
-          body.setAttribute('data-modo', modo);
-        }
+        document.addEventListener('astro:before-swap', (ev) => {
+          const m = localStorage.getItem('pref-modo') || 'oscuro';
+          const t = localStorage.getItem('pref-texto') || 'estandar';
+          const a = localStorage.getItem('pref-ancho') || 'normal';
+          const nuevoEstilo = ev.newDocument.documentElement.getAttribute('data-estilo') || 'moderno';
 
-        document.addEventListener(
-          'astro:before-swap',
-          (ev) => {
-
-            const m =
-              localStorage.getItem('pref-modo') || 'oscuro';
-
-            const t =
-              localStorage.getItem('pref-texto') || 'estandar';
-
-            const a =
-              localStorage.getItem('pref-ancho') || 'normal';
-
-            const nuevoEstilo =
-              ev.newDocument.documentElement
-                .getAttribute('data-estilo') || 'moderno';
-
-            ev.newDocument.documentElement
-              .setAttribute('data-modo', m);
-
-            ev.newDocument.documentElement
-              .setAttribute('data-estilo', nuevoEstilo);
-
-            ev.newDocument.documentElement
-              .setAttribute('data-texto', t);
-
-            ev.newDocument.documentElement
-              .setAttribute('data-ancho', a);
-
-            if (ev.newDocument.body) {
-              ev.newDocument.body
-                .setAttribute('data-modo', m);
-            }
-
-          }
-        );
-
+          ev.newDocument.documentElement.setAttribute('data-modo', m);
+          ev.newDocument.documentElement.setAttribute('data-estilo', nuevoEstilo);
+          ev.newDocument.documentElement.setAttribute('data-texto', t);
+          ev.newDocument.documentElement.setAttribute('data-ancho', a);
+          if (ev.newDocument.body) ev.newDocument.body.setAttribute('data-modo', m);
+        });
       })();
     </script>
-
   </head>
 
-
   <body>
-
     <Header />
 
-
-    <!-- ==========================================================
-         ESTRUCTURA PRINCIPAL
-         ========================================================== -->
-
-    <div
-      class={`layout-grid ${isLanding ? 'landing-mode' : ''}`}
-    >
-
-      <aside
-        class="sticky-panel left-panel hide-on-mobile"
-      >
+    <div class={`layout-grid ${isLanding ? 'landing-mode' : ''}`}>
+      <aside class="sticky-panel left-panel hide-on-mobile">
         <LeftSidebar headings={headings} />
       </aside>
 
-
       <main class="main-content">
-
         <div class="content-wrapper">
-
           <slot />
-
         </div>
-
       </main>
 
-
-      <aside
-        class="sticky-panel right-panel hide-on-tablet"
-      >
-        <RightSidebar
-          frontmatter={frontmatter}
-          docId={docId}
-        />
+      <aside class="sticky-panel right-panel hide-on-tablet">
+        <RightSidebar frontmatter={frontmatter} docId={docId} />
       </aside>
-
     </div>
 
-
-    <!-- ==========================================================
-         BOTÓN COPIAR CÓDIGO
-         ========================================================== -->
-
+    <!-- BOTÓN COPIAR CÓDIGO -->
     <script>
+      document.addEventListener('astro:page-load', () => {
+        document.querySelectorAll('.main-content pre').forEach((preNode) => {
+          const pre = preNode as HTMLElement;
+          const isMermaid = pre.getAttribute('data-language') === 'mermaid' || !!pre.querySelector('.language-mermaid');
+          if (isMermaid || pre.querySelector('.copy-code-btn')) return;
 
-      document.addEventListener(
-        'astro:page-load',
-        () => {
+          const btn = document.createElement('button');
+          btn.className = 'copy-code-btn';
+          btn.innerText = 'Copiar';
 
-          document
-            .querySelectorAll('.main-content pre')
-            .forEach((preNode) => {
+          btn.addEventListener('click', async () => {
+            const codeEl = pre.querySelector('code');
+            const code = codeEl ? codeEl.textContent : pre.textContent;
+            if (!code) return;
 
-              const pre =
-                preNode as HTMLElement;
+            try {
+              await navigator.clipboard.writeText(code);
+              btn.innerText = '¡Copiado!';
+              btn.classList.add('copied');
+              setTimeout(() => {
+                btn.innerText = 'Copiar';
+                btn.classList.remove('copied');
+              }, 2000);
+            } catch (error) {
+              console.error('Error al copiar:', error);
+            }
+          });
 
-              /*
-               * Mermaid NO recibe botón de copiar.
-               */
-
-              const isMermaid =
-                pre.getAttribute('data-language') === 'mermaid' ||
-                !!pre.querySelector('.language-mermaid');
-
-              if (
-                isMermaid ||
-                pre.querySelector('.copy-code-btn')
-              ) {
-                return;
-              }
-
-
-              const btn =
-                document.createElement('button');
-
-              btn.className =
-                'copy-code-btn';
-
-              btn.innerText =
-                'Copiar';
-
-
-              btn.addEventListener(
-                'click',
-                async () => {
-
-                  const codeEl =
-                    pre.querySelector('code');
-
-                  const code =
-                    codeEl
-                      ? codeEl.textContent
-                      : pre.textContent;
-
-                  if (!code) {
-                    return;
-                  }
-
-
-                  try {
-
-                    await navigator.clipboard
-                      .writeText(code);
-
-                    btn.innerText =
-                      '¡Copiado!';
-
-                    btn.classList.add(
-                      'copied'
-                    );
-
-                    setTimeout(() => {
-
-                      btn.innerText =
-                        'Copiar';
-
-                      btn.classList.remove(
-                        'copied'
-                      );
-
-                    }, 2000);
-
-                  } catch (error) {
-
-                    console.error(
-                      'Error al copiar:',
-                      error
-                    );
-
-                  }
-
-                }
-              );
-
-
-              pre.appendChild(btn);
-
-            });
-
-        }
-      );
-
+          pre.appendChild(btn);
+        });
+      });
     </script>
 
-
-    <!-- ==========================================================
-         MERMAID
-         ========================================================== -->
-
+    <!-- MERMAID -->
     <script>
+      import mermaid, { type MermaidConfig } from 'mermaid';
 
-      import mermaid from 'mermaid';
-
-
-      /*
-       * ==========================================================
-       * CONFIGURACIÓN CENTRAL DE MERMAID
-       * ==========================================================
-       *
-       * Aquí controlamos:
-       *
-       * - fuente
-       * - tamaño de texto
-       * - separación entre nodos
-       * - separación entre niveles
-       * - padding general
-       * - tipo de curva
-       *
-       * IMPORTANTE:
-       *
-       * NO modificamos aquí:
-       *
-       * x
-       * y
-       * width
-       * height
-       * transform
-       *
-       * porque Mermaid debe calcularlos.
-       */
-
-      function getMermaidConfig() {
-
-        const html =
-          document.documentElement;
-
-        const isDark =
-          html.getAttribute('data-modo') === 'oscuro';
-
-
+      function getMermaidConfig(): MermaidConfig {
+        const isDark = document.documentElement.getAttribute('data-modo') === 'oscuro';
         return {
-
           startOnLoad: false,
-
           look: 'classic',
-
           theme: 'base',
-
-
-          /*
-           * ======================================================
-           * APARIENCIA BASE
-           * ======================================================
-           */
-
           themeVariables: {
-
             background: 'transparent',
-
-            /*
-             * IMPORTANTE:
-             *
-             * No usamos inherit.
-             *
-             * Mermaid necesita una fuente estable
-             * para calcular correctamente las dimensiones.
-             */
-
-            fontFamily:
-              'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-
-            fontSize:
-              '14px',
-
-
-            /*
-             * NODOS
-             */
-
-            primaryColor:
-              isDark
-                ? '#0f172a'
-                : '#f8fafc',
-
-            primaryTextColor:
-              isDark
-                ? '#f8fafc'
-                : '#0f172a',
-
-            primaryBorderColor:
-              isDark
-                ? '#38bdf8'
-                : '#6366f1',
-
-
-            /*
-             * CONEXIONES
-             */
-
-            lineColor:
-              isDark
-                ? '#94a3b8'
-                : '#64748b',
-
-            textColor:
-              isDark
-                ? '#f8fafc'
-                : '#0f172a',
-
-
-            /*
-             * SUBGRÁFICOS
-             */
-
-            clusterBkg:
-              isDark
-                ? 'rgba(255,255,255,0.05)'
-                : 'rgba(0,0,0,0.03)',
-
-            clusterBorder:
-              isDark
-                ? '#334155'
-                : '#cbd5e1'
-
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontSize: '14px',
+            primaryColor: isDark ? '#0f172a' : '#f8fafc',
+            primaryTextColor: isDark ? '#f8fafc' : '#0f172a',
+            primaryBorderColor: isDark ? '#38bdf8' : '#6366f1',
+            lineColor: isDark ? '#94a3b8' : '#64748b',
+            textColor: isDark ? '#f8fafc' : '#0f172a',
+            clusterBkg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+            clusterBorder: isDark ? '#334155' : '#cbd5e1'
           },
-
-
-          /*
-           * ======================================================
-           * DISTRIBUCIÓN DEL DIAGRAMA
-           * ======================================================
-           */
-
           flowchart: {
-
             htmlLabels: true,
-
-            /*
-             * Espacio interno que Mermaid utiliza
-             * para calcular los elementos.
-             */
-
             padding: 10,
-
-            /*
-             * Distancia horizontal entre nodos.
-             */
-
             nodeSpacing: 35,
-
-            /*
-             * Distancia vertical entre niveles.
-             */
-
             rankSpacing: 35,
-
-            /*
-             * Líneas rectas.
-             */
-
             curve: 'linear'
-
           },
-
-
-          /*
-           * ======================================================
-           * CSS INTERNO DE MERMAID
-           * ======================================================
-           *
-           * SOLO APARIENCIA.
-           *
-           * NO tocar geometría.
-           */
-
           themeCSS: `
-
-            .node rect {
-              filter: none;
-              stroke-width: 1.5px;
-            }
-
-            .node polygon {
-              filter: none;
-              stroke-width: 1.5px;
-            }
-
-            .node circle {
-              filter: none;
-              stroke-width: 1.5px;
-            }
-
-            .cluster rect {
-              filter: none;
-              stroke-width: 1.5px;
-            }
-
-            .edgePath path {
-              fill: none;
-            }
-
+            .node rect, .node polygon, .node circle, .cluster rect { filter: none; stroke-width: 1.5px; }
+            .edgePath path { fill: none; }
           `
-
         };
-
       }
-
-
-
-      /*
-       * ==========================================================
-       * RENDERIZADO
-       * ==========================================================
-       */
 
       async function renderMermaid() {
-
-
-        /*
-         * Buscamos bloques Mermaid generados
-         * por el Markdown/Astro.
-         */
-
-        const blocks =
-          Array.from(
-            document.querySelectorAll(
-              'pre[data-language="mermaid"], pre:has(code.language-mermaid)'
-            )
-          );
-
-
-        /*
-         * ========================================================
-         * CONVERTIR PRE → CONTENEDOR MERMAID
-         * ========================================================
-         */
+        const blocks = Array.from(
+          document.querySelectorAll('pre[data-language="mermaid"], pre:has(code.language-mermaid)')
+        );
 
         blocks.forEach((preNode) => {
+          const pre = preNode as HTMLElement;
+          if (pre.dataset.mermaidProcessed === 'true') return;
 
-          const pre =
-            preNode as HTMLElement;
+          const codeEl = pre.querySelector('code');
+          const code = (codeEl?.textContent || pre.textContent || '').trim();
+          if (!code) return;
 
-
-          /*
-           * Si ya fue procesado,
-           * no lo volvemos a crear.
-           */
-
-          if (
-            pre.dataset.mermaidProcessed === 'true'
-          ) {
-            return;
-          }
-
-
-          const codeEl =
-            pre.querySelector('code');
-
-
-          const code =
-            (
-              codeEl?.textContent ||
-              pre.textContent ||
-              ''
-            ).trim();
-
-
-          if (!code) {
-            return;
-          }
-
-
-          /*
-           * Contenedor donde Mermaid
-           * generará el SVG.
-           */
-
-          const container =
-            document.createElement('div');
-
-
-          container.className =
-            'mermaid-native';
-
-
-          /*
-           * Guardamos el código original.
-           */
-
-          container.dataset.mermaidSource =
-            code;
-
-
-          /*
-           * SOLO CONTENEDOR EXTERNO.
-           *
-           * Esto NO modifica el SVG interno.
-           */
-
-          container.style.display =
-            'flex';
-
-          container.style.justifyContent =
-            'center';
-
-          container.style.alignItems =
-            'center';
-
-          container.style.width =
-            '100%';
-
-          container.style.margin =
-            '2rem 0';
-
-
-          /*
-           * Mermaid necesita recibir
-           * el código como texto.
-           */
-
-          container.textContent =
-            code;
-
-
-          /*
-           * Insertamos el contenedor
-           * después del PRE original.
-           */
+          const container = document.createElement('div');
+          container.className = 'mermaid-native';
+          container.dataset.mermaidSource = code;
+          container.style.display = 'flex';
+          container.style.justifyContent = 'center';
+          container.style.alignItems = 'center';
+          container.style.width = '100%';
+          container.style.margin = '2rem 0';
+          container.textContent = code;
 
           pre.after(container);
-
-
-          /*
-           * Marcamos el PRE.
-           */
-
-          pre.dataset.mermaidProcessed =
-            'true';
-
-
-          /*
-           * Ocultamos el código original.
-           */
-
-          pre.style.display =
-            'none';
-
+          pre.dataset.mermaidProcessed = 'true';
+          pre.style.display = 'none';
         });
 
+        const nodes = Array.from(
+          document.querySelectorAll('.mermaid-native:not([data-mermaid-rendered="true"])')
+        ) as HTMLElement[];
 
-        /*
-         * ========================================================
-         * BUSCAR DIAGRAMAS SIN RENDERIZAR
-         * ========================================================
-         */
-
-        const nodes =
-          Array.from(
-            document.querySelectorAll(
-              '.mermaid-native:not([data-mermaid-rendered="true"])'
-            )
-          ) as HTMLElement[];
-
-
-        if (!nodes.length) {
-          return;
-        }
-
+        if (!nodes.length) return;
 
         try {
-
-          /*
-           * Inicializamos Mermaid.
-           */
-
-          mermaid.initialize(
-            getMermaidConfig()
-          );
-
-
-          /*
-           * Mermaid calcula:
-           *
-           * width
-           * height
-           * x
-           * y
-           * transform
-           * posiciones
-           * conexiones
-           *
-           * TODO desde aquí.
-           */
-
-          await mermaid.run({
-            nodes
-          });
-
-
-          /*
-           * Marcamos como renderizados.
-           */
-
+          mermaid.initialize(getMermaidConfig());
+          await mermaid.run({ nodes });
           nodes.forEach((node) => {
-
-            node.dataset.mermaidRendered =
-              'true';
-
+            node.dataset.mermaidRendered = 'true';
           });
-
-
         } catch (error) {
-
-          console.error(
-            'Error de Mermaid:',
-            error
-          );
-
+          console.error('Error de Mermaid:', error);
         }
-
       }
 
-
-
-      /*
-       * ==========================================================
-       * INICIALIZACIÓN
-       * ==========================================================
-       */
-
-      document.addEventListener(
-        'astro:page-load',
-        () => {
-
-          renderMermaid();
-
-        }
-      );
-
+      document.addEventListener('astro:page-load', () => {
+        renderMermaid();
+      });
     </script>
-
   </body>
-
 </html>

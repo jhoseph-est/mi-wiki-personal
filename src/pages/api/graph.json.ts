@@ -1,27 +1,64 @@
-import { getCollection } from 'astro:content';
+// src/pages/api/graph.json.ts
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+interface GraphNode {
+  id: string;
+  name: string;
+  val: number;
+  group: string;
+}
+
+interface GraphLink {
+  source: string;
+  target: string;
+}
 
 export async function GET() {
-  const allDocsGraph = await getCollection('docs');
-  
-  const nodes = allDocsGraph.map(d => ({
-    id: `/docs/${d.id.replace(/\\/g, '/')}`,
-    name: d.data.title || 'Sin título',
-    val: 1,
-    group: d.id.split('/')[0]
-  }));
+  const allDocs = await getCollection('docs');
+  const activeDocs = allDocs.filter((d: CollectionEntry<'docs'>) => d.data.draft !== true);
 
-  const links: any[] = [];
-  allDocsGraph.forEach(d => {
+  const nodeMap = new Map<string, GraphNode>();
+  
+  activeDocs.forEach((d) => {
+    const normalizedId = `/docs/${d.id.replace(/\\/g, '/')}`;
+    const group = d.id.replace(/\\/g, '/').split('/')[0] || 'raiz';
+    nodeMap.set(normalizedId, {
+      id: normalizedId,
+      name: d.data.title || 'Sin título',
+      val: 1,
+      group
+    });
+  });
+
+  const links: GraphLink[] = [];
+  const targetIds = Array.from(nodeMap.keys());
+
+  activeDocs.forEach((d) => {
+    // 1. Guardamos el texto en una constante para asegurar el tipo string
+    const docBody = d.body;
+    if (!docBody) return;
+
     const sourceId = `/docs/${d.id.replace(/\\/g, '/')}`;
-    allDocsGraph.forEach(t => {
-      const targetId = `/docs/${t.id.replace(/\\/g, '/')}`;
-      if (d.body && d.body.includes(targetId) && sourceId !== targetId) {
+
+    targetIds.forEach((targetId) => {
+      if (sourceId === targetId) return;
+
+      const cleanSlug = targetId.replace('/docs/', '');
+      const hasLink = 
+        docBody.includes(targetId) || 
+        docBody.includes(`(${cleanSlug})`) || 
+        docBody.includes(`[[${cleanSlug}`);
+
+      if (hasLink) {
         links.push({ source: sourceId, target: targetId });
       }
     });
   });
 
-  return new Response(JSON.stringify({ nodes, links }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return new Response(
+    JSON.stringify({ nodes: Array.from(nodeMap.values()), links }),
+    {
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
 }

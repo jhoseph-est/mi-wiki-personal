@@ -5,10 +5,10 @@
   <div class="graph-modal-content">
     <div class="graph-modal-header">
       <div>
-        <h3 style="margin: 0; color: #8b5cf6;">Red de Conocimiento</h3>
-        <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Haz clic en un nodo para navegar a ese apunte.</p>
+        <h3 class="graph-title">Red de Conocimiento</h3>
+        <p class="graph-subtitle">Haz clic en un nodo para navegar a ese apunte.</p>
       </div>
-      <button id="close-graph-btn" class="close-btn">
+      <button id="close-graph-btn" class="close-btn" aria-label="Cerrar grafo">
         Cerrar
       </button>
     </div>
@@ -18,39 +18,108 @@
 
 <style>
   .graph-modal-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px); z-index: 9999; display: flex;
-    justify-content: center; align-items: center; opacity: 0;
-    pointer-events: none; transition: opacity 0.2s ease;
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px); 
+    z-index: 9999; 
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    opacity: 0;
+    pointer-events: none; 
+    transition: opacity 0.2s ease;
   }
-  .graph-modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .graph-modal-overlay.active { 
+    opacity: 1; 
+    pointer-events: auto; 
+  }
   .graph-modal-content {
-    width: 95vw; height: 90vh; background: var(--bg-color);
-    border: 1px solid var(--border-color); border-radius: 12px;
-    display: flex; flex-direction: column;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5); overflow: hidden;
+    width: 95vw; 
+    height: 90vh; 
+    background: var(--bg-color);
+    border: 1px solid var(--border-color); 
+    border-radius: 12px;
+    display: flex; 
+    flex-direction: column;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+    overflow: hidden;
   }
   .graph-modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 1rem 1.5rem; 
+    border-bottom: 1px solid var(--border-color);
     background: var(--header-bg);
   }
-  #graph-container { flex-grow: 1; width: 100%; height: 100%; cursor: grab; position: relative; }
+  .graph-title { margin: 0; color: #8b5cf6; font-size: 1.1rem; }
+  .graph-subtitle { margin: 0; opacity: 0.7; font-size: 0.85rem; color: var(--text-color); }
+
+  #graph-container { 
+    flex-grow: 1; 
+    width: 100%; 
+    height: 100%; 
+    cursor: grab; 
+    position: relative; 
+  }
   #graph-container:active { cursor: grabbing; }
   
   .close-btn {
-    background: rgba(239, 68, 68, 0.1); color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem;
-    border-radius: 6px; cursor: pointer; font-weight: bold;
-    font-size: 0.85rem; transition: all 0.2s ease;
+    background: rgba(239, 68, 68, 0.1); 
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3); 
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold;
+    font-size: 0.85rem; 
+    transition: all 0.2s ease;
   }
-  .close-btn:hover { background: #ef4444; color: white; }
+  .close-btn:hover { 
+    background: #ef4444; 
+    color: white; 
+  }
 </style>
 
 <script>
   import ForceGraph from 'force-graph';
+  import { navigate } from 'astro:transitions/client';
 
-  let Graph: any = null;
+  interface GraphNodeObject {
+    id: string;
+    name: string;
+    x: number;
+    y: number;
+    color?: string;
+  }
+
+  // 1. Tipo derivado automáticamente sin depender de exportaciones inexistentes
+  type ForceGraphInstance = {
+  width: (w?: number) => any;
+  height: (h?: number) => any;
+  zoomToFit: (duration?: number, padding?: number) => any;
+  _destructor?: () => void;
+  [key: string]: any;
+  };
+
+  let Graph: ForceGraphInstance | null = null;
+  let resizeObserver: ResizeObserver | null = null;
+
+  function destroyGraph(container?: HTMLElement | null) {
+    if (Graph) {
+      // @ts-ignore
+      Graph._destructor && Graph._destructor();
+      Graph = null;
+    }
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (container) {
+      container.innerHTML = '';
+    }
+  }
 
   function setupGraphModal() {
     const btnToggleGraph = document.getElementById('btn-toggle-graph');
@@ -64,11 +133,7 @@
 
     const closeGraphModal = () => {
       graphModal.classList.remove('active');
-      if (Graph) {
-        Graph._destructor && Graph._destructor();
-        Graph = null;
-      }
-      graphContainer.innerHTML = '';
+      destroyGraph(graphContainer);
     };
 
     const openGraphModal = () => {
@@ -78,29 +143,31 @@
       graphContainer.innerHTML = '';
 
       fetch('/api/graph.json')
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           isFetching = false;
           if (!graphModal.classList.contains('active')) return;
 
           const isDark = document.documentElement.getAttribute('data-modo') === 'oscuro';
-          const bgColor = isDark ? 'var(--bg-color)' : '#ffffff';
-          const lineColor = isDark ? 'rgba(255,255,255,255)' : 'rgba(0,255,0,255)';
-          const textColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
+          const computedBg = window.getComputedStyle(document.body).backgroundColor;
+          const lineColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+          const textColor = isDark ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 23, 42, 0.85)';
 
-          // @ts-ignore
-          Graph = ForceGraph()(graphContainer)
+          // 2. Ejecución segura para evitar TS2348
+          const createGraph = ForceGraph as any;
+          Graph = createGraph()(graphContainer)
             .graphData(data)
             .nodeAutoColorBy('group')
             .nodeLabel(() => '')
             .linkColor(() => lineColor)
-            .linkWidth(2.5)
-            .backgroundColor(bgColor)
-            .nodeCanvasObject((node: any, ctx: any, globalScale: number) => {
+            .linkWidth(1.5)
+            .backgroundColor(computedBg || (isDark ? '#0f172a' : '#ffffff'))
+            .nodeCanvasObject((node: unknown, ctx: CanvasRenderingContext2D, globalScale: number) => {
+              const n = node as GraphNodeObject;
               const nodeSize = 4;
               ctx.beginPath();
-              ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI, false);
-              ctx.fillStyle = node.color || '#8b5cf6';
+              ctx.arc(n.x, n.y, nodeSize, 0, 2 * Math.PI, false);
+              ctx.fillStyle = n.color || '#8b5cf6';
               ctx.fill();
 
               if (globalScale >= 1.2) {
@@ -109,34 +176,49 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
                 ctx.fillStyle = textColor;
-                ctx.fillText(node.name, node.x, node.y + nodeSize + (2 / globalScale));
+                ctx.fillText(n.name, n.x, n.y + nodeSize + (2 / globalScale));
               }
             })
-            .onNodeClick((node: any) => {
-              if (node && node.id) window.location.href = node.id;
+            .onNodeClick((node: unknown) => {
+              const n = node as GraphNodeObject;
+              if (n && n.id) {
+                closeGraphModal();
+                navigate(n.id);
+              }
             });
 
           setTimeout(() => {
-            if (graphContainer) {
+            if (graphContainer && Graph) {
               Graph.width(graphContainer.clientWidth);
               Graph.height(graphContainer.clientHeight);
               Graph.zoomToFit(400, 40);
+
+              resizeObserver = new ResizeObserver(() => {
+                if (Graph && graphContainer) {
+                  Graph.width(graphContainer.clientWidth);
+                  Graph.height(graphContainer.clientHeight);
+                }
+              });
+              resizeObserver.observe(graphContainer);
             }
           }, 50);
         })
-        .catch(() => { isFetching = false; });
+        .catch(() => { 
+          isFetching = false; 
+        });
     };
 
     btnToggleGraph.onclick = openGraphModal;
     if (closeGraphBtn) closeGraphBtn.onclick = closeGraphModal;
+
+    graphModal.onclick = (e) => {
+      if (e.target === graphModal) closeGraphModal();
+    };
   }
 
-  // Limpieza automática del motor de físicas antes de un cambio de página en Astro
   document.addEventListener('astro:before-swap', () => {
-    if (Graph) {
-      Graph._destructor && Graph._destructor();
-      Graph = null;
-    }
+    const graphContainer = document.getElementById('graph-container');
+    destroyGraph(graphContainer);
   });
 
   document.addEventListener('astro:page-load', setupGraphModal);

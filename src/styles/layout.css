@@ -72,19 +72,7 @@ body {
   padding-left: 15px;
 }
 .left-panel details summary::-webkit-details-marker { display: none; }
-.left-panel details summary::before {
-  content: "›";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 15px;
-  text-align: center;
-  transform: translateY(-50%);
-  font-size: 1.4rem;
-  line-height: 1;
-  opacity: 0.5;
-  transition: transform 0.2s ease;
-}
+
 .left-panel details[open] > summary::before {
   transform: translateY(-42%) rotate(90deg);
 }

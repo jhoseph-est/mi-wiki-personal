@@ -5,6 +5,7 @@ import GraphModal from '../../components/GraphModal.astro';
 import FolderView from '../../components/FolderView.astro';
 import { formatName, generateDocPaths } from '../../utils/fileTree';
 
+
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
   return generateDocPaths(allDocs);

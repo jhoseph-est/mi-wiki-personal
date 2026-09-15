@@ -212,8 +212,3 @@ Creación y apreciación artística.
 <div>
 algo lindo
 </div>
-
-
-<style>
-body { background: red; }
-</style>

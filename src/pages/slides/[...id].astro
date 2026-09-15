@@ -1,18 +1,26 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
-// 1. Importaciones de estilos (Vite los inyectará automáticamente)
+// 1. Estilos encapsulados de Reveal.js
 import 'reveal.js/reveal.css';
 import 'reveal.js/theme/black.css';
 import 'reveal.js/plugin/highlight/monokai.css';
 
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
-  const slideDocs = allDocs.filter((doc: any) => doc.data.slides === true);
-  return slideDocs.map((doc: any) => ({
+  // Filtramos borradores y tomamos solo los que tienen slides: true
+  const slideDocs = allDocs.filter(
+    (doc: CollectionEntry<'docs'>) => doc.data.draft !== true && doc.data.slides === true
+  );
+
+  return slideDocs.map((doc) => ({
     params: { id: doc.id.replace(/\\/g, '/') },
     props: { doc },
   }));
+}
+
+interface Props {
+  doc: CollectionEntry<'docs'>;
 }
 
 const { doc } = Astro.props;
@@ -42,7 +50,7 @@ const { doc } = Astro.props;
   </style>
 </head>
 <body>
-  <a href="#" onclick="window.close()" class="btn-exit"> Cerrar</a>
+  <a href="#" onclick="window.close()" class="btn-exit" aria-label="Cerrar presentación">✕ Cerrar</a>
   
   <div class="reveal">
     <div class="slides">
@@ -52,22 +60,24 @@ const { doc } = Astro.props;
     </div>
   </div>
 
-  <!-- 2. Scripts procesados por Vite (Sin rutas estáticas /public/) -->
   <script>
     import Reveal from 'reveal.js';
     import Markdown from 'reveal.js/plugin/markdown';
     import Highlight from 'reveal.js/plugin/highlight';
-    import Math from 'reveal.js/plugin/math';
+    import RevealMath from 'reveal.js/plugin/math';
     import Notes from 'reveal.js/plugin/notes';
 
-    Reveal.initialize({
+    const deck = new Reveal({
       controls: true,
       progress: true,
       center: true,
       hash: true,
       transition: 'slide',
-      plugins: [ Markdown, Highlight, Math.KaTeX, Notes ]
+      // Cambiamos KaTeX por MathJax3 nativo de Reveal.js
+      plugins: [ Markdown, Highlight, RevealMath.MathJax3, Notes ]
     });
+
+    deck.initialize();
 
     document.addEventListener('keydown', (e) => {
       if (e.key.toLowerCase() === 'q') window.close();

@@ -41,7 +41,7 @@
 
 .main-content .mermaid-native foreignObject p {
   margin: 0;
-  color: var(--mermaid-node-text, #ffffff);
+  color: var(--mermaid-node-text, #0f172a);
   font-family: system-ui, -apple-system, sans-serif;
   font-size: var(--mermaid-font-size, 14px);
   line-height: normal;

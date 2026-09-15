@@ -233,12 +233,16 @@ USUARIO ||--o{ PEDIDO : "realiza"
 
 Cronogramas.
 
-```gantt
-[
-  { "id": "1", "name": "Diseño de Arquitectura", "start": "2026-01-01", "end": "2026-01-05", "progress": 100 },
-  { "id": "2", "name": "Prototipo Electrónico", "start": "2026-01-06", "end": "2026-01-11", "progress": 50, "dependencies": "1" },
-  { "id": "3", "name": "Pruebas Unitarias", "start": "2026-01-12", "end": "2026-01-15", "progress": 0, "dependencies": "2" }
-]
+```mermaid
+gantt
+    title Cronograma de Proyecto
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    tickInterval 2day
+    section Fase 1
+    Diseño de Arquitectura :done, 2026-01-01, 2026-01-05
+    Prototipo Electrónico  :active, 2026-01-06, 2026-01-11
+    Pruebas Unitarias      : 2026-01-12, 2026-01-15
 ```
 
 ---

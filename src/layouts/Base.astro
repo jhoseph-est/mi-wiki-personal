@@ -137,6 +137,21 @@ const estiloDoc = frontmatter.theme || 'moderno';
             rankSpacing: 35,
             curve: 'linear'
           },
+          // Configuración que comprobamos en el laboratorio:
+          gantt: {
+            useWidth: 850,
+            useMaxWidth: false,
+            leftPadding: 150,
+            barHeight: 28,
+            barGap: 8,
+            topPadding: 50,
+            titleTopMargin: 25,
+            gridLineStartPadding: 35,
+            fontSize: 12,
+            sectionFontSize: 14,
+            numberSectionStyles: 4,
+            axisFormat: '%d/%m'
+          },
           themeCSS: `
             .node rect, .node polygon, .node circle, .cluster rect { filter: none; stroke-width: 1.5px; }
             .edgePath path { fill: none; }
@@ -149,46 +164,73 @@ const estiloDoc = frontmatter.theme || 'moderno';
           document.querySelectorAll('pre[data-language="mermaid"], pre:has(code.language-mermaid)')
         );
 
-        blocks.forEach((preNode) => {
+        if (!blocks.length) return;
+
+        mermaid.initialize(getMermaidConfig());
+
+        const standardNodes: HTMLElement[] = [];
+
+        for (const [index, preNode] of blocks.entries()) {
           const pre = preNode as HTMLElement;
-          if (pre.dataset.mermaidProcessed === 'true') return;
+          if (pre.dataset.mermaidProcessed === 'true') continue;
 
           const codeEl = pre.querySelector('code');
           const code = (codeEl?.textContent || pre.textContent || '').trim();
-          if (!code) return;
+          if (!code) continue;
 
-          const container = document.createElement('div');
-          container.className = 'mermaid-native';
-          container.dataset.mermaidSource = code;
-          container.style.display = 'flex';
-          container.style.justifyContent = 'center';
-          container.style.alignItems = 'center';
-          container.style.width = '100%';
-          container.style.margin = '2rem 0';
-          container.textContent = code;
+          const cleanCode = code.replace(/%%[\s\S]*?%%/g, '').trim();
+          const isGantt = cleanCode.startsWith('gantt');
 
-          pre.after(container);
-          pre.dataset.mermaidProcessed = 'true';
-          pre.style.display = 'none';
-        });
+          if (isGantt) {
+            // --- TRATAMIENTO EXCLUSIVO PARA GANTT ---
+            const renderId = `mermaid-gantt-${Date.now()}-${index}`;
+            try {
+              const { svg } = await mermaid.render(renderId, code);
+              const container = document.createElement('div');
+              container.className = 'mermaid-native is-gantt';
+              container.innerHTML = svg;
 
-        const nodes = Array.from(
-          document.querySelectorAll('.mermaid-native:not([data-mermaid-rendered="true"])')
-        ) as HTMLElement[];
+              const svgEl = container.querySelector('svg');
+              if (svgEl) {
+                svgEl.style.width = '850px';
+                svgEl.style.minWidth = '850px';
+                svgEl.style.maxWidth = 'none';
+                svgEl.style.height = 'auto';
+              }
 
-        if (!nodes.length) return;
+              pre.after(container);
+              pre.dataset.mermaidProcessed = 'true';
+              pre.style.display = 'none';
+            } catch (err) {
+              console.error('Error al renderizar Gantt con Mermaid:', err);
+            }
+          } else {
+            // --- TODOS LOS DEMÁS DIAGRAMAS (MÉTODO NATIVO ORIGINAL) ---
+            const container = document.createElement('div');
+            container.className = 'mermaid-native';
+            container.textContent = code;
 
-        try {
-          mermaid.initialize(getMermaidConfig());
-          await mermaid.run({ nodes });
-          nodes.forEach((node) => {
-            node.dataset.mermaidRendered = 'true';
-          });
-        } catch (error) {
-          console.error('Error de Mermaid:', error);
+            pre.after(container);
+            pre.dataset.mermaidProcessed = 'true';
+            pre.style.display = 'none';
+
+            standardNodes.push(container);
+          }
+        }
+
+        // Ejecuta el flujo habitual solo sobre los diagramas normales
+        if (standardNodes.length > 0) {
+          try {
+            await mermaid.run({ nodes: standardNodes });
+            standardNodes.forEach((node) => {
+              node.dataset.mermaidRendered = 'true';
+            });
+          } catch (error) {
+            console.error('Error al ejecutar mermaid.run():', error);
+          }
         }
       }
-
+      
       document.addEventListener('astro:page-load', () => {
         renderMermaid();
       });

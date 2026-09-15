@@ -1,0 +1,234 @@
+---
+// src/pages/mermaid-proof.astro
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laboratorio Gantt Mermaid</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+    }
+    .panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem;
+      height: fit-content;
+    }
+    .panel h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #38bdf8;
+    }
+    .control-group {
+      margin-bottom: 1.2rem;
+    }
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+    }
+    .control-group select {
+      width: 100%;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 0.4rem;
+      border-radius: 6px;
+    }
+    .canvas-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 2rem;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #gantt-output {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    /* Estilos dinámicos sobre el SVG generado */
+    #gantt-output svg {
+      height: auto !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <!-- Panel de controles en vivo -->
+    <div class="panel">
+      <h2>Parámetros de Render</h2>
+
+      <div class="control-group">
+        <label>Ancho Forzado del Canvas: <span id="val-width">850px</span></label>
+        <input type="range" id="param-width" min="400" max="1400" step="50" value="850" />
+      </div>
+
+      <div class="control-group">
+        <label>Left Padding (Secciones): <span id="val-leftpad">150px</span></label>
+        <input type="range" id="param-leftpad" min="50" max="300" step="10" value="150" />
+      </div>
+
+      <div class="control-group">
+        <label>Altura de Barras: <span id="val-barh">28px</span></label>
+        <input type="range" id="param-barh" min="16" max="50" step="2" value="28" />
+      </div>
+
+      <div class="control-group">
+        <label>Separación de Barras: <span id="val-gap">8px</span></label>
+        <input type="range" id="param-gap" min="2" max="25" step="1" value="8" />
+      </div>
+
+      <div class="control-group">
+        <label>Intervalo de Eje (tickInterval):</label>
+        <select id="param-tick">
+          <option value="1day">1 día</option>
+          <option value="2day" selected>2 días</option>
+          <option value="1week">1 semana</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>useMaxWidth:</label>
+        <select id="param-maxwidth">
+          <option value="false" selected>false (Respeta ancho D3)</option>
+          <option value="true">true (Escala con SVG)</option>
+        </select>
+      </div>
+
+      <button id="btn-copy-config" style="width: 100%; padding: 0.6rem; background: #38bdf8; border: none; font-weight: 700; border-radius: 6px; cursor: pointer; color: #0f172a;">
+        Copiar Configuración Óptima
+      </button>
+    </div>
+
+    <!-- Área de visualización -->
+    <div class="canvas-box">
+      <div id="gantt-output"></div>
+    </div>
+  </div>
+
+  <script>
+    import mermaid from 'mermaid';
+
+    const rawDefinition = (tickInterval: string) => `
+gantt
+    title Cronograma de Proyecto
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    tickInterval ${tickInterval}
+    section Fase 1
+    Diseño de Arquitectura :done, 2026-01-01, 2026-01-05
+    Prototipo Electrónico  :active, 2026-01-06, 2026-01-11
+    Pruebas Unitarias      : 2026-01-12, 2026-01-15
+`;
+
+    // Elementos del DOM
+    const pWidth = document.getElementById('param-width') as HTMLInputElement;
+    const pLeftPad = document.getElementById('param-leftpad') as HTMLInputElement;
+    const pBarH = document.getElementById('param-barh') as HTMLInputElement;
+    const pGap = document.getElementById('param-gap') as HTMLInputElement;
+    const pTick = document.getElementById('param-tick') as HTMLSelectElement;
+    const pMaxWidth = document.getElementById('param-maxwidth') as HTMLSelectElement;
+
+    const valWidth = document.getElementById('val-width')!;
+    const valLeftPad = document.getElementById('val-leftpad')!;
+    const valBarH = document.getElementById('val-barh')!;
+    const valGap = document.getElementById('val-gap')!;
+    const output = document.getElementById('gantt-output')!;
+
+    async function reRender() {
+      valWidth.textContent = `${pWidth.value}px`;
+      valLeftPad.textContent = `${pLeftPad.value}px`;
+      valBarH.textContent = `${pBarH.value}px`;
+      valGap.textContent = `${pGap.value}px`;
+
+      const widthPx = parseInt(pWidth.value, 10);
+      const leftPadding = parseInt(pLeftPad.value, 10);
+      const barHeight = parseInt(pBarH.value, 10);
+      const barGap = parseInt(pGap.value, 10);
+      const tick = pTick.value;
+      const useMaxWidth = pMaxWidth.value === 'true';
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        gantt: {
+          useWidth: widthPx, // Clave maestra de Mermaid para el cálculo base de D3
+          useMaxWidth: useMaxWidth,
+          leftPadding: leftPadding,
+          barHeight: barHeight,
+          barGap: barGap,
+          topPadding: 50,
+          titleTopMargin: 25,
+          gridLineStartPadding: 35,
+          fontSize: 12,
+          sectionFontSize: 14,
+          numberSectionStyles: 4,
+          axisFormat: '%d/%m'
+        }
+      });
+
+      output.innerHTML = '';
+      try {
+        const id = `gantt-render-${Date.now()}`;
+        const { svg } = await mermaid.render(id, rawDefinition(tick));
+        output.innerHTML = svg;
+
+        // Ajuste en el elemento SVG generado
+        const svgEl = output.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.width = `${widthPx}px`;
+          svgEl.style.maxWidth = '100%';
+        }
+      } catch (err) {
+        console.error('Error renderizando:', err);
+      }
+    }
+
+    [pWidth, pLeftPad, pBarH, pGap, pTick, pMaxWidth].forEach((el) => {
+      el.addEventListener('input', reRender);
+    });
+
+    document.getElementById('btn-copy-config')?.addEventListener('click', () => {
+      const configSnippet = `gantt: {
+  useWidth: ${pWidth.value},
+  useMaxWidth: ${pMaxWidth.value},
+  leftPadding: ${pLeftPad.value},
+  barHeight: ${pBarH.value},
+  barGap: ${pGap.value},
+  axisFormat: '%d/%m'
+}`;
+      navigator.clipboard.writeText(configSnippet);
+      alert('Configuración copiada al portapapeles.');
+    });
+
+    // Render inicial
+    reRender();
+  </script>
+</body>
+</html>

@@ -77,3 +77,34 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
 .main-content .mermaid-native .edgePath path {
   stroke: var(--border-color, #64748b) !important;
 }
+
+/* Estilos originales de Mermaid para todos tus diagramas */
+.main-content .mermaid-native {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 2rem 0;
+  overflow-x: auto;
+}
+
+.main-content .mermaid-native svg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* Único selector para Gantt */
+.main-content .mermaid-native.is-gantt {
+  display: block !important;
+  padding-bottom: 0.5rem;
+}
+
+.main-content .mermaid-native.is-gantt svg {
+  margin: 0 auto;
+  width: 850px !important;
+  min-width: 850px !important;
+  max-width: none !important;
+}

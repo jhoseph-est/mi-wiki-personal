@@ -108,7 +108,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
       });
     </script>
 
-<!-- MERMAID CON RE-RENDERIZADO REACTIVO -->
+<!-- MERMAID CON RE-RENDERIZADO REACTIVO Y CONTROLES -->
     <script>
       import mermaid, { type MermaidConfig } from 'mermaid';
 
@@ -172,8 +172,136 @@ const estiloDoc = frontmatter.theme || 'moderno';
         };
       }
 
-async function renderMermaid(forceReRender = false) {
-        // 1. Registrar bloques originales
+      function buildWrapperStructure(innerContent: string): HTMLElement {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mermaid-wrapper';
+        wrapper.innerHTML = `
+          <div class="mermaid-toolbar">
+            <button class="mermaid-tool-btn btn-zoom-in" title="Acercar">+</button>
+            <button class="mermaid-tool-btn btn-zoom-out" title="Alejar">-</button>
+            <button class="mermaid-tool-btn btn-zoom-reset" title="Restablecer">1:1</button>
+            <button class="mermaid-tool-btn btn-fullscreen-diagram" title="Ver en Pantalla Completa">⛶</button>
+            <button class="mermaid-tool-btn btn-download-svg" title="Descargar como SVG">SVG</button>
+            <button class="mermaid-tool-btn btn-copy-code" title="Copiar sintaxis fuente">Copiar</button>
+          </div>
+          <div class="mermaid-viewport">${innerContent}</div>
+        `;
+        return wrapper;
+      }
+
+      function attachMermaidControls(wrapper: HTMLElement, code: string) {
+        const svg = wrapper.querySelector('svg');
+        const viewport = wrapper.querySelector('.mermaid-viewport') as HTMLElement;
+        if (!svg || !viewport) return;
+
+        let currentScale = 1;
+        const scaleStep = 0.15;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let translateX = 0;
+        let translateY = 0;
+
+        function updateTransform() {
+          svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        }
+
+        // --- CONTROLES DE ZOOM ---
+        wrapper.querySelector('.btn-zoom-in')?.addEventListener('click', () => {
+          currentScale = Math.min(currentScale + scaleStep, 3);
+          updateTransform();
+        });
+
+        wrapper.querySelector('.btn-zoom-out')?.addEventListener('click', () => {
+          currentScale = Math.max(currentScale - scaleStep, 0.4);
+          updateTransform();
+        });
+
+        wrapper.querySelector('.btn-zoom-reset')?.addEventListener('click', () => {
+          currentScale = 1;
+          translateX = 0;
+          translateY = 0;
+          svg.style.transform = 'none';
+        });
+
+        // --- LÓGICA DE ARRASTRE (PAN) ---
+        viewport.addEventListener('mousedown', (e) => {
+          // Solo permitir arrastre si hay zoom
+          if (currentScale === 1 && !wrapper.classList.contains('has-custom-width') && !wrapper.classList.contains('is-gantt')) return;
+          
+          isDragging = true;
+          viewport.style.cursor = 'grabbing';
+          startX = e.clientX - translateX;
+          startY = e.clientY - translateY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          translateX = e.clientX - startX;
+          translateY = e.clientY - startY;
+          updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+          isDragging = false;
+          viewport.style.cursor = 'default';
+        });
+
+        // --- HERRAMIENTAS ADICIONALES ---
+        wrapper.querySelector('.btn-copy-code')?.addEventListener('click', async (e) => {
+          const btn = e.currentTarget as HTMLElement;
+          await navigator.clipboard.writeText(code);
+          const prevText = btn.textContent;
+          btn.textContent = '✓';
+          setTimeout(() => (btn.textContent = prevText), 1500);
+        });
+
+        wrapper.querySelector('.btn-download-svg')?.addEventListener('click', () => {
+          const svgData = new XMLSerializer().serializeToString(svg);
+          const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `diagrama-${Date.now()}.svg`;
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+
+        wrapper.querySelector('.btn-fullscreen-diagram')?.addEventListener('click', () => {
+          let modal = document.getElementById('mermaid-global-modal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'mermaid-global-modal';
+            modal.className = 'mermaid-modal-overlay';
+            modal.innerHTML = `
+              <div class="mermaid-modal-content">
+                <button class="mermaid-modal-close">Cerrar (Esc)</button>
+                <div class="mermaid-modal-body"></div>
+              </div>
+            `;
+            document.body.appendChild(modal);
+
+            modal.querySelector('.mermaid-modal-close')?.addEventListener('click', () => {
+              modal?.classList.remove('is-active');
+            });
+            window.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Escape') modal?.classList.remove('is-active');
+            });
+          }
+
+          const modalBody = modal.querySelector('.mermaid-modal-body')!;
+          // Clonamos el SVG y le quitamos la transformación de arrastre que tenía en la página
+          const clonedSvg = svg.cloneNode(true) as SVGElement;
+          clonedSvg.style.transform = 'none';
+          
+          modalBody.innerHTML = '';
+          modalBody.appendChild(clonedSvg);
+          modal.classList.add('is-active');
+        });
+      }
+
+      async function renderMermaid(forceReRender = false) {
         const codeBlocks = Array.from(
           document.querySelectorAll('pre[data-language="mermaid"], pre:has(code.language-mermaid)')
         );
@@ -197,75 +325,79 @@ async function renderMermaid(forceReRender = false) {
 
         mermaid.initialize(getMermaidConfig());
 
-        const containers = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-native'));
-        const standardNodes: { el: HTMLElement; customWidth: number | null }[] = [];
+        const containers = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-native, .mermaid-wrapper'));
+        const standardNodes: { el: HTMLElement; customWidth: number | null; rawCode: string }[] = [];
 
-        for (const [index, container] of containers.entries()) {
-          const code = container.dataset.sourceCode;
+        for (const [index, item] of containers.entries()) {
+          const code = item.dataset.sourceCode;
           if (!code) continue;
 
-          if (container.dataset.renderedMode && !forceReRender) continue;
+          if (item.dataset.renderedMode && !forceReRender) continue;
 
-          // 1. Extraer si especificaste un ancho manual (ej: %%width: 1400px%% o %%width: 900%%)
+          // Extraer directiva %%width: NNNpx%%
           const widthMatch = code.match(/%%width:\s*(\d+)(?:px)?%%/i);
           const customWidth = widthMatch ? parseInt(widthMatch[1], 10) : null;
-
-          // 2. Limpiar la directiva del código fuente
           const cleanCode = code.replace(/%%width:\s*(\d+)(?:px)?%%/i, '').trim();
           const cleanWithoutComments = cleanCode.replace(/%%[\s\S]*?%%/g, '').trim();
           const isGantt = cleanWithoutComments.startsWith('gantt');
 
           if (isGantt) {
-            // --- GANTT (motor D3 con directiva nativa) ---
-            container.className = 'mermaid-native is-gantt';
-            const renderId = `mermaid-gantt-${Date.now()}-${index}`;
             const targetWidth = customWidth || 1000;
-
             const ganttCode = `%%{init: { 'gantt': { 'useWidth': ${targetWidth} } } }%%\n` + cleanCode;
+            const renderId = `mermaid-gantt-${Date.now()}-${index}`;
 
             try {
               const { svg } = await mermaid.render(renderId, ganttCode);
-              container.innerHTML = svg;
+              const wrapper = buildWrapperStructure(svg);
+              wrapper.classList.add('is-gantt');
+              wrapper.dataset.sourceCode = code;
 
-              const svgEl = container.querySelector('svg');
+              const svgEl = wrapper.querySelector('svg');
               if (svgEl) {
                 svgEl.style.setProperty('width', `${targetWidth}px`, 'important');
                 svgEl.style.setProperty('min-width', `${targetWidth}px`, 'important');
-                svgEl.style.maxWidth = 'none';
-                svgEl.style.height = 'auto';
               }
-              container.dataset.renderedMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
+
+              item.replaceWith(wrapper);
+              attachMermaidControls(wrapper, code);
+              wrapper.dataset.renderedMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
             } catch (err) {
               console.error('Error renderizando Gantt:', err);
             }
           } else {
-            // --- FLOWCHART, SEQUENCE, CLASS, ER, ETC. ---
-            container.className = 'mermaid-native' + (customWidth ? ' has-custom-width' : '');
-            container.style.visibility = 'hidden';
-            container.textContent = cleanCode;
-            container.removeAttribute('data-processed');
+            // Diagrama normal: Lo ocultamos de forma segura para que Mermaid lo procese sin estresarse
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'mermaid-native';
+            tempDiv.style.visibility = 'hidden';
+            tempDiv.style.position = 'absolute';
+            tempDiv.textContent = cleanCode;
+            tempDiv.dataset.sourceCode = code;
 
-            standardNodes.push({ el: container, customWidth });
+            item.replaceWith(tempDiv);
+            standardNodes.push({ el: tempDiv, customWidth, rawCode: code });
           }
         }
 
-        // Ejecutar los diagramas estándar
         if (standardNodes.length > 0) {
           try {
             await mermaid.run({ nodes: standardNodes.map(n => n.el) });
             const currentMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
 
-            standardNodes.forEach(({ el, customWidth }) => {
+            standardNodes.forEach(({ el, customWidth, rawCode }) => {
               const svgEl = el.querySelector('svg');
               if (svgEl && customWidth) {
-                // Si definiste un ancho manual, se lo aplica directamente al SVG
+                // SOLO tocamos el width si tú pusiste la directiva manual. Si no, Mermaid manda.
                 svgEl.style.setProperty('width', `${customWidth}px`, 'important');
                 svgEl.style.setProperty('min-width', `${customWidth}px`, 'important');
-                svgEl.style.maxWidth = 'none';
-                svgEl.style.height = 'auto';
               }
-              el.style.visibility = 'visible';
-              el.dataset.renderedMode = currentMode;
+
+              const wrapper = buildWrapperStructure(svgEl ? svgEl.outerHTML : '');
+              wrapper.dataset.sourceCode = rawCode;
+              if (customWidth) wrapper.classList.add('has-custom-width');
+
+              el.replaceWith(wrapper);
+              attachMermaidControls(wrapper, rawCode);
+              wrapper.dataset.renderedMode = currentMode;
             });
           } catch (error) {
             console.error('Error en mermaid.run():', error);
@@ -273,17 +405,13 @@ async function renderMermaid(forceReRender = false) {
         }
       }
 
-      // Escuchar carga de página
       document.addEventListener('astro:page-load', () => renderMermaid(false));
-      // En src/layouts/Base.astro
-      let themeTimeout: ReturnType<typeof setTimeout>;
 
-      // Observador de mutación para re-renderizar inmediatamente al cambiar el tema (claro/oscuro)
+      let themeTimeout: ReturnType<typeof setTimeout>;
       const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (mutation.type === 'attributes' && mutation.attributeName === 'data-modo') {
             clearTimeout(themeTimeout);
-            // Espera 100ms para asegurar que el CSS de la página ya cambió antes de pintar Mermaid
             themeTimeout = setTimeout(() => {
               renderMermaid(true);
             }, 100);

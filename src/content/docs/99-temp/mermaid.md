@@ -234,15 +234,25 @@ USUARIO ||--o{ PEDIDO : "realiza"
 Cronogramas.
 
 ```mermaid
+%%width: 1300%%
 gantt
-    title Cronograma de Proyecto
+    title Plan Anual Extenso
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
-    tickInterval 2day
     section Fase 1
-    Diseño de Arquitectura :done, 2026-01-01, 2026-01-05
-    Prototipo Electrónico  :active, 2026-01-06, 2026-01-11
-    Pruebas Unitarias      : 2026-01-12, 2026-01-15
+    Tarea 1 : 2026-01-01, 30d
+```
+
+
+```mermaid
+%%width: 600%%
+gantt
+    title Sprint Corto
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    tickInterval 1day
+    section Mini
+    Tarea : 2026-01-01, 2026-01-04
 ```
 
 ---

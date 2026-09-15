@@ -96,18 +96,6 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
   flex-shrink: 0;
 }
 
-/* Único selector para Gantt */
-.main-content .mermaid-native.is-gantt {
-  display: block !important;
-  padding-bottom: 0.5rem;
-}
-
-.main-content .mermaid-native.is-gantt svg {
-  margin: 0 auto;
-  width: 850px !important;
-  min-width: 850px !important;
-  max-width: none !important;
-}
 /* Único bloque para Gantt en src/styles/mermaid.css */
 .main-content .mermaid-native.is-gantt {
   display: block !important;
@@ -119,8 +107,6 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
 .main-content .mermaid-native.is-gantt svg {
   display: block;
   margin: 0 auto;
-  width: 950px !important;
-  min-width: 950px !important;
   max-width: none !important;
   height: auto !important;
 }
@@ -131,3 +117,4 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
   font-weight: 600 !important;
   font-size: 11px !important;
 }
+

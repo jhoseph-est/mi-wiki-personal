@@ -200,6 +200,7 @@ erDiagram
 ## 6. Diagrama de Gantt
 
 ```mermaid
+%%width: 1500%%
 gantt
     title Plan Maestro de Infraestructura y Lanzamiento
     dateFormat YYYY-MM-DD
@@ -219,7 +220,51 @@ gantt
     Despliegue a Producción        :crit,    deploy,    after test_load, 2d
 
 ```
+```mermaid
+%%width: 3000%%
+gantt
+    title Plan Maestro Anual: Ecosistema IoT, Plataforma Web y Lanzamiento Global (2026)
+    dateFormat YYYY-MM-DD
+    axisFormat %b %Y
+    tickInterval 1month
 
+    section 1. Investigación y Arquitectura
+    Auditoría de Requerimientos y Normativas   :done,    req_01,  2026-01-01, 2026-01-31
+    Modelado de Base de Datos y Schemas       :done,    db_arch, after req_01, 30d
+    Diseño Conceptual de Hardware (PCB v1)    :done,    hw_des,  2026-01-15, 2026-03-01
+    Aprobación de Arquitectura de Seguridad   :crit, done, sec_ap, after db_arch, 15d
+
+    section 2. Backend & Core IoT
+    Infraestructura NestJS & Microservicios   :done,    be_core, after sec_ap, 45d
+    Broker MQTT & Protocolos de Telemetría    :done,    mqtt_sub, 2026-03-15, 2026-05-15
+    Pipeline de Procesamiento de Flujos       :active,  data_pipe, after mqtt_sub, 60d
+    Firma Criptográfica en Dispositivos ESP32 :crit, active, crypt_iot, after hw_des, 90d
+
+    section 3. Hardware & Firmware
+    Fabricación de Prototipos Físicos         :done,    pcb_fab, 2026-03-01, 2026-04-30
+    Desarrollo Firmware C++ en FreeRTOS       :active,  fw_dev,  after pcb_fab, 75d
+    Calibración de Sensores y Actuadores      :         sens_cal, after fw_dev, 40d
+    Homologación y Certificación de Hardware  :crit,    hw_cert, after sens_cal, 45d
+
+    section 4. Plataformas Web (Astro & Next.js)
+    Frontend Público en Astro (SEO & Docs)    :done,    web_ast, 2026-02-01, 2026-04-15
+    Dashboard de Administración en Next.js    :active,  web_next, after be_core, 90d
+    Panel de Control y Telemetría en Vivo     :         dash_iot, after data_pipe, 60d
+    Integración de Facturación e Inventario   :         inv_mod, after web_next, 45d
+
+    section 5. QA, Seguridad & Carga
+    Pruebas Unitarias y Cobertura E2E         :active,  qa_unit, 2026-06-01, 2026-08-15
+    Penetration Testing Externo               :crit,    sec_pen, after dash_iot, 30d
+    Pruebas de Estrés MQTT (100k Conexiones)  :crit,    stress_t, after data_pipe, 25d
+    Corrección de Vulnerabilidades y Bugs     :         fix_bug, after sec_pen, 30d
+
+    section 6. Despliegue y Operaciones
+    Despliegue Staging en Clúster Kubernetes  :         k8s_stg, 2026-09-01, 2026-10-15
+    Migración de Datos y Ensayo de Fallos     :crit,    mig_data, after k8s_stg, 20d
+    Congelamiento de Código (Code Freeze)     :milestone, m_freeze, 2026-11-05, 0d
+    Lanzamiento a Producción Mundial          :milestone, crit, m_prod, 2026-12-01, 0d
+    Soporte Post-Lanzamiento y Monitoreo      :         post_rel, 2026-12-01, 2026-12-31
+```
 ---
 
 ## 7. Diagrama de Flujo Git (GitGraph)

@@ -233,11 +233,12 @@ USUARIO ||--o{ PEDIDO : "realiza"
 
 Cronogramas.
 
-```mermaid
-gantt
-title Proyecto
-section Fase 1
-Tarea 1 :done, 2024-01-01, 3d
+```gantt
+[
+  { "id": "1", "name": "Diseño de Arquitectura", "start": "2026-01-01", "end": "2026-01-05", "progress": 100 },
+  { "id": "2", "name": "Prototipo Electrónico", "start": "2026-01-06", "end": "2026-01-11", "progress": 50, "dependencies": "1" },
+  { "id": "3", "name": "Pruebas Unitarias", "start": "2026-01-12", "end": "2026-01-15", "progress": 0, "dependencies": "2" }
+]
 ```
 
 ---

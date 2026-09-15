@@ -1,0 +1,236 @@
+---
+// src/components/GanttChart.astro
+export interface GanttTask {
+  id?: string;
+  name: string;
+  start: string; // Formato YYYY-MM-DD
+  end: string;   // Formato YYYY-MM-DD
+  progress?: number;
+  status?: 'done' | 'active' | 'todo';
+}
+
+interface Props {
+  title?: string;
+  tasks: GanttTask[];
+}
+
+const { title, tasks = [] } = Astro.props;
+
+// 1. Calcular el rango de fechas mínimo y máximo
+if (tasks.length === 0) return;
+
+const startDates = tasks.map(t => new Date(t.start).getTime());
+const endDates = tasks.map(t => new Date(t.end).getTime());
+
+const minTime = Math.min(...startDates);
+const maxTime = Math.max(...endDates);
+
+const oneDay = 24 * 60 * 60 * 1000;
+const totalDays = Math.max(1, Math.round((maxTime - minTime) / oneDay) + 1);
+
+// 2. Generar lista de días para la cabecera
+const daysHeader = Array.from({ length: totalDays }, (_, i) => {
+  const d = new Date(minTime + i * oneDay);
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dia}/${mes}`;
+});
+
+// 3. Mapear cada tarea a columnas de CSS Grid
+const computedTasks = tasks.map(t => {
+  const startOffset = Math.round((new Date(t.start).getTime() - minTime) / oneDay);
+  const duration = Math.max(1, Math.round((new Date(t.end).getTime() - new Date(t.start).getTime()) / oneDay) + 1);
+  return {
+    ...t,
+    startCol: startOffset + 1,
+    spanCols: duration
+  };
+});
+---
+
+<div class="gantt-native-card">
+  {title && <h3 class="gantt-title">{title}</h3>}
+  
+  <div class="gantt-scroll-area">
+    <div class="gantt-grid" style={`--total-days: ${totalDays};`}>
+      
+      <!-- Cabecera de Días -->
+      <div class="gantt-header-row">
+        <div class="gantt-sidebar-spacer">Fases / Tareas</div>
+        <div class="gantt-days-track">
+          {daysHeader.map(day => (
+            <div class="gantt-day-tick">
+              <span>{day}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Filas de Tareas -->
+      <div class="gantt-body">
+        {computedTasks.map((task) => (
+          <div class="gantt-row">
+            <div class="gantt-row-label" title={task.name}>
+              {task.name}
+            </div>
+            <div class="gantt-row-track">
+              <!-- Barra de tarea -->
+              <div 
+                class={`gantt-bar ${task.status || (task.progress === 100 ? 'done' : 'active')}`}
+                style={`grid-column: ${task.startCol} / span ${task.spanCols};`}
+              >
+                <div class="gantt-bar-content">
+                  <span class="gantt-bar-title">{task.name}</span>
+                  {task.progress !== undefined && <span class="gantt-bar-pct">{task.progress}%</span>}
+                </div>
+                {task.progress !== undefined && (
+                  <div class="gantt-progress-fill" style={`width: ${task.progress}%;`}></div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .gantt-native-card {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+  }
+  html[data-modo="oscuro"] .gantt-native-card {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .gantt-title {
+    margin: 0 0 1.2rem 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    font-weight: 700;
+  }
+
+  .gantt-scroll-area {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .gantt-grid {
+    min-width: 650px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Cabecera */
+  .gantt-header-row {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.6rem;
+  }
+  .gantt-sidebar-spacer {
+    width: 180px;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-color);
+    opacity: 0.6;
+  }
+  .gantt-days-track {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(var(--total-days), 1fr);
+    text-align: center;
+  }
+  .gantt-day-tick {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0.7;
+    border-left: 1px dashed rgba(150, 150, 150, 0.15);
+  }
+
+  /* Filas */
+  .gantt-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .gantt-row {
+    display: flex;
+    align-items: center;
+    height: 38px;
+  }
+  .gantt-row-label {
+    width: 180px;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1rem;
+  }
+  .gantt-row-track {
+    flex-grow: 1;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(var(--total-days), 1fr);
+    align-items: center;
+    position: relative;
+    background: rgba(150, 150, 150, 0.03);
+    border-radius: 6px;
+  }
+
+  /* Barras de Gantt */
+  .gantt-bar {
+    position: relative;
+    height: 30px;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    background: #6366f1;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease;
+  }
+  .gantt-bar:hover {
+    transform: translateY(-1px);
+  }
+  .gantt-bar.done {
+    background: #3b82f6;
+  }
+  .gantt-bar.active {
+    background: #8b5cf6;
+  }
+
+  .gantt-bar-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .gantt-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+</style>

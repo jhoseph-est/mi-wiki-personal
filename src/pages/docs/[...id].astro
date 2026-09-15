@@ -82,6 +82,10 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
             Grafo
           </button>
           <GraphModal />
+          <!-- NUEVO BOTÓN PARA EXPORTAR PDF -->
+          <button id="btn-export-pdf" class="action-btn" title="Descargar como PDF">
+            PDF
+          </button>
         </>
       )}
       <button id="btn-fullscreen" class="action-btn" title="Pantalla Completa">
@@ -191,5 +195,15 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         (btnPresent as HTMLAnchorElement).click();
       }
     });
+  });
+  document.addEventListener('astro:page-load', () => {
+    // ... tu código existente de fullscreen y atajos ...
+
+    const btnPdf = document.getElementById('btn-export-pdf');
+    if (btnPdf) {
+      btnPdf.addEventListener('click', () => {
+        window.print();
+      });
+    }
   });
 </script>

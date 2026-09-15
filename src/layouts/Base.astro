@@ -108,7 +108,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
       });
     </script>
 
-    <!-- MERMAID -->
+<!-- MERMAID CON RE-RENDERIZADO REACTIVO -->
     <script>
       import mermaid, { type MermaidConfig } from 'mermaid';
 
@@ -117,18 +117,36 @@ const estiloDoc = frontmatter.theme || 'moderno';
         return {
           startOnLoad: false,
           look: 'classic',
-          theme: 'base',
+          theme: isDark ? 'dark' : 'default',
           themeVariables: {
             background: 'transparent',
             fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             fontSize: '14px',
-            primaryColor: isDark ? '#0f172a' : '#f8fafc',
+            primaryColor: isDark ? '#1e293b' : '#f1f5f9',
             primaryTextColor: isDark ? '#f8fafc' : '#0f172a',
             primaryBorderColor: isDark ? '#38bdf8' : '#6366f1',
             lineColor: isDark ? '#94a3b8' : '#64748b',
             textColor: isDark ? '#f8fafc' : '#0f172a',
-            clusterBkg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-            clusterBorder: isDark ? '#334155' : '#cbd5e1'
+            actorTextColor: isDark ? '#f8fafc' : '#0f172a',
+            actorLineColor: isDark ? '#38bdf8' : '#6366f1',
+            signalColor: isDark ? '#f8fafc' : '#0f172a',
+            signalTextColor: isDark ? '#f8fafc' : '#0f172a',
+            labelBoxBkgColor: isDark ? '#1e293b' : '#f8fafc',
+            labelBoxBorderColor: isDark ? '#38bdf8' : '#6366f1',
+            labelTextColor: isDark ? '#f8fafc' : '#0f172a',
+            loopTextColor: isDark ? '#f8fafc' : '#0f172a',
+            noteBorderColor: isDark ? '#f59e0b' : '#d97706',
+            noteBkgColor: isDark ? '#78350f' : '#fef3c7',
+            noteTextColor: isDark ? '#fef3c7' : '#78350f',
+            taskBorderColor: isDark ? '#38bdf8' : '#6366f1',
+            taskBkgColor: isDark ? '#1e293b' : '#e2e8f0',
+            taskTextColor: isDark ? '#f8fafc' : '#0f172a',
+            taskTextOutsideColor: isDark ? '#f8fafc' : '#0f172a',
+            activeTaskBorderColor: isDark ? '#818cf8' : '#4f46e5',
+            activeTaskBkgColor: isDark ? '#312e81' : '#c7d2fe',
+            gridColor: isDark ? '#334155' : '#cbd5e1',
+            sectionBkgColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+            altSectionBkgColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
           },
           flowchart: {
             htmlLabels: true,
@@ -137,11 +155,10 @@ const estiloDoc = frontmatter.theme || 'moderno';
             rankSpacing: 35,
             curve: 'linear'
           },
-          // Configuración que comprobamos en el laboratorio:
           gantt: {
-            useWidth: 850,
+            useWidth: 950,
             useMaxWidth: false,
-            leftPadding: 150,
+            leftPadding: 160,
             barHeight: 28,
             barGap: 8,
             topPadding: 50,
@@ -151,88 +168,111 @@ const estiloDoc = frontmatter.theme || 'moderno';
             sectionFontSize: 14,
             numberSectionStyles: 4,
             axisFormat: '%d/%m'
-          },
-          themeCSS: `
-            .node rect, .node polygon, .node circle, .cluster rect { filter: none; stroke-width: 1.5px; }
-            .edgePath path { fill: none; }
-          `
+          }
         };
       }
 
-      async function renderMermaid() {
-        const blocks = Array.from(
+      async function renderMermaid(forceReRender = false) {
+        // 1. Preparar bloques de código iniciales
+        const codeBlocks = Array.from(
           document.querySelectorAll('pre[data-language="mermaid"], pre:has(code.language-mermaid)')
         );
 
-        if (!blocks.length) return;
-
-        mermaid.initialize(getMermaidConfig());
-
-        const standardNodes: HTMLElement[] = [];
-
-        for (const [index, preNode] of blocks.entries()) {
+        codeBlocks.forEach((preNode) => {
           const pre = preNode as HTMLElement;
-          if (pre.dataset.mermaidProcessed === 'true') continue;
+          if (pre.dataset.mermaidRegistered === 'true') return;
 
           const codeEl = pre.querySelector('code');
-          const code = (codeEl?.textContent || pre.textContent || '').trim();
+          const rawCode = (codeEl?.textContent || pre.textContent || '').trim();
+          if (!rawCode) return;
+
+          const container = document.createElement('div');
+          container.className = 'mermaid-native';
+          container.dataset.sourceCode = rawCode;
+
+          pre.after(container);
+          pre.style.display = 'none';
+          pre.dataset.mermaidRegistered = 'true';
+        });
+
+        // 2. Inicializar Mermaid con el modo de color actual
+        mermaid.initialize(getMermaidConfig());
+
+        // 3. Renderizar cada contenedor
+        const containers = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-native'));
+        const standardNodes: HTMLElement[] = [];
+
+        for (const [index, container] of containers.entries()) {
+          const code = container.dataset.sourceCode;
           if (!code) continue;
+
+          // Si ya está renderizado y no es un cambio forzado de tema, saltar
+          if (container.dataset.renderedMode && !forceReRender) continue;
 
           const cleanCode = code.replace(/%%[\s\S]*?%%/g, '').trim();
           const isGantt = cleanCode.startsWith('gantt');
 
           if (isGantt) {
-            // --- TRATAMIENTO EXCLUSIVO PARA GANTT ---
+            container.className = 'mermaid-native is-gantt';
+            container.innerHTML = '';
             const renderId = `mermaid-gantt-${Date.now()}-${index}`;
             try {
               const { svg } = await mermaid.render(renderId, code);
-              const container = document.createElement('div');
-              container.className = 'mermaid-native is-gantt';
               container.innerHTML = svg;
 
               const svgEl = container.querySelector('svg');
               if (svgEl) {
-                svgEl.style.width = '850px';
-                svgEl.style.minWidth = '850px';
+                svgEl.style.width = '950px';
+                svgEl.style.minWidth = '950px';
                 svgEl.style.maxWidth = 'none';
                 svgEl.style.height = 'auto';
               }
-
-              pre.after(container);
-              pre.dataset.mermaidProcessed = 'true';
-              pre.style.display = 'none';
+              container.dataset.renderedMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
             } catch (err) {
-              console.error('Error al renderizar Gantt con Mermaid:', err);
+              console.error('Error renderizando Gantt:', err);
             }
           } else {
-            // --- TODOS LOS DEMÁS DIAGRAMAS (MÉTODO NATIVO ORIGINAL) ---
-            const container = document.createElement('div');
             container.className = 'mermaid-native';
             container.textContent = code;
-
-            pre.after(container);
-            pre.dataset.mermaidProcessed = 'true';
-            pre.style.display = 'none';
-
+            container.removeAttribute('data-processed');
             standardNodes.push(container);
           }
         }
 
-        // Ejecuta el flujo habitual solo sobre los diagramas normales
         if (standardNodes.length > 0) {
           try {
             await mermaid.run({ nodes: standardNodes });
+            const currentMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
             standardNodes.forEach((node) => {
-              node.dataset.mermaidRendered = 'true';
+              node.dataset.renderedMode = currentMode;
             });
           } catch (error) {
-            console.error('Error al ejecutar mermaid.run():', error);
+            console.error('Error en mermaid.run():', error);
           }
         }
       }
-      
-      document.addEventListener('astro:page-load', () => {
-        renderMermaid();
+
+      // Escuchar carga de página
+      document.addEventListener('astro:page-load', () => renderMermaid(false));
+      // En src/layouts/Base.astro
+      let themeTimeout: ReturnType<typeof setTimeout>;
+
+      // Observador de mutación para re-renderizar inmediatamente al cambiar el tema (claro/oscuro)
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-modo') {
+            clearTimeout(themeTimeout);
+            // Espera 100ms para asegurar que el CSS de la página ya cambió antes de pintar Mermaid
+            themeTimeout = setTimeout(() => {
+              renderMermaid(true);
+            }, 100);
+          }
+        }
+      });
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-modo']
       });
     </script>
   </body>

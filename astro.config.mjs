@@ -19,11 +19,9 @@ export default defineConfig({
       ]
     },
     build: {
-      // Elevamos el límite a 1500 kB para dar margen a librerías de diagramas y físicas
-      chunkSizeWarningLimit: 1500,
+      chunkSizeWarningLimit: 2500,
       rollupOptions: {
         output: {
-          // Separa las librerías pesadas en sus propios chunks independientes
           manualChunks(id) {
             if (id.includes('node_modules/mermaid')) {
               return 'vendor-mermaid';

@@ -231,3 +231,73 @@ body {
     padding: 3vh 5vw !important;
   }
 }
+
+/* ==========================================================
+   EXPORTACIÓN PERFECTA A PDF (@media print)
+   ========================================================== */
+@media print {
+  /* Ocultar interfaz del sistema que no pertenece al apunte */
+  .main-header,
+  .sticky-panel,
+  .top-bar,
+  .doc-nav,
+  .nav-divider,
+  .copy-code-btn,
+  #graph-modal,
+  .main-content::after {
+    display: none !important;
+  }
+
+  /* Resetear dimensiones de body y viewport para flujo de página continuo */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 12pt !important;
+  }
+
+  .layout-grid {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .content-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Evitar cortes feos en tablas, bloques de código y diagramas */
+  pre, table, .mermaid-native, .gantt-native-card, blockquote {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 1.5rem 0 !important;
+  }
+
+  /* Asegurar contraste legible en código */
+  .main-content pre {
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+  }
+
+  /* Ajustar diagramas Mermaid al ancho imprimible */
+  .mermaid-native svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .mermaid-native.is-gantt svg {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}

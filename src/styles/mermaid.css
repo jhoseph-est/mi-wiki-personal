@@ -108,3 +108,26 @@ html[data-modo="oscuro"] .main-content .mermaid-native foreignObject p {
   min-width: 850px !important;
   max-width: none !important;
 }
+/* Único bloque para Gantt en src/styles/mermaid.css */
+.main-content .mermaid-native.is-gantt {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  padding-bottom: 0.75rem;
+}
+
+.main-content .mermaid-native.is-gantt svg {
+  display: block;
+  margin: 0 auto;
+  width: 950px !important;
+  min-width: 950px !important;
+  max-width: none !important;
+  height: auto !important;
+}
+
+.main-content .mermaid-native .taskTextOutsideRight,
+.main-content .mermaid-native .taskTextOutsideLeft {
+  fill: var(--text-color) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}

@@ -1,6 +1,7 @@
 ---
 title: "mermaid"
 tags: ["algo"]
+slides: true
 ---
 
 # 🧭 1. Dirección del flujo (la base de todo)

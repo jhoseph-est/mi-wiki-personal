@@ -145,17 +145,17 @@ $$
 5. Distributividad
 
 $$
-\begin{aligned}
+\begin{align}
 p \land (q \lor r) &\equiv (p \land q) \lor (p \land r) \\
 p \lor (q \land r) &\equiv (p \lor q) \land (p \lor r)
-\end{aligned}
+\end{align}
 $$
 
 6. Conmutatividad
 
 $$
-\begin{align}
+\begin{aligned}
 p \land ( q \lor r ) &\equiv ( p \land q ) \lor r \\
 p \lor ( q \land r ) &\equiv ( p \lor q ) \land r
-\end{align}
+\end{aligned}
 $$

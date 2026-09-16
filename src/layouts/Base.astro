@@ -52,6 +52,30 @@ const estiloDoc = frontmatter.theme || 'moderno';
         });
       })();
     </script>
+<!-- CONFIGURACIÓN GLOBAL DE MATHJAX -->
+    <script is:inline>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        options: {
+          // No ignorar tablas ni celdas
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          ignoreHtmlClass: 'tex2jax_ignore',
+          processHtmlClass: 'tex2jax_process'
+        },
+        svg: {
+          fontCache: 'global'
+        },
+        startup: {
+          typeset: false // Lo llamamos nosotros manualmente para controlar Astro ClientRouter
+        }
+      };
+    </script>
+    <script is:inline id="MathJax-script" async src="/mathjax/tex-mml-chtml.js"></script>
   </head>
 
   <body>
@@ -75,7 +99,14 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
     <!-- BOTÓN COPIAR CÓDIGO -->
     <script>
+      import { renderMermaid } from '../utils/mermaidViewer';
+
       document.addEventListener('astro:page-load', () => {
+        renderMermaid(false);
+        // Re-procesar fórmulas matemáticas con MathJax al navegar
+        if ((window as any).MathJax && (window as any).MathJax.typesetPromise) {
+          (window as any).MathJax.typesetPromise();
+        }
         document.querySelectorAll('.main-content pre').forEach((preNode) => {
           const pre = preNode as HTMLElement;
           const isMermaid = pre.getAttribute('data-language') === 'mermaid' || !!pre.querySelector('.language-mermaid');

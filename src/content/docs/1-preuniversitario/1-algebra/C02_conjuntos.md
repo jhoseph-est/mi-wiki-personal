@@ -1,6 +1,6 @@
 ---
 title: C02_conjuntos
-
+slides: true
 ---
 
 ## conceptos

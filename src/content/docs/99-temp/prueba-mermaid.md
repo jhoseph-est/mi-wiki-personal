@@ -3,6 +3,7 @@ title: Batería de Pruebas Extrema - Mermaid
 tags: ["sistema", "mermaid", "tutorial"]
 orden: 1
 theme: moderno
+slides: true
 ---
 
 # 🧪 Suite de Pruebas y Límites: Mermaid

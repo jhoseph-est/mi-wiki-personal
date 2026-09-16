@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import remarkMath from 'remark-math';
-import rehypeMathjax from 'rehype-mathjax';
+import rehypeKatex from 'rehype-katex';
 import mdx from '@astrojs/mdx';
 import { remarkAlert } from 'remark-github-blockquote-alert';
 import remarkWikiLink from 'remark-wiki-link';
@@ -15,39 +15,44 @@ export default defineConfig({
         'reveal.js/plugin/markdown',
         'reveal.js/plugin/highlight',
         'reveal.js/plugin/math',
-        'reveal.js/plugin/notes'
-      ]
+        'reveal.js/plugin/notes',
+      ],
     },
     build: {
       chunkSizeWarningLimit: 3500,
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('node_modules/mermaid')) {
-              return 'vendor-mermaid';
-            }
-            if (id.includes('node_modules/force-graph')) {
-              return 'vendor-force-graph';
-            }
-            if (id.includes('node_modules/reveal.js')) {
-              return 'vendor-reveal';
-            }
-          }
-        }
-      }
-    }
+            if (id.includes('node_modules/mermaid')) return 'vendor-mermaid';
+            if (id.includes('node_modules/force-graph')) return 'vendor-force-graph';
+            if (id.includes('node_modules/reveal.js')) return 'vendor-reveal';
+          },
+        },
+      },
+    },
   },
   markdown: {
-    ...unified({
+    processor: unified({
       remarkPlugins: [
-        remarkMath, 
+        remarkMath,
         remarkAlert,
-        [remarkWikiLink, { 
-          pathFormat: 'absolute',
-          hrefTemplate: (permalink) => `/docs/${permalink}`
-        }]
+        [
+          remarkWikiLink,
+          {
+            pathFormat: 'absolute',
+            hrefTemplate: (permalink) => `/docs/${permalink}`,
+          },
+        ],
       ],
-      rehypePlugins: [rehypeMathjax]
+      rehypePlugins: [
+        [
+          rehypeKatex,
+          {
+            // Evita que KaTeX lance advertencias por tildes dentro del modo matemático
+            strict: false,
+          },
+        ],
+      ],
     }),
     shikiConfig: {
       themes: {
@@ -56,7 +61,10 @@ export default defineConfig({
       },
       defaultColor: false,
       wrap: true,
-    }
+    },
   },
-  integrations: [mdx()],
+  integrations: [
+    // MDX ahora hereda automáticamente el processor configurado arriba
+    mdx(),
+  ],
 });

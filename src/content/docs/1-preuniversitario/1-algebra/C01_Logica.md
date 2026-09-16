@@ -1,6 +1,6 @@
 ---
 title: C01_Logica
-
+slides: true
 ---
 
 ## Lógica y lógica proposicional
@@ -145,17 +145,17 @@ $$
 5. Distributividad
 
 $$
-    \begin{align}
-        p \land ( q \lor r ) &\equiv ( p \land q ) \lor ( p \land r ) \\
-	    p \lor ( q \land r ) &\equiv ( p \lor q ) \land ( p \lor r )
-	\end{align}
+\begin{aligned}
+p \land (q \lor r) &\equiv (p \land q) \lor (p \land r) \\
+p \lor (q \land r) &\equiv (p \lor q) \land (p \lor r)
+\end{aligned}
 $$
 
 6. Conmutatividad
 
 $$
-	\begin{align}
-		p \land ( q \lor r ) &\equiv ( p \land q ) \lor r \\
-		p \lor ( q \land r ) &\equiv ( p \lor q ) \land r
-	\end{align}
+\begin{align}
+p \land ( q \lor r ) &\equiv ( p \land q ) \lor r \\
+p \lor ( q \land r ) &\equiv ( p \lor q ) \land r
+\end{align}
 $$

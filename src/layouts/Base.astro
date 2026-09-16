@@ -265,6 +265,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
           URL.revokeObjectURL(url);
         });
 
+        // BOTÓN PANTALLA COMPLETA (CUANDO ESTÁ EN GRANDE)
         wrapper.querySelector('.btn-fullscreen-diagram')?.addEventListener('click', () => {
           let modal = document.getElementById('mermaid-global-modal');
           if (!modal) {
@@ -290,11 +291,18 @@ const estiloDoc = frontmatter.theme || 'moderno';
           const modalBody = modal.querySelector('.mermaid-modal-body') as HTMLElement;
           const clonedSvg = svg.cloneNode(true) as SVGElement;
           
-          // Limpiar estilos forzados para que en el modal encaje con su tamaño natural
+          // Limpiar estilos forzados del tamaño pequeño
           clonedSvg.style.transform = 'none';
-          clonedSvg.style.width = 'auto';
-          clonedSvg.style.maxWidth = '100%';
-          clonedSvg.style.height = 'auto';
+          clonedSvg.removeAttribute('width');
+          clonedSvg.removeAttribute('height');
+          clonedSvg.style.removeProperty('width');
+          clonedSvg.style.removeProperty('height');
+          clonedSvg.style.removeProperty('max-width');
+          clonedSvg.style.removeProperty('min-width');
+
+          // Asignar al modal el layout que definiste en el diagrama (o fit por defecto)
+          const diagramLayout = wrapper.dataset.layout || 'fit';
+          modalBody.className = `mermaid-modal-body modal-layout-${diagramLayout}`;
 
           modalBody.innerHTML = '';
           modalBody.appendChild(clonedSvg);
@@ -330,8 +338,10 @@ const estiloDoc = frontmatter.theme || 'moderno';
         
         interface NodeItem {
           el: HTMLElement;
+          layout: 'fit' | 'pan-x' | 'pan-y';
           width: string | null;
           maxWidth: string | null;
+          height: string | null;
           rawCode: string;
         }
         const standardNodes: NodeItem[] = [];
@@ -342,28 +352,34 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
           if (item.dataset.renderedMode && !forceReRender) continue;
 
-          // Parser seguro de directivas %%width: ...%% y %%max-width: ...%%
+          // Detectar directivas
+          const layoutMatch = code.match(/%%layout:\s*(fit|pan-x|pan-y)\s*%%/i);
           const widthMatch = code.match(/%%width:\s*(\d+(?:px|%)?)\s*%%/i);
           const maxWidthMatch = code.match(/%%max-width:\s*(\d+(?:px|%)?)\s*%%/i);
+          const heightMatch = code.match(/%%height:\s*(\d+(?:px|%)?)\s*%%/i);
 
           const parseUnit = (val: string | null) => {
             if (!val) return null;
             return val.endsWith('%') || val.endsWith('px') ? val : `${val}px`;
           };
 
+          const parsedLayout = (layoutMatch ? layoutMatch[1].toLowerCase() : 'fit') as 'fit' | 'pan-x' | 'pan-y';
           const parsedWidth = parseUnit(widthMatch ? widthMatch[1] : null);
           const parsedMaxWidth = parseUnit(maxWidthMatch ? maxWidthMatch[1] : null);
+          const parsedHeight = parseUnit(heightMatch ? heightMatch[1] : null);
 
-          // Limpiar directivas del código a renderizar
+          // Limpiar directivas del código Mermaid
           const cleanCode = code
+            .replace(/%%layout:.*?%%/gi, '')
             .replace(/%%width:.*?%%/gi, '')
             .replace(/%%max-width:.*?%%/gi, '')
+            .replace(/%%height:.*?%%/gi, '')
             .trim();
 
           const isGantt = cleanCode.replace(/%%[\s\S]*?%%/g, '').trim().startsWith('gantt');
 
           if (isGantt) {
-            const numericWidth = widthMatch ? parseInt(widthMatch[1], 10) : 1000;
+            const numericWidth = widthMatch ? parseInt(widthMatch[1], 10) : 1200;
             const ganttCode = `%%{init: { 'gantt': { 'useWidth': ${numericWidth} } } }%%\n` + cleanCode;
             const renderId = `mermaid-gantt-${Date.now()}-${index}`;
 
@@ -372,6 +388,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
               const wrapper = buildWrapperStructure(svg);
               wrapper.classList.add('is-gantt');
               wrapper.dataset.sourceCode = code;
+              wrapper.dataset.layout = parsedLayout;
 
               const svgEl = wrapper.querySelector('svg') as SVGElement | null;
               if (svgEl) {
@@ -392,7 +409,14 @@ const estiloDoc = frontmatter.theme || 'moderno';
             tempDiv.dataset.sourceCode = code;
 
             item.replaceWith(tempDiv);
-            standardNodes.push({ el: tempDiv, width: parsedWidth, maxWidth: parsedMaxWidth, rawCode: code });
+            standardNodes.push({ 
+              el: tempDiv, 
+              layout: parsedLayout, 
+              width: parsedWidth, 
+              maxWidth: parsedMaxWidth, 
+              height: parsedHeight, 
+              rawCode: code 
+            });
           }
         }
 
@@ -401,16 +425,29 @@ const estiloDoc = frontmatter.theme || 'moderno';
             await mermaid.run({ nodes: standardNodes.map((n) => n.el) });
             const currentMode = document.documentElement.getAttribute('data-modo') || 'oscuro';
 
-            standardNodes.forEach(({ el, width, maxWidth, rawCode }) => {
+            standardNodes.forEach(({ el, layout, width, maxWidth, height, rawCode }) => {
               const svgEl = el.querySelector('svg') as SVGElement | null;
+              
+              // Aplicar tamaño personalizado SOLO al estado pequeño
               if (svgEl) {
-                if (width) svgEl.style.setProperty('width', width, 'important');
-                if (maxWidth) svgEl.style.setProperty('max-width', maxWidth, 'important');
+                if (width) {
+                  svgEl.style.setProperty('width', width, 'important');
+                }
+                if (maxWidth) {
+                  svgEl.style.setProperty('max-width', maxWidth, 'important');
+                }
+                if (height) {
+                  svgEl.style.setProperty('max-height', height, 'important');
+                }
               }
 
               const wrapper = buildWrapperStructure(svgEl ? svgEl.outerHTML : '');
               wrapper.dataset.sourceCode = rawCode;
-              if (width || maxWidth) wrapper.classList.add('has-custom-width');
+              wrapper.dataset.layout = layout; // Guardamos el layout para el modal
+
+              if (width || maxWidth || height) {
+                wrapper.classList.add('has-custom-width');
+              }
 
               el.replaceWith(wrapper);
               attachMermaidControls(wrapper, rawCode);

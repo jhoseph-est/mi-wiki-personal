@@ -9,6 +9,7 @@ theme: moderno
 ## 1. Flowchart Complejo con Subgraphs
 
 ```mermaid
+%%layout: pan-y%%
 flowchart TB
     Start([Inicio del Proceso]) --> Step1[Paso Rectangular]
     Step1 --> Decision{"¿Tiene permisos?"}
@@ -48,6 +49,7 @@ flowchart TB
 ## 2. Diagrama de Secuencia con Agrupaciones y Bucles
 
 ```mermaid
+%%layout: pan-y%%
 sequenceDiagram
     autonumber
     actor U as Usuario

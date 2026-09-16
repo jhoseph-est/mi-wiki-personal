@@ -127,39 +127,65 @@ html[data-modo="oscuro"] .mermaid-wrapper {
 }
 
 /* ==========================================================
-   TAMAÑOS Y CENTRADO PERFECTO
+   TAMAÑOS Y MODOS DE LAYOUT (fit, pan-x, pan-y) EN VISTA NORMAL
    ========================================================== */
 .mermaid-viewport {
   width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
   padding: 1.5rem 1rem;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.2s ease;
 }
 
 .mermaid-viewport svg {
   display: block !important;
   margin: 0 auto !important;
-  max-width: 100%;
   height: auto;
   transition: transform 0.2s ease;
 }
 
-/* Si tiene ancho personalizado, permitimos scroll horizontal pero centrado en bloque */
-.mermaid-wrapper.has-custom-width .mermaid-viewport {
-  justify-content: flex-start;
+/* 1. MODO FIT */
+.mermaid-wrapper.layout-fit .mermaid-viewport {
+  overflow: hidden;
+}
+.mermaid-wrapper.layout-fit .mermaid-viewport svg {
+  max-width: 100% !important;
+  width: auto !important;
 }
 
-.mermaid-wrapper.has-custom-width .mermaid-viewport svg {
+/* 2. MODO PAN-X (Scroll horizontal solo si es necesario) */
+.mermaid-wrapper.layout-pan-x .mermaid-viewport {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  display: flex;
+  justify-content: center;
+}
+.mermaid-wrapper.layout-pan-x .mermaid-viewport svg {
   max-width: none !important;
+  flex-shrink: 0;
+  margin: 0 auto !important;
+}
+
+/* 3. MODO PAN-Y (Scroll vertical en vista normal) */
+.mermaid-wrapper.layout-pan-y .mermaid-viewport {
+  max-height: var(--mermaid-viewport-height, 500px);
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.mermaid-wrapper.layout-pan-y .mermaid-viewport svg {
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
   margin: 0 auto !important;
 }
 
 /* ==========================================================
-   MODAL DE PANTALLA COMPLETA
+   MODAL DE PANTALLA COMPLETA Y SUS MODOS DE VISUALIZACIÓN
    ========================================================== */
 .mermaid-modal-overlay {
   position: fixed;
@@ -185,12 +211,10 @@ html[data-modo="oscuro"] .mermaid-wrapper {
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
+  padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+  box-sizing: border-box;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
 }
 
 .mermaid-modal-close {
@@ -200,7 +224,7 @@ html[data-modo="oscuro"] .mermaid-wrapper {
   background: rgba(139, 92, 246, 0.1);
   color: #8b5cf6;
   border: 1px solid rgba(139, 92, 246, 0.3);
-  padding: 0.5rem 0.8rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
@@ -215,14 +239,63 @@ html[data-modo="oscuro"] .mermaid-wrapper {
 .mermaid-modal-body {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
+}
+
+/* 1. GRANDE: layout fit */
+.mermaid-modal-body.modal-layout-fit {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
-
-.mermaid-modal-body svg {
+.mermaid-modal-body.modal-layout-fit svg {
   max-width: 100% !important;
-  max-height: 85vh !important;
+  max-height: 100% !important;
   width: auto !important;
   height: auto !important;
+  margin: auto !important;
+}
+
+/* 2. GRANDE: layout pan-x (Se expande verticalmente y genera scroll horizontal) */
+.mermaid-modal-body.modal-layout-pan-x {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 1rem 2rem 2.5rem 2rem !important; /* Espacio para el scrollbar */
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.mermaid-modal-body.modal-layout-pan-x svg {
+  /* Al fijar la altura al alto del modal, el SVG se proyecta hacia los lados */
+  height: calc(85vh - 5rem) !important;
+  min-height: calc(85vh - 5rem) !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  flex-shrink: 0 !important;
+  margin: 0 auto !important; /* Si cabe se centra; si no cabe permite recorrerlo desde el inicio */
+}
+
+/* 3. GRANDE: layout pan-y (Scroll vertical completo sin recortar los extremos) */
+.mermaid-modal-body.modal-layout-pan-y {
+  display: block !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 2rem 1.5rem 3rem 1.5rem !important; /* Margen superior e inferior para ver todo el flujo */
+  box-sizing: border-box !important;
+  text-align: center !important;
+}
+.mermaid-modal-body.modal-layout-pan-y svg {
+  display: block !important;
+  width: auto !important;
+  max-width: 85vw !important; /* Evita salirse de los bordes laterales */
+  min-height: min-content !important;
+  height: auto !important;
+  max-height: none !important; /* Permite crecer verticalmente todo lo necesario */
+  margin: 0 auto !important; /* Centrado perfecto horizontal */
 }

@@ -1,5 +1,5 @@
 ---
-title: mermaid
+title: "mermaid"
 tags: ["algo"]
 ---
 
@@ -16,7 +16,7 @@ Mermaid usa estas direcciones:
 
 Ejemplo vertical:
 ```mermaid
-%%width: 1200%%
+%%layout: pan-x%%
 sequenceDiagram
     autonumber
     actor U as Usuario
@@ -29,7 +29,7 @@ sequenceDiagram
 ```
 ```mermaid
 %%width: 10%%
-%%max-width: 1000%%
+%%layout: pan-x%%
 flowchart TB
 A --> B
 B --> C
@@ -37,7 +37,7 @@ B --> C
 
 ```mermaid
 %%width: 100%%
-%%max-width: 1000%%
+%%layout: pan-x%%
 graph TB
 A --> B
 B --> C
@@ -46,7 +46,7 @@ B --> C
 Ejemplo horizontal:
 
 ```mermaid
-%%max-width: 1000%%
+%%layout: pan-x%%
 graph LR
 A --> B
 B --> C
@@ -64,6 +64,7 @@ Esto se hace con **subgraphs**.
 ## ✔ Ejemplo: bloques horizontales y luego flujo vertical
 
 ```mermaid
+%%layout: pan-y%%
 graph TB
 
 subgraph Horizontal
@@ -247,6 +248,7 @@ B --> C
 Bases de datos.
 
 ```mermaid
+%%layout: pan-y%%
 erDiagram
 USUARIO ||--o{ PEDIDO : "realiza"
 ```
@@ -256,7 +258,7 @@ USUARIO ||--o{ PEDIDO : "realiza"
 Cronogramas.
 
 ```mermaid
-%%width: 1300%%
+
 gantt
     title Plan Anual Extenso
     dateFormat YYYY-MM-DD
@@ -267,7 +269,7 @@ gantt
 
 
 ```mermaid
-%%width: 600%%
+%%layout: pan-x %%
 gantt
     title Sprint Corto
     dateFormat YYYY-MM-DD

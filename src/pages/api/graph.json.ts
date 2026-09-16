@@ -1,4 +1,3 @@
-// src/pages/api/graph.json.ts
 import { getCollection, type CollectionEntry } from 'astro:content';
 
 interface GraphNode {
@@ -16,12 +15,19 @@ interface GraphLink {
 export async function GET() {
   const allDocs = await getCollection('docs');
   const activeDocs = allDocs.filter((d: CollectionEntry<'docs'>) => d.data.draft !== true);
-
-  const nodeMap = new Map<string, GraphNode>();
   
+  const nodeMap = new Map<string, GraphNode>();
+  const activeDocIds = new Set<string>();
+
+  // 1. Construir nodos e índice de IDs válidos
   activeDocs.forEach((d) => {
     const normalizedId = `/docs/${d.id.replace(/\\/g, '/')}`;
-    const group = d.id.replace(/\\/g, '/').split('/')[0] || 'raiz';
+    const cleanId = d.id.replace(/\\/g, '/');
+    const group = cleanId.split('/')[0] || 'raiz';
+
+    activeDocIds.add(cleanId);
+    activeDocIds.add(normalizedId);
+
     nodeMap.set(normalizedId, {
       id: normalizedId,
       name: d.data.title || 'Sin título',
@@ -31,28 +37,33 @@ export async function GET() {
   });
 
   const links: GraphLink[] = [];
-  const targetIds = Array.from(nodeMap.keys());
+  const addedLinks = new Set<string>();
+
+  // 2. Extraer enlaces usando regex en una sola pasada O(N)
+  const linkRegex = /\[\[(.*?)\]\]|\((.*?)\)/g;
 
   activeDocs.forEach((d) => {
-    // 1. Guardamos el texto en una constante para asegurar el tipo string
     const docBody = d.body;
     if (!docBody) return;
 
     const sourceId = `/docs/${d.id.replace(/\\/g, '/')}`;
+    const matches = docBody.matchAll(linkRegex);
 
-    targetIds.forEach((targetId) => {
-      if (sourceId === targetId) return;
+    for (const match of matches) {
+      let ref = (match[1] || match[2] || '').trim();
+      if (!ref || ref.startsWith('http') || ref.startsWith('#')) continue;
 
-      const cleanSlug = targetId.replace('/docs/', '');
-      const hasLink = 
-        docBody.includes(targetId) || 
-        docBody.includes(`(${cleanSlug})`) || 
-        docBody.includes(`[[${cleanSlug}`);
+      ref = ref.replace('/docs/', '').replace(/\.mdx?$/, '');
+      const targetId = `/docs/${ref}`;
 
-      if (hasLink) {
-        links.push({ source: sourceId, target: targetId });
+      if (targetId !== sourceId && nodeMap.has(targetId)) {
+        const linkKey = `${sourceId}->${targetId}`;
+        if (!addedLinks.has(linkKey)) {
+          addedLinks.add(linkKey);
+          links.push({ source: sourceId, target: targetId });
+        }
       }
-    });
+    }
   });
 
   return new Response(

@@ -9,7 +9,7 @@ title: C02_conjuntos
 
 - Por comprensión
 $$
-	A = \lbrace x / x \text{ es una vocal} \rbrace
+A = \lbrace x / x \text{ es una vocal} \rbrace
 $$
 - Por extensión
 $$

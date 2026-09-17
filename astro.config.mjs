@@ -3,7 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import mdx from '@astrojs/mdx';
-import { remarkAlert } from 'remark-github-blockquote-alert';
+import remarkObsidianCallout from 'remark-obsidian-callout'; // <-- Importar aquí
 import remarkWikiLink from 'remark-wiki-link';
 
 export default defineConfig({
@@ -35,7 +35,7 @@ export default defineConfig({
     processor: unified({
       remarkPlugins: [
         remarkMath,
-        remarkAlert,
+        remarkObsidianCallout, // <-- Agregar aquí
         [
           remarkWikiLink,
           {
@@ -48,7 +48,6 @@ export default defineConfig({
         [
           rehypeKatex,
           {
-            // Evita que KaTeX lance advertencias por tildes dentro del modo matemático
             strict: false,
           },
         ],
@@ -63,8 +62,5 @@ export default defineConfig({
       wrap: true,
     },
   },
-  integrations: [
-    // MDX ahora hereda automáticamente el processor configurado arriba
-    mdx(),
-  ],
+  integrations: [mdx()],
 });

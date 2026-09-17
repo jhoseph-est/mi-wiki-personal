@@ -4,10 +4,27 @@ title: notas en md
 
 # Callouts nativos de Obsidian (explicados)
 
-## [!note] — Nota
+## note — Nota
 > [!note] Nota
 > Información general o aclaraciones pequeñas.
 > Úsalo para aclaraciones que ayudan, pero no son esenciales.
+> etc etc
+
+> [!note] Nota
+> Información general o aclaraciones pequeñas.
+> Úsalo para aclaraciones que ayudan, pero no son esenciales.
+> etc etc
+
+ esto ya no es nota
+
+> [!note] Nota
+> Información general o aclaraciones pequeñas.
+> Úsalo para aclaraciones que ayudan, pero no son esenciales.
+> etc etc.
+>> [!abstract] Nota  
+>> Información general o aclaraciones pequeñas.
+>> Úsalo para aclaraciones que ayudan, pero no son esenciales.
+>> etc etc
 
 ---
 

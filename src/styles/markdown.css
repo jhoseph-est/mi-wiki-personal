@@ -66,36 +66,205 @@ html[data-modo="oscuro"] .main-content th {
   background-color: rgba(255, 255, 255, 0.05); 
 }
 
-/* Callouts (GitHub Blockquote Alerts) */
-.markdown-alert { 
-  padding: 1rem 1.5rem; 
-  margin: 1.5rem 0; 
-  border-left: 4px solid var(--border-color); 
-  border-radius: 4px; 
-  background-color: rgba(0, 0, 0, 0.02); 
+/* ==========================================================
+   CALLOUTS OBSIDIAN (MINIMALISTA Y LIMPIO)
+   ========================================================== */
+
+/* 1. Contenedor principal: una sola tarjeta con borde izquierdo */
+.main-content blockquote[data-callout],
+.main-content [class*="callout-"] {
+  display: block;
+  margin: 1.5rem 0 !important;
+  padding: 0.85rem 1.15rem !important;
+  border-left: 4px solid var(--callout-color, #38bdf8) !important;
+  background-color: var(--callout-bg, rgba(56, 189, 248, 0.08)) !important;
+  border-top: 1px solid var(--callout-border, rgba(255, 255, 255, 0.06)) !important;
+  border-right: 1px solid var(--callout-border, rgba(255, 255, 255, 0.06)) !important;
+  border-bottom: 1px solid var(--callout-border, rgba(255, 255, 255, 0.06)) !important;
+  border-radius: 6px;
+  box-shadow: none !important;
 }
-.markdown-alert-title { 
-  display: flex; 
-  align-items: center; 
-  font-weight: 600; 
-  margin-bottom: 0.5rem; 
-  font-size: 1.05rem; 
+
+/* 2. Neutralizar CUALQUIER fondo o borde que meta el plugin a los hijos */
+.main-content [class*="callout-"] div,
+.main-content [class*="callout-"] .callout-title,
+.main-content [class*="callout-"] .callout-title-icon,
+.main-content [class*="callout-"] .callout-title-text,
+.main-content [class*="callout-"] .callout-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
-.markdown-alert-title svg { 
-  margin-right: 0.5rem; 
-  fill: currentColor; 
+
+/* 3. Encabezado en una sola línea continua */
+.main-content [class*="callout-"] .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0 !important;
+  margin: 0 0 0.4rem 0 !important;
+  font-family: var(--ui-font) !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  color: var(--callout-color, #38bdf8) !important;
 }
-.markdown-alert p:last-child { 
-  margin-bottom: 0; 
+
+.main-content [class*="callout-"] .callout-title-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: var(--callout-color, #38bdf8) !important;
 }
-.markdown-alert.markdown-alert-note { border-color: #3b82f6; }
-.markdown-alert.markdown-alert-note .markdown-alert-title { color: #3b82f6; }
-.markdown-alert.markdown-alert-warning { border-color: #eab308; }
-.markdown-alert.markdown-alert-warning .markdown-alert-title { color: #eab308; }
-.markdown-alert.markdown-alert-important { border-color: #8b5cf6; }
-.markdown-alert.markdown-alert-important .markdown-alert-title { color: #8b5cf6; }
-.markdown-alert.markdown-alert-caution { border-color: #ef4444; }
-.markdown-alert.markdown-alert-caution .markdown-alert-title { color: #ef4444; }
+
+.main-content [class*="callout-"] .callout-title-icon svg {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  fill: currentColor !important;
+  display: block;
+}
+
+.main-content [class*="callout-"] .callout-title-text {
+  padding: 0 !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: normal !important;
+}
+
+/* 4. Texto del cuerpo */
+.main-content [class*="callout-"] .callout-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  opacity: 0.95;
+  white-space: pre-line !important;
+}
+
+.main-content [class*="callout-"] .callout-content p {
+  margin: 0.25rem 0 !important;
+}
+
+.main-content [class*="callout-"] .callout-content p:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* ----------------------------------------------------------
+   COLORES MODO CLARO (Pasteles sutiles)
+   ---------------------------------------------------------- */
+[data-callout="note"], [data-callout="info"], .callout-note, .callout-info { 
+  --callout-color: #0284c7; --callout-bg: rgba(2, 132, 199, 0.06); --callout-border: rgba(2, 132, 199, 0.15); 
+}
+[data-callout="abstract"], [data-callout="summary"], [data-callout="tldr"], .callout-abstract, .callout-summary, .callout-tldr { 
+  --callout-color: #0d9488; --callout-bg: rgba(13, 148, 136, 0.06); --callout-border: rgba(13, 148, 136, 0.15); 
+}
+[data-callout="todo"], .callout-todo { 
+  --callout-color: #2563eb; --callout-bg: rgba(37, 99, 235, 0.06); --callout-border: rgba(37, 99, 235, 0.15); 
+}
+[data-callout="tip"], [data-callout="hint"], [data-callout="important"], .callout-tip, .callout-hint, .callout-important { 
+  --callout-color: #0891b2; --callout-bg: rgba(8, 145, 178, 0.06); --callout-border: rgba(8, 145, 178, 0.15); 
+}
+[data-callout="success"], [data-callout="check"], [data-callout="done"], .callout-success, .callout-check, .callout-done { 
+  --callout-color: #16a34a; --callout-bg: rgba(22, 163, 74, 0.06); --callout-border: rgba(22, 163, 74, 0.15); 
+}
+[data-callout="question"], [data-callout="help"], [data-callout="faq"], .callout-question, .callout-help, .callout-faq { 
+  --callout-color: #ea580c; --callout-bg: rgba(234, 88, 12, 0.06); --callout-border: rgba(234, 88, 12, 0.15); 
+}
+[data-callout="warning"], [data-callout="caution"], [data-callout="attention"], .callout-warning, .callout-caution, .callout-attention { 
+  --callout-color: #d97706; --callout-bg: rgba(217, 119, 6, 0.06); --callout-border: rgba(217, 119, 6, 0.15); 
+}
+[data-callout="failure"], [data-callout="fail"], [data-callout="missing"], [data-callout="danger"], [data-callout="error"], [data-callout="bug"], .callout-failure, .callout-fail, .callout-missing, .callout-danger, .callout-error, .callout-bug { 
+  --callout-color: #dc2626; --callout-bg: rgba(220, 38, 38, 0.06); --callout-border: rgba(220, 38, 38, 0.15); 
+}
+[data-callout="example"], .callout-example { 
+  --callout-color: #9333ea; --callout-bg: rgba(147, 51, 234, 0.06); --callout-border: rgba(147, 51, 234, 0.15); 
+}
+[data-callout="quote"], [data-callout="cite"], .callout-quote, .callout-cite { 
+  --callout-color: #64748b; --callout-bg: rgba(100, 116, 139, 0.06); --callout-border: rgba(100, 116, 139, 0.15); 
+}
+
+/* ----------------------------------------------------------
+   COLORES MODO OSCURO (html[data-modo="oscuro"])
+   ---------------------------------------------------------- */
+html[data-modo="oscuro"] [data-callout="note"],
+html[data-modo="oscuro"] [data-callout="info"],
+html[data-modo="oscuro"] .callout-note,
+html[data-modo="oscuro"] .callout-info { 
+  --callout-color: #38bdf8; --callout-bg: rgba(56, 189, 248, 0.08); --callout-border: rgba(56, 189, 248, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="abstract"],
+html[data-modo="oscuro"] [data-callout="summary"],
+html[data-modo="oscuro"] [data-callout="tldr"],
+html[data-modo="oscuro"] .callout-abstract,
+html[data-modo="oscuro"] .callout-summary,
+html[data-modo="oscuro"] .callout-tldr { 
+  --callout-color: #2dd4bf; --callout-bg: rgba(45, 212, 191, 0.08); --callout-border: rgba(45, 212, 191, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="todo"],
+html[data-modo="oscuro"] .callout-todo { 
+  --callout-color: #60a5fa; --callout-bg: rgba(96, 165, 250, 0.08); --callout-border: rgba(96, 165, 250, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="tip"],
+html[data-modo="oscuro"] [data-callout="hint"],
+html[data-modo="oscuro"] [data-callout="important"],
+html[data-modo="oscuro"] .callout-tip,
+html[data-modo="oscuro"] .callout-hint,
+html[data-modo="oscuro"] .callout-important { 
+  --callout-color: #22d3ee; --callout-bg: rgba(34, 211, 238, 0.08); --callout-border: rgba(34, 211, 238, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="success"],
+html[data-modo="oscuro"] [data-callout="check"],
+html[data-modo="oscuro"] [data-callout="done"],
+html[data-modo="oscuro"] .callout-success,
+html[data-modo="oscuro"] .callout-check,
+html[data-modo="oscuro"] .callout-done { 
+  --callout-color: #4ade80; --callout-bg: rgba(74, 222, 128, 0.08); --callout-border: rgba(74, 222, 128, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="question"],
+html[data-modo="oscuro"] [data-callout="help"],
+html[data-modo="oscuro"] [data-callout="faq"],
+html[data-modo="oscuro"] .callout-question,
+html[data-modo="oscuro"] .callout-help,
+html[data-modo="oscuro"] .callout-faq { 
+  --callout-color: #fb923c; --callout-bg: rgba(251, 146, 60, 0.08); --callout-border: rgba(251, 146, 60, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="warning"],
+html[data-modo="oscuro"] [data-callout="caution"],
+html[data-modo="oscuro"] [data-callout="attention"],
+html[data-modo="oscuro"] .callout-warning,
+html[data-modo="oscuro"] .callout-caution,
+html[data-modo="oscuro"] .callout-attention { 
+  --callout-color: #fbbf24; --callout-bg: rgba(251, 191, 36, 0.08); --callout-border: rgba(251, 191, 36, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="failure"],
+html[data-modo="oscuro"] [data-callout="fail"],
+html[data-modo="oscuro"] [data-callout="missing"],
+html[data-modo="oscuro"] [data-callout="danger"],
+html[data-modo="oscuro"] [data-callout="error"],
+html[data-modo="oscuro"] [data-callout="bug"],
+html[data-modo="oscuro"] .callout-failure,
+html[data-modo="oscuro"] .callout-fail,
+html[data-modo="oscuro"] .callout-missing,
+html[data-modo="oscuro"] .callout-danger,
+html[data-modo="oscuro"] .callout-error,
+html[data-modo="oscuro"] .callout-bug { 
+  --callout-color: #f87171; --callout-bg: rgba(248, 113, 113, 0.08); --callout-border: rgba(248, 113, 113, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="example"],
+html[data-modo="oscuro"] .callout-example { 
+  --callout-color: #c084fc; --callout-bg: rgba(192, 132, 252, 0.08); --callout-border: rgba(192, 132, 252, 0.18); 
+}
+html[data-modo="oscuro"] [data-callout="quote"],
+html[data-modo="oscuro"] [data-callout="cite"],
+html[data-modo="oscuro"] .callout-quote,
+html[data-modo="oscuro"] .callout-cite { 
+  --callout-color: #94a3b8; --callout-bg: rgba(148, 163, 184, 0.08); --callout-border: rgba(148, 163, 184, 0.18); 
+}
 
 /* Botón de copiar código */
 .copy-code-btn { 

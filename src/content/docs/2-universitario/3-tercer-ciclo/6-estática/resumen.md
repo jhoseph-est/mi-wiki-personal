@@ -2,7 +2,7 @@
 title: "resumen 1"
 ---
 
-  # Compendio de Fórmulas, Conceptos y Métodos de Estática
+# Compendio de Fórmulas, Conceptos y Métodos de Estática
 
 Este documento sintetiza la teoría, formulación matemática con leyendas y metodologías de resolución de problemas extraídas del material del curso de Estática (Vectores, Momentos, Sistemas Equivalentes, Torsor, Equilibrio 2D/3D, Centroides y Cargas Distribuidas).
 
@@ -12,9 +12,18 @@ Este documento sintetiza la teoría, formulación matemática con leyendas y met
 
 ### 1.1. Vector de Posición y Vector Unitario
 Para dos puntos en el espacio $A(x_A, y_A, z_A)$ y $B(x_B, y_B, z_B)$:
-$$\vec{r}_{AB} = (x_B - x_A)\hat{\imath} + (y_B - y_A)\hat{\jmath} + (z_B - z_A)\hat{k}$$
-$$\|\vec{r}_{AB}\| = \sqrt{(x_B - x_A)^2 + (y_B - y_A)^2 + (z_B - z_A)^2}$$
-$$\hat{u}_{AB} = \frac{\vec{r}_{AB}}{\|\vec{r}_{AB}\|}$$
+
+$$
+\vec{r}_{AB} = (x_B - x_A)\hat{\imath} + (y_B - y_A)\hat{\jmath} + (z_B - z_A)\hat{k}
+$$
+
+$$
+\|\vec{r}_{AB}\| = \sqrt{(x_B - x_A)^2 + (y_B - y_A)^2 + (z_B - z_A)^2}
+$$
+
+$$
+\hat{u}_{AB} = \frac{\vec{r}_{AB}}{\|\vec{r}_{AB}\|}
+$$
 
 **Leyenda:**
 * $\vec{r}_{AB}$: Vector posición dirigido desde el punto $A$ hacia el punto $B$.
@@ -22,23 +31,44 @@ $$\hat{u}_{AB} = \frac{\vec{r}_{AB}}{\|\vec{r}_{AB}\|}$$
 * $\hat{u}_{AB}$: Vector unitario adimensional en la línea de acción de $A$ a $B$.
 
 ### 1.2. Fuerza Expresada en Términos de su Magnitud y Vector Unitario
-$$\vec{F} = F\,\hat{u}_{AB} = F_x\,\hat{\imath} + F_y\,\hat{\jmath} + F_z\,\hat{k}$$
-$$F = \|\vec{F}\| = \sqrt{F_x^2 + F_y^2 + F_z^2}$$
+
+$$
+\vec{F} = F\,\hat{u}_{AB} = F_x\,\hat{\imath} + F_y\,\hat{\jmath} + F_z\,\hat{k}
+$$
+
+$$
+F = \|\vec{F}\| = \sqrt{F_x^2 + F_y^2 + F_z^2}
+$$
 
 ### 1.3. Cosenos Directores
-$$\cos\alpha = \frac{F_x}{F}, \quad \cos\beta = \frac{F_y}{F}, \quad \cos\gamma = \frac{F_z}{F}$$
-$$\cos^2\alpha + \cos^2\beta + \cos^2\gamma = 1$$
+
+$$
+\cos\alpha = \frac{F_x}{F}, \quad \cos\beta = \frac{F_y}{F}, \quad \cos\gamma = \frac{F_z}{F}
+$$
+
+$$
+\cos^2\alpha + \cos^2\beta + \cos^2\gamma = 1
+$$
 
 **Leyenda:**
 * $\alpha, \beta, \gamma$: Ángulos directores que forma el vector con los ejes positivos $x, y, z$ respectivamente.
 * $F_x, F_y, F_z$: Componentes escalares ortogonales de la fuerza $\vec{F}$.
 
 ### 1.4. Producto Punto (Escalar)
-$$\vec{U} \cdot \vec{V} = \|\vec{U}\|\|\vec{V}\|\cos\theta = U_x V_x + U_y V_y + U_z V_z$$
-$$\cos\theta = \frac{\vec{U} \cdot \vec{V}}{\|\vec{U}\|\|\vec{V}\|}$$
+
+$$
+\vec{U} \cdot \vec{V} = \|\vec{U}\|\|\vec{V}\|\cos\theta = U_x V_x + U_y V_y + U_z V_z
+$$
+
+$$
+\cos\theta = \frac{\vec{U} \cdot \vec{V}}{\|\vec{U}\|\|\vec{V}\|}
+$$
 
 **Proyección sobre una recta o eje $L$:**
-$$V_L = \vec{V} \cdot \hat{u}_L, \quad \vec{V}_L = (\vec{V} \cdot \hat{u}_L)\,\hat{u}_L$$
+
+$$
+V_L = \vec{V} \cdot \hat{u}_L, \quad \vec{V}_L = (\vec{V} \cdot \hat{u}_L)\,\hat{u}_L
+$$
 
 ---
 
@@ -46,11 +76,18 @@ $$V_L = \vec{V} \cdot \hat{u}_L, \quad \vec{V}_L = (\vec{V} \cdot \hat{u}_L)\,\h
 
 ### 2.1. Momento de una Fuerza respecto a un Punto
 * **Formulación Escalar (2D):**
-  $$M_O = \pm F \cdot D$$
+  $$
+  M_O = \pm F \cdot D
+  $$
   *(Convención habitual: giro antihorario positivo $+$, horario negativo $-$).*
 * **Formulación Vectorial (3D):**
-  $$\vec{M}_O = \vec{r} \times \vec{F} = \begin{vmatrix} \hat{\imath} & \hat{\jmath} & \hat{k} \\ r_x & r_y & r_z \\ F_x & F_y & F_z \end{vmatrix}$$
-  $$D = \frac{\|\vec{M}_O\|}{\|\vec{F}\|}$$
+$$
+\vec{M}_O = \vec{r} \times \vec{F} = \begin{vmatrix} \hat{\imath} & \hat{\jmath} & \hat{k} \\ r_x & r_y & r_z \\ F_x & F_y & F_z \end{vmatrix}
+$$
+
+$$
+D = \frac{\|\vec{M}_O\|}{\|\vec{F}\|}
+$$
 
 **Leyenda:**
 * $\vec{M}_O$: Vector momento respecto al centro de momentos $O$.
@@ -58,8 +95,14 @@ $$V_L = \vec{V} \cdot \hat{u}_L, \quad \vec{V}_L = (\vec{V} \cdot \hat{u}_L)\,\h
 * $D$: Brazo de palanca (distancia perpendicular mínima entre el punto $O$ y la línea de acción de la fuerza).
 
 ### 2.2. Momento respecto a un Eje o Línea $L$
-$$M_L = \hat{u}_L \cdot (\vec{r} \times \vec{F}) = \begin{vmatrix} u_{Lx} & u_{Ly} & u_{Lz} \\ r_x & r_y & r_z \\ F_x & F_y & F_z \end{vmatrix}$$
-$$\vec{M}_L = M_L\,\hat{u}_L$$
+
+$$
+M_L = \hat{u}_L \cdot (\vec{r} \times \vec{F}) = \begin{vmatrix} u_{Lx} & u_{Ly} & u_{Lz} \\ r_x & r_y & r_z \\ F_x & F_y & F_z \end{vmatrix}
+$$
+
+$$
+\vec{M}_L = M_L\,\hat{u}_L
+$$
 
 **Leyenda:**
 * $\hat{u}_L$: Vector unitario a lo largo del eje $L$.
@@ -67,7 +110,10 @@ $$\vec{M}_L = M_L\,\hat{u}_L$$
 
 ### 2.3. Momento de un Par (Cupla)
 Dos fuerzas de igual magnitud, sentidos opuestos y líneas de acción paralelas separadas por una distancia perpendicular $d$:
-$$M = F \cdot d, \quad \vec{M} = \vec{r} \times \vec{F}$$
+
+$$
+M = F \cdot d, \quad \vec{M} = \vec{r} \times \vec{F}
+$$
 
 * El momento de un par es un **vector libre** (su valor es idéntico respecto a cualquier punto del espacio).
 * Pares equivalentes: tienen el mismo vector momento $\vec{M}$ (misma magnitud, dirección y sentido de giro).
@@ -77,11 +123,19 @@ $$M = F \cdot d, \quad \vec{M} = \vec{r} \times \vec{F}$$
 ## 3. Reducción de Sistemas de Fuerzas y Llave de Torsión (Torsor)
 
 ### 3.1. Reducción a un Sistema Fuerza-Par en un punto $O$
-$$\vec{R} = \sum \vec{F}_i$$
-$$\vec{M}_O^R = \sum \vec{M}_O = \sum (\vec{r}_i \times \vec{F}_i) + \sum \vec{M}_j$$
+
+$$
+\vec{R} = \sum \vec{F}_i
+$$
+
+$$
+\vec{M}_O^R = \sum \vec{M}_O = \sum (\vec{r}_i \times \vec{F}_i) + \sum \vec{M}_j
+$$
 
 * Si el sistema se traslada de $O$ a un nuevo punto $O'$ (con vector $\vec{s}$ de $O'$ a $O$ o $\vec{r}_{O'/O}$):
-  $$\vec{M}_{O'}^R = \vec{M}_O^R + \vec{s} \times \vec{R}$$
+  $$
+  \vec{M}_{O'}^R = \vec{M}_O^R + \vec{s} \times \vec{R}
+  $$
 
 ### 3.2. Casos de Reducción a Fuerza Única
 Un sistema puede reducirse a una sola fuerza resultante $\vec{R}$ si y solo si:
@@ -90,20 +144,32 @@ Un sistema puede reducirse a una sola fuerza resultante $\vec{R}$ si y solo si:
 3. Fuerzas paralelas en el espacio ($\vec{R} \cdot \vec{M}_O^R = 0$).
 
 * **Línea de acción en 2D:**
-  $$x R_y - y R_x = M_O^R$$
-  $$x_{\text{int}} = \frac{M_O^R}{R_y} \quad (\text{para } y=0), \qquad y_{\text{int}} = -\frac{M_O^R}{R_x} \quad (\text{para } x=0)$$
+  $$
+  x R_y - y R_x = M_O^R
+  $$
+  $$
+  x_{\text{int}} = \frac{M_O^R}{R_y} \quad (\text{para } y=0), \qquad y_{\text{int}} = -\frac{M_O^R}{R_x} \quad (\text{para } x=0)
+  $$
 * **Línea de acción en 3D (para $\vec{R} \cdot \vec{M}_O^R = 0$):**
-  $$\vec{r} \times \vec{R} = \vec{M}_O^R$$
+  $$
+  \vec{r} \times \vec{R} = \vec{M}_O^R
+  $$
 
 ### 3.3. Sistema Torsor o Llave de Torsión (Wrench)
 En el caso tridimensional general, $\vec{R} \cdot \vec{M}_O^R \neq 0$. El sistema se reduce a una fuerza $\vec{R}$ y a un momento par colineal con ella ($\vec{M}_1 \parallel \vec{R}$).
 
 * **Momento mínimo (paralelo a $\vec{R}$):**
-  $$\mu = M_1 = \frac{\vec{R} \cdot \vec{M}_O^R}{\|\vec{R}\|}, \quad \vec{M}_1 = \mu\,\frac{\vec{R}}{\|\vec{R}\|}$$
+  $$
+  \mu = M_1 = \frac{\vec{R} \cdot \vec{M}_O^R}{\|\vec{R}\|}, \quad \vec{M}_1 = \mu\,\frac{\vec{R}}{\|\vec{R}\|}
+  $$
 * **Paso o avance del torsor ($p$ o $\lambda$):**
-  $$p = \frac{\mu}{\|\vec{R}\|} = \frac{\vec{R} \cdot \vec{M}_O^R}{\|\vec{R}\|^2} \quad [\text{unidades de longitud: m, pulg}]$$
+  $$
+  p = \frac{\mu}{\|\vec{R}\|} = \frac{\vec{R} \cdot \vec{M}_O^R}{\|\vec{R}\|^2} \quad [\text{unidades de longitud: m, pulg}]
+  $$
 * **Ecuación vectorial de la recta del eje del torsor:**
-  $$\vec{r}_P(t) = \frac{\vec{R} \times \vec{M}_O^R}{\|\vec{R}\|^2} + t\,\frac{\vec{R}}{\|\vec{R}\|}, \quad t \in \mathbb{R}$$
+  $$
+  \vec{r}_P(t) = \frac{\vec{R} \times \vec{M}_O^R}{\|\vec{R}\|^2} + t\,\frac{\vec{R}}{\|\vec{R}\|}, \quad t \in \mathbb{R}
+  $$
   Donde $\vec{r}_0 = \dfrac{\vec{R} \times \vec{M}_O^R}{\|\vec{R}\|^2}$ es el punto del eje más cercano al origen.
 
 ---
@@ -111,13 +177,22 @@ En el caso tridimensional general, $\vec{R} \cdot \vec{M}_O^R \neq 0$. El sistem
 ## 4. Equilibrio de Cuerpos Rígidos
 
 ### 4.1. Condiciones Generales
-$$\sum \vec{F} = \vec{0}, \qquad \sum \vec{M}_O = \vec{0}$$
+
+$$
+\sum \vec{F} = \vec{0}, \qquad \sum \vec{M}_O = \vec{0}
+$$
 
 * **Equilibrio 2D (hasta 3 ecuaciones escalares independientes):**
-  $$\sum F_x = 0, \quad \sum F_y = 0, \quad \sum M_A = 0$$
+  $$
+  \sum F_x = 0, \quad \sum F_y = 0, \quad \sum M_A = 0
+  $$
 * **Equilibrio 3D (hasta 6 ecuaciones escalares independientes):**
-  $$\sum F_x = 0, \quad \sum F_y = 0, \quad \sum F_z = 0$$
-  $$\sum M_x = 0, \quad \sum M_y = 0, \quad \sum M_z = 0$$
+  $$
+  \sum F_x = 0, \quad \sum F_y = 0, \quad \sum F_z = 0
+  $$
+  $$
+  \sum M_x = 0, \quad \sum M_y = 0, \quad \sum M_z = 0
+  $$
 
 ### 4.2. Tipos de Apoyos y sus Reacciones
 | Apoyo / Conexión | Dimensiones | Reacciones que genera | Grados de libertad impedidos |
@@ -133,7 +208,10 @@ $$\sum \vec{F} = \vec{0}, \qquad \sum \vec{M}_O = \vec{0}$$
 
 ### 4.3. Teorema de las Tres Fuerzas (Equilibrio 2D)
 Si un cuerpo en equilibrio está sometido únicamente a tres fuerzas coplanares concurrentes o paralelas:
-$$\frac{F_1}{\operatorname{sen}\beta} = \frac{F_2}{\operatorname{sen}\alpha} = \frac{F_3}{\operatorname{sen}\varepsilon} \quad (\text{Ley de Senos / Teorema de Lami})$$
+
+$$
+\frac{F_1}{\operatorname{sen}\beta} = \frac{F_2}{\operatorname{sen}\alpha} = \frac{F_3}{\operatorname{sen}\varepsilon} \quad (\text{Ley de Senos / Teorema de Lami})
+$$
 
 ---
 
@@ -149,14 +227,24 @@ $$\frac{F_1}{\operatorname{sen}\beta} = \frac{F_2}{\operatorname{sen}\alpha} = \
 | **Centro de Masa** | $\dfrac{\int x\,\rho\,dV}{\int \rho\,dV}$ | $\dfrac{\int y\,\rho\,dV}{\int \rho\,dV}$ | $\dfrac{\int z\,\rho\,dV}{\int \rho\,dV}$ |
 
 * **Diferencial de línea en coordenadas cartesianas:**
-  $$dL = \sqrt{dx^2 + dy^2} = \sqrt{1 + \left(\frac{dy}{dx}\right)^2}\,dx$$
+  $$
+  dL = \sqrt{dx^2 + dy^2} = \sqrt{1 + \left(\frac{dy}{dx}\right)^2}\,dx
+  $$
 * **Diferencial de línea en coordenadas polares:**
-  $$dL = R\,d\theta, \quad x = R\cos\theta, \quad y = R\operatorname{sen}\theta$$
+  $$
+  dL = R\,d\theta, \quad x = R\cos\theta, \quad y = R\operatorname{sen}\theta
+  $$
 
 ### 5.2. Cuerpos Compuestos
 Para áreas, volúmenes o masas formadas por figuras geométricas conocidas:
-$$\bar{x} = \frac{\sum \bar{x}_i A_i}{\sum A_i}, \quad \bar{y} = \frac{\sum \bar{y}_i A_i}{\sum A_i}$$
-$$\bar{x} = \frac{\sum \bar{x}_i V_i}{\sum V_i}, \quad \bar{x} = \frac{\sum \bar{x}_i m_i}{\sum m_i}, \quad \bar{x} = \frac{\sum \bar{x}_i W_i}{\sum W_i}$$
+
+$$
+\bar{x} = \frac{\sum \bar{x}_i A_i}{\sum A_i}, \quad \bar{y} = \frac{\sum \bar{y}_i A_i}{\sum A_i}
+$$
+
+$$
+\bar{x} = \frac{\sum \bar{x}_i V_i}{\sum V_i}, \quad \bar{x} = \frac{\sum \bar{x}_i m_i}{\sum m_i}, \quad \bar{x} = \frac{\sum \bar{x}_i W_i}{\sum W_i}
+$$
 
 * **Regla para huecos o vacíos:** Las propiedades de área, volumen o masa de un hueco se ingresan con **signo negativo** ($-A_{\text{hueco}}$).
 
@@ -168,11 +256,15 @@ $$\bar{x} = \frac{\sum \bar{x}_i V_i}{\sum V_i}, \quad \bar{x} = \frac{\sum \bar
 
 ### 5.4. Teoremas de Pappus-Guldinus
 1. **Área de una superficie de revolución:** Generada al rotar una curva plana $L$ alrededor de un eje que no la interseca:
-   $$A = 2\pi\,\bar{y}_L\,L$$
+   $$
+   A = 2\pi\,\bar{y}_L\,L
+   $$
    *(Distancia recorrida por el centroide de la línea $\times$ longitud de la línea).*
 
 2. **Volumen de un cuerpo de revolución:** Generado al rotar un área plana $A$ alrededor de un eje que no la interseca:
-   $$V = 2\pi\,\bar{y}_A\,A$$
+   $$
+   V = 2\pi\,\bar{y}_A\,A
+   $$
    *(Distancia recorrida por el centroide del área $\times$ área generatriz).*
 
 ---
@@ -182,16 +274,24 @@ $$\bar{x} = \frac{\sum \bar{x}_i V_i}{\sum V_i}, \quad \bar{x} = \frac{\sum \bar
 ### 6.1. Cargas Distribuidas en Vigas
 Dada una carga continua $w = f(x)$ $[\text{N/m}]$ a lo largo de una viga de longitud $L$:
 * **Fuerza concentrada equivalente:**
-  $$W = \int_0^L w\,dx = \text{Área bajo la curva } w(x)$$
+  $$
+  W = \int_0^L w\,dx = \text{Área bajo la curva } w(x)
+  $$
 * **Punto de aplicación (línea de acción $\bar{x}$):**
-  $$\bar{x} = \frac{\int_0^L x\,w\,dx}{W} = \text{Centroide del área bajo la curva } w(x)$$
+  $$
+  \bar{x} = \frac{\int_0^L x\,w\,dx}{W} = \text{Centroide del área bajo la curva } w(x)
+  $$
 
 ### 6.2. Presión Hidrostática sobre Superficies
 * **Presión a profundidad $h$:**
-  $$p = \gamma\,h = \rho\,g\,h \quad [\text{N/m}^2 \text{ o lb/ft}^2]$$
+  $$
+  p = \gamma\,h = \rho\,g\,h \quad [\text{N/m}^2 \text{ o lb/ft}^2]
+  $$
   Donde $\gamma$ es el peso específico del fluido ($\gamma_{\text{agua}} \approx 9810\text{ N/m}^3 = 62.4\text{ lb/ft}^3$).
 * **Fuerza diferencial y total:**
-  $$dR = p\,dA = \gamma\,h\,(b\,dx) \implies R = \int dR$$
+  $$
+  dR = p\,dA = \gamma\,h\,(b\,dx) \implies R = \int dR
+  $$
 * **Punto de aplicación:** Coincide con el centroide del prisma o trapecio de presiones que actúa sobre la compuerta.
 
 ---
@@ -228,4 +328,6 @@ Dada una carga continua $w = f(x)$ $[\text{N/m}]$ a lo largo de una viga de long
    * Columna 3: Medida de la parte ($A_i$, $V_i$ o $L_i$), usando signo negativo si es un agujero.
    * Columna 4, 5, 6: Momentos de primer orden ($\bar{x}_i A_i, \bar{y}_i A_i$, etc.).
 3. **Sumatorias y cocientes:**
-   $$\bar{x} = \frac{\sum \bar{x}_i A_i}{\sum A_i}, \qquad \bar{y} = \frac{\sum \bar{y}_i A_i}{\sum A_i}$$
+   $$
+   \bar{x} = \frac{\sum \bar{x}_i A_i}{\sum A_i}, \qquad \bar{y} = \frac{\sum \bar{y}_i A_i}{\sum A_i}
+   $$

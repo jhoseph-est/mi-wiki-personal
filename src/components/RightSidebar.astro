@@ -23,12 +23,19 @@ const formatDate = (dateStr?: Date | string): string => {
 let backlinks: Array<{ title: string; url: string }> = [];
 if (docId && docId !== 'explorar') {
   const allDocs = await getCollection('docs');
+  
+  // Expresión regular que solo busca:
+  // 1. Wikilinks estilo Obsidian: [[prueba]] o [[prueba|Alias]]
+  // 2. Enlaces estándar de Markdown: (/docs/prueba) o (prueba)
+  const escapedDocId = docId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const linkRegex = new RegExp(`\\[\\[(?:.*\\/)?${escapedDocId}(?:#[^\\]|]*)?(?:\\|[^\\]]*)?\\]\\]|\\((?:\\/docs\\/)?${escapedDocId}(?:\\.mdx?)?(?:#[^)]*)?\\)`, 'i');
+
   backlinks = allDocs
     .filter((d: CollectionEntry<'docs'>) => {
       if (d.data.draft === true) return false;
       const normalized = d.id.replace(/\\/g, '/');
       if (normalized === docId) return false;
-      return d.body && d.body.includes(docId);
+      return d.body && linkRegex.test(d.body);
     })
     .map((d: CollectionEntry<'docs'>) => ({
       title: d.data.title,

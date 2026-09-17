@@ -99,9 +99,34 @@ body {
   line-height: var(--doc-line-height);
 }
 
-/* Protegemos los enlaces para que no se hereden estilos raros dentro de los gráficos */
-.main-content a:not(.mermaid-native *) {
-  color: var(--text-color);
+/* Enlaces generales dentro del contenido Markdown */
+.main-content article a:not(.mermaid-native *) {
+  color: #a78bfa !important; /* Morado claro legible */
+  text-decoration: none;
+  border-bottom: 1.5px solid rgba(167, 139, 250, 0.4);
+  font-weight: 500;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+/* Efecto hover */
+.main-content article a:not(.mermaid-native *):hover {
+  color: #c4b5fd !important;
+  background-color: rgba(139, 92, 246, 0.15);
+  border-bottom-color: #8b5cf6;
+}
+
+/* En modo claro: tono morado con mejor contraste */
+html[data-modo="claro"] .main-content article a:not(.mermaid-native *) {
+  color: #7c3aed !important;
+  border-bottom-color: rgba(124, 58, 237, 0.4);
+}
+
+html[data-modo="claro"] .main-content article a:not(.mermaid-native *):hover {
+  color: #6d28d9 !important;
+  background-color: rgba(124, 58, 237, 0.08);
+  border-bottom-color: #7c3aed;
 }
 
 /* --- TAMAÑOS DE TEXTO --- */

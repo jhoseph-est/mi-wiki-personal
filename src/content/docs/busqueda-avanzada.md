@@ -1,12 +1,12 @@
 ---
 title: Guía de Búsqueda Avanzada
-date: 2026-09-05
+date: 2026-07-05
 author: Admindsada
 tags:
   - guia
   - sistema
   - buscador
-icon: "🤖"
+icon: 🤖
 ---
 
 # Cómo usar el Buscador Avanzado

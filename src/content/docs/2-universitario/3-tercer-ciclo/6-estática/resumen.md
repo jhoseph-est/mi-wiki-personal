@@ -1,6 +1,7 @@
 ---
 title: "resumen 1"
 ---
+
   # Compendio de Fórmulas, Conceptos y Métodos de Estática
 
 Este documento sintetiza la teoría, formulación matemática con leyendas y metodologías de resolución de problemas extraídas del material del curso de Estática (Vectores, Momentos, Sistemas Equivalentes, Torsor, Equilibrio 2D/3D, Centroides y Cargas Distribuidas).

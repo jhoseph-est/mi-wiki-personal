@@ -1,5 +1,5 @@
 ---
-title: "resumen 1"
+title: "resumen 2"
 ---
 # Formulario y Resumen Teórico: Estadística Descriptiva, Probabilidades y Regresión
 

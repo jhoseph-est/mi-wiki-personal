@@ -4,8 +4,14 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 interface Props {
   frontmatter?: {
     date?: Date | string;
+    updated?: Date | string;
     author?: string;
     tags?: string[];
+    curso?: string;
+    ciclo?: string | number;
+    dificultad?: 'Básico' | 'Intermedio' | 'Avanzado' | string;
+    tiempoLectura?: string;
+    referencia?: string;
     [key: string]: unknown;
   };
   docId?: string;
@@ -19,27 +25,60 @@ const formatDate = (dateStr?: Date | string): string => {
   return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 };
 
-// Backlinks
 let backlinks: Array<{ title: string; url: string }> = [];
+let outgoingLinks: Array<{ title: string; url: string }> = [];
+
 if (docId && docId !== 'explorar') {
   const allDocs = await getCollection('docs');
-  
-  // Expresión regular que solo busca:
-  // 1. Wikilinks estilo Obsidian: [[prueba]] o [[prueba|Alias]]
-  // 2. Enlaces estándar de Markdown: (/docs/prueba) o (prueba)
-  const escapedDocId = docId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const linkRegex = new RegExp(`\\[\\[(?:.*\\/)?${escapedDocId}(?:#[^\\]|]*)?(?:\\|[^\\]]*)?\\]\\]|\\((?:\\/docs\\/)?${escapedDocId}(?:\\.mdx?)?(?:#[^)]*)?\\)`, 'i');
+  const validDocs = allDocs.filter((d: CollectionEntry<'docs'>) => d.data.draft !== true);
 
-  backlinks = allDocs
+  const docMap = new Map<string, string>();
+  validDocs.forEach((d) => {
+    const norm = d.id.replace(/\\/g, '/');
+    docMap.set(norm, d.data.title || norm);
+    docMap.set(`/docs/${norm}`, d.data.title || norm);
+  });
+
+  // Enlaces salientes
+  const currentDoc = validDocs.find((d) => d.id.replace(/\\/g, '/') === docId);
+  if (currentDoc && currentDoc.body) {
+    const linkExtractionRegex = /\[\[(.*?)\]\]|\((.*?)\)/g;
+    const matches = currentDoc.body.matchAll(linkExtractionRegex);
+    const addedOut = new Set<string>();
+
+    for (const match of matches) {
+      let target = (match[1] || match[2] || '').trim();
+      if (!target || target.startsWith('http') || target.startsWith('#')) continue;
+
+      target = target.split('|')[0].split('#')[0].trim();
+      target = target.replace(/^\/docs\//, '').replace(/\.mdx?$/, '');
+
+      if (target !== docId && docMap.has(target) && !addedOut.has(target)) {
+        addedOut.add(target);
+        outgoingLinks.push({
+          title: docMap.get(target) || target,
+          url: `/docs/${target}`,
+        });
+      }
+    }
+  }
+
+  // Backlinks entrantes
+  const escapedDocId = docId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const linkRegex = new RegExp(
+    `\\[\\[(?:.*\\/)?${escapedDocId}(?:#[^\\]|]*)?(?:\\|[^\\]]*)?\\]\\]|\\((?:\\/docs\\/)?${escapedDocId}(?:\\.mdx?)?(?:#[^)]*)?\\)`,
+    'i'
+  );
+
+  backlinks = validDocs
     .filter((d: CollectionEntry<'docs'>) => {
-      if (d.data.draft === true) return false;
       const normalized = d.id.replace(/\\/g, '/');
       if (normalized === docId) return false;
       return d.body && linkRegex.test(d.body);
     })
     .map((d: CollectionEntry<'docs'>) => ({
-      title: d.data.title,
-      url: `/docs/${d.id.replace(/\\/g, '/')}`
+      title: d.data.title || d.id,
+      url: `/docs/${d.id.replace(/\\/g, '/')}`,
     }));
 }
 ---
@@ -52,34 +91,106 @@ if (docId && docId !== 'explorar') {
 
   <div class="sidebar-content">
     <div id="meta-pane" class="tab-pane active">
+      {/* Contexto Académico */}
+      {frontmatter.curso && (
+        <div class="ficha">
+          <span class="ficha-label">📚 Asignatura</span>
+          <a href={`/curso/${frontmatter.curso}`} class="ficha-chip" title={`Ver todas las notas de ${frontmatter.curso}`}>
+            {frontmatter.curso} <span>↗</span>
+          </a>
+        </div>
+      )}
+
+      {frontmatter.ciclo && (
+        <div class="ficha">
+          <span class="ficha-label">🎓 Ciclo / Nivel</span>
+          <a href={`/ciclo/${frontmatter.ciclo}`} class="ficha-chip" title={`Ver notas del Ciclo ${frontmatter.ciclo}`}>
+            Ciclo {frontmatter.ciclo} <span>↗</span>
+          </a>
+        </div>
+      )}
+
+      {frontmatter.dificultad && (
+        <div class="ficha">
+          <span class="ficha-label">⚡ Dificultad</span>
+          <a href={`/dificultad/${frontmatter.dificultad}`} class="ficha-chip" title={`Ver notas con dificultad ${frontmatter.dificultad}`}>
+            {frontmatter.dificultad} <span>↗</span>
+          </a>
+        </div>
+      )}
+
+      {frontmatter.tiempoLectura && (
+        <div class="ficha">
+          <span class="ficha-label">⏱️ Tiempo estimado</span>
+          <span class="ficha-value">{frontmatter.tiempoLectura}</span>
+        </div>
+      )}
+
+      {/* Fechas */}
       {frontmatter.date && (
         <div class="ficha">
-          <span class="ficha-label">📅 Fecha</span>
+          <span class="ficha-label">📅 Creado</span>
           <span class="ficha-value">{formatDate(frontmatter.date)}</span>
+        </div>
+      )}
+
+      {frontmatter.updated && (
+        <div class="ficha">
+          <span class="ficha-label">🔄 Actualizado</span>
+          <span class="ficha-value">{formatDate(frontmatter.updated)}</span>
         </div>
       )}
 
       {frontmatter.author && (
         <div class="ficha">
           <span class="ficha-label">✍️ Autor</span>
-          <span class="ficha-value">{frontmatter.author}</span>
+          <a href={`/autor/${frontmatter.author}`} class="ficha-chip" title={`Ver todas las notas de ${frontmatter.author}`}>
+            {frontmatter.author} <span>↗</span>
+          </a>
         </div>
       )}
 
+      {frontmatter.referencia && (
+        <div class="ficha">
+          <span class="ficha-label">🔗 Referencia</span>
+          <a href={frontmatter.referencia} target="_blank" rel="noopener noreferrer" class="ficha-link">
+            Consultar fuente exterior ↗
+          </a>
+        </div>
+      )}
+
+      {/* Etiquetas */}
       {frontmatter.tags && frontmatter.tags.length > 0 && (
         <div class="ficha">
           <span class="ficha-label">🏷️ Etiquetas</span>
           <div class="tags-container">
             {frontmatter.tags.map((tag: string) => (
-              <a href={`/tags/${tag}`} class="tag">{tag}</a>
+              <a href={`/tags/${tag}`} class="tag">#{tag}</a>
             ))}
           </div>
         </div>
       )}
 
+      {/* Enlaces Salientes */}
+      {outgoingLinks.length > 0 && (
+        <div class="sidebar-backlinks">
+          <h4 class="sidebar-subtitle">🔗 Enlaces en esta nota</h4>
+          <ul class="sidebar-backlink-list">
+            {outgoingLinks.map((link) => (
+              <li>
+                <a href={link.url} class="sidebar-backlink-item" title={link.title}>
+                  {link.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Conexiones Entrantes */}
       {backlinks.length > 0 && (
         <div class="sidebar-backlinks">
-          <h4 class="sidebar-subtitle">🔗 Conexiones</h4>
+          <h4 class="sidebar-subtitle">📎 Conexiones entrantes</h4>
           <ul class="sidebar-backlink-list">
             {backlinks.map((link) => (
               <li>
@@ -92,9 +203,16 @@ if (docId && docId !== 'explorar') {
         </div>
       )}
 
-      {!frontmatter.date && !frontmatter.author && (!frontmatter.tags || frontmatter.tags.length === 0) && (
-        <p class="empty-msg">No hay metadatos adicionales.</p>
-      )}
+      {!frontmatter.date &&
+        !frontmatter.author &&
+        (!frontmatter.tags || frontmatter.tags.length === 0) &&
+        !frontmatter.curso &&
+        !frontmatter.ciclo &&
+        !frontmatter.dificultad &&
+        outgoingLinks.length === 0 &&
+        backlinks.length === 0 && (
+          <p class="empty-msg">No hay metadatos adicionales ni conexiones.</p>
+        )}
     </div>
 
     <div id="prefs-pane" class="tab-pane">
@@ -144,18 +262,69 @@ if (docId && docId !== 'explorar') {
   .tags-container { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
   .tag { background: var(--text-color); color: var(--bg-color); padding: 0.1rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: lowercase; text-decoration: none; }
 
+  .ficha-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    width: fit-content;
+    border: none;
+  }
+
+  .ficha-chip span {
+    font-size: 0.65rem;
+    opacity: 0.8;
+  }
+
+  .ficha-chip:hover {
+    opacity: 0.85;
+    transform: translateX(2px);
+    background: var(--text-color);
+    color: var(--bg-color);
+  }
+
+  :global(html[data-modo="claro"]) .ficha-chip {
+    background: var(--text-color);
+    color: var(--bg-color);
+  }
+
+  :global(html[data-modo="claro"]) .ficha-chip:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+    opacity: 0.85;
+  }
+
+  .ficha-link {
+    font-size: 0.8rem;
+    color: #8b5cf6;
+    text-decoration: none;
+    word-break: break-all;
+    transition: opacity 0.2s;
+  }
+  .ficha-link:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+
   .prefs-body { display: flex; flex-direction: column; gap: 0.8rem; }
   .prefs-body label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.85rem; }
   .pref-select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; font-size: 0.85rem; }
   .empty-msg { font-size: 0.85rem; font-style: italic; opacity: 0.6; }
 
-  /* Estilos encapsulados de Backlinks */
-  .sidebar-backlinks { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border-color); }
-  .sidebar-subtitle { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #8b5cf6; margin: 0 0 0.8rem 0; font-weight: 700; }
-  .sidebar-backlink-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  /* Estilos de Enlaces y Conexiones */
+  .sidebar-backlinks { margin-top: 1.2rem; padding-top: 0.8rem; border-top: 1px dashed var(--border-color); }
+  .sidebar-subtitle { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: #8b5cf6; margin: 0 0 0.6rem 0; font-weight: 700; }
+  .sidebar-backlink-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.45rem; }
   .sidebar-backlink-item {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-color);
     text-decoration: none;
     padding: 0.4rem 0.6rem;
@@ -166,6 +335,9 @@ if (docId && docId !== 'explorar') {
     overflow: hidden;
     text-overflow: ellipsis;
     transition: all 0.2s ease;
+  }
+  :global(html[data-modo="oscuro"]) .sidebar-backlink-item {
+    background: rgba(255, 255, 255, 0.03);
   }
   .sidebar-backlink-item:hover {
     background: rgba(139, 92, 246, 0.1);
@@ -188,7 +360,6 @@ if (docId && docId !== 'explorar') {
       });
     }
 
-    // Pestaña activa
     const savedTab = localStorage.getItem('right-active-tab') || 'right-meta';
     const targetPaneId = savedTab.replace('right-', '') + '-pane';
 
@@ -201,7 +372,6 @@ if (docId && docId !== 'explorar') {
 
     updateSelectValues();
 
-    // Eventos de Pestaña
     wrapper.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', (e: MouseEvent) => {
         const target = e.currentTarget as HTMLElement;
@@ -221,7 +391,6 @@ if (docId && docId !== 'explorar') {
       });
     });
 
-    // Manejo directo de selects sin cloneNode
     ['modo', 'texto', 'ancho'].forEach((id) => {
       const select = document.getElementById(`r-select-${id}`) as HTMLSelectElement | null;
       if (select) {

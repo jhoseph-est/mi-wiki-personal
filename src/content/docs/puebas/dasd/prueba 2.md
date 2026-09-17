@@ -1,5 +1,6 @@
 ---
 title: prueba 2
+tags: ["guia", "markdown", "mdx", "tutorial"]
 ---
 
 >[!info]

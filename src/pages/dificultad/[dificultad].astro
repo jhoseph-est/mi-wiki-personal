@@ -1,0 +1,73 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatName } from '../../utils/fileTree';
+
+export async function getStaticPaths() {
+  const allDocs = await getCollection('docs');
+  const publishedDocs = allDocs.filter((doc: CollectionEntry<'docs'>) => doc.data.draft !== true);
+
+  const uniqueDificultades = [
+    ...new Set(
+      publishedDocs
+        .map((doc) => doc.data.dificultad)
+        .filter((d): d is string => typeof d === 'string' && d.trim() !== '')
+    ),
+  ];
+
+  return uniqueDificultades.map((dificultad) => {
+    const filteredDocs = publishedDocs.filter((doc) => doc.data.dificultad === dificultad);
+    return {
+      params: { dificultad },
+      props: { docs: filteredDocs },
+    };
+  });
+}
+
+interface Props {
+  docs: CollectionEntry<'docs'>[];
+}
+
+const { dificultad } = Astro.params;
+const { docs } = Astro.props;
+---
+
+<Base title={`Dificultad: ${dificultad}`}>
+  <div class="filter-header">
+    <span class="filter-badge">⚡ Dificultad</span>
+    <h1>{dificultad}</h1>
+    <p>Se encontraron {docs.length} {docs.length === 1 ? 'apunte' : 'apuntes'}.</p>
+  </div>
+
+  <ul class="filter-list">
+    {docs.map((doc) => {
+      const normalizedId = doc.id.replace(/\\/g, '/');
+      const folderPath = normalizedId.split('/').slice(0, -1).join(' / ');
+      return (
+        <li>
+          <a href={`/docs/${normalizedId}`} class="filter-link">
+            <h2>{doc.data.title}</h2>
+            <span class="folder-badge">📁 {folderPath ? formatName(folderPath) : 'Raíz'}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</Base>
+
+<style>
+  .filter-header { margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+  .filter-badge { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8b5cf6; }
+  .filter-header h1 { margin: 0.3rem 0 0.5rem 0; color: var(--text-color); font-size: 1.8rem; }
+  .filter-header p { margin: 0; opacity: 0.7; font-size: 0.95rem; }
+  .filter-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .filter-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0.8rem 1rem;
+    background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 8px;
+    text-decoration: none; color: var(--text-color); transition: all 0.2s ease;
+  }
+  :global(html[data-modo="oscuro"]) .filter-link { background: rgba(255, 255, 255, 0.02); }
+  .filter-link:hover { background: rgba(139, 92, 246, 0.08); border-color: #8b5cf6; transform: translateX(4px); }
+  .filter-link h2 { margin: 0; font-size: 1.05rem; font-weight: 500; flex-grow: 1; }
+  .folder-badge { font-size: 0.8rem; opacity: 0.6; white-space: nowrap; }
+</style>

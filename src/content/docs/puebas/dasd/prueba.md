@@ -1,5 +1,13 @@
----  
-title: prueba  
+---
+title: "Estadística Descriptiva y Conceptos Básicos"
+curso: "Estadística y Probabilidades"
+ciclo: 1
+dificultad: "Básico"
+tiempoLectura: "6 min"
+date: 2026-03-15
+updated: 2026-09-17
+tags: ["estadistica", "probabilidades", "analisis"]
+referencia: "https://es.wikipedia.org/wiki/Estad%C3%ADstica_descriptiva"
 ---
 # Archivo de Pruebas Matemáticas para Lector Markdown con LaTeX
 

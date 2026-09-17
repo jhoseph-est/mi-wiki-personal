@@ -95,6 +95,13 @@ flowchart TB
 > [!tip] Regla rápida
 > * Si describe lo que **ya pasó** en el conjunto de datos $\to$ **Descriptiva**.
 > * Si concluye sobre lo que **no se ha medido directamente** con cierto margen de error $\to$ **Inferencial**. ${}\frac{1}{b}{}$
+> $$
+> \begin{aligned}
+> p \land ( q \lor r ) &\equiv ( p \land q ) \lor r \\
+> p \lor ( q \land r ) &\equiv ( p \lor q ) \land r
+> \end{aligned}
+> $$
+
 
 
 ${}\frac{1}{b}{}$

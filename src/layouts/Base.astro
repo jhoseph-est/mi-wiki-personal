@@ -66,7 +66,7 @@ const estiloDoc = frontmatter.theme || 'moderno';
         <LeftSidebar headings={headings} />
       </aside>
 
-      <main class="main-content" data-pagefind-body>
+      <main class="main-content" data-pagefind-ignore>
         <div class="content-wrapper">
           <slot />
         </div>
@@ -133,6 +133,16 @@ const estiloDoc = frontmatter.theme || 'moderno';
       observer.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-modo']
+      });
+    </script>
+    <!-- NUEVO SCRIPT PARA EVITAR QUE PAGEFIND DUPLIQUE EL CÓDIGO DE LAS FÓRMULAS -->
+    <script>
+      document.addEventListener('astro:page-load', () => {
+        document.querySelectorAll('.katex-mathml, .katex-html').forEach(el => {
+          if (!el.hasAttribute('data-pagefind-ignore')) {
+            el.setAttribute('data-pagefind-ignore', 'true');
+          }
+        });
       });
     </script>
   </body>

@@ -1,5 +1,5 @@
 ---
-title: "Batería de Pruebas: MathJax & Fórmulas"
+title: "prueba para formulas 2"
 slides: true
 date: 2026-09-16
 author: "Admin"

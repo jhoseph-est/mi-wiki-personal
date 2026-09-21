@@ -1,6 +1,9 @@
 ---
-title: Batería de Pruebas Extrema - Mermaid
-tags: ["sistema", "mermaid", "tutorial"]
+title: prueba general para mermaids avanzados
+tags:
+  - sistema
+  - mermaid
+  - tutorial
 orden: 1
 theme: moderno
 slides: true

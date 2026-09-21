@@ -1,5 +1,5 @@
 ---
-title: prueba 2
+title: "prueba para md"
 tags: ["guia", "markdown", "mdx", "tutorial"]
 ---
 

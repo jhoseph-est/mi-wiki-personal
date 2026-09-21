@@ -45,6 +45,10 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
+  
+  /* AÑADIR ESTAS DOS LÍNEAS */
+  scroll-behavior: smooth; 
+  scroll-padding-top: 1.5rem; /* El respiro visual exacto para que el título no choque con el borde superior */
 }
 
 .content-wrapper {

@@ -335,3 +335,16 @@ html[data-modo="oscuro"] .callout-cite {
 .main-content .katex .array {
     display: inline-table;
 }
+
+
+.main-content {
+  padding: var(--content-padding, 2rem 3rem);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  
+  /* AQUÍ ESTÁ LA CLAVE: Forzamos el espacio superior obligatorio para cualquier anclaje (#) */
+  scroll-padding-top: 100px; /* Puedes subir o bajar este valor (ej. 4rem o 6rem) según el espacio que quieras dejar con el header */
+}

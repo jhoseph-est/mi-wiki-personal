@@ -25,10 +25,12 @@ $$\forall x \in U, \quad x \in (A \bigtriangleup B) \iff (x \in A \land x \notin
 ---
 
 ## 2. Cálculo y Límites
-
+	
 Definición formal de límite $(\varepsilon - \delta)$:
 
-$$\lim_{x \to a} f(x) = L \iff \forall \varepsilon > 0, \, \exists \delta > 0 : 0 < |x - a| < \delta \implies |f(x) - L| < \varepsilon + \lim_{x \to a} f(x) = L \iff \forall \varepsilon > 0, \, \exists \delta > 0 : 0 < |x - a| < \delta \implies |f(x) - L| < \varepsilon $$
+$$
+\lim_{x \to a} f(x) = L \iff \forall \varepsilon > 0, \, \exists \delta > 0 : 0 < |x - a| < \delta \implies |f(x) - L| < \varepsilon + \lim_{x \to a} f(x) = L \iff \forall \varepsilon > 0, \, \exists \delta > 0 : 0 < |x - a| < \delta \implies |f(x) - L| < \varepsilon
+$$
 
 Fracción display grande:
 $$\lim_{n \to \infty} \left(1 + \frac{1}{n}\right)^n = e$$

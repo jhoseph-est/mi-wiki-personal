@@ -302,3 +302,36 @@ html[data-modo="oscuro"] .callout-cite {
 .main-content pre:hover .copy-code-btn { opacity: 1; }
 .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
 .copy-code-btn.copied { background: #10b981; color: white; border-color: #10b981; }
+
+/* ==========================================================
+   CORRECCIÓN DEFINITIVA PARA FÓRMULAS LARGAS Y MATRICES (KaTeX)
+   ========================================================== */
+
+/* Contenedor principal de fórmulas en bloque */
+.main-content .katex-display {
+    display: block;
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    padding: 0.50rem 0;
+    margin: 1.5rem 0;
+    -webkit-overflow-scrolling: touch;
+    text-align: left; /* Alinea las fórmulas largas hacia la izquierda para un scroll cómodo */
+}
+
+/* Forzar que la fórmula matemática NUNCA se rompa en varias líneas */
+.main-content .katex-display > .katex {
+    display: inline-block;
+    white-space: nowrap !important; /* Impide los saltos de línea automáticos que se ven en tu imagen */
+    max-width: none !important;
+}
+
+/* Control estricto para matrices, arreglos y entornos multilínea (bmatrix, pmatrix, aligned) */
+.main-content .katex-display .katex-html {
+    white-space: nowrap !important;
+}
+
+/* Evitar que las matrices o cajas internas de LaTeX distorsionen su ancho */
+.main-content .katex .array {
+    display: inline-table;
+}

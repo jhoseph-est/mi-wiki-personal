@@ -290,3 +290,23 @@ body {
     height: auto !important;
   }
 } /* Asegúrate de que esta llave cierre @media print */
+
+/* ==========================================================
+   FASE 4: COMPENSACIÓN DE ANCLAJES Y HASHES (#)
+   ========================================================== */
+
+/* Añade un margen de seguridad superior automático a todos los encabezados 
+   para que la cabecera fija no los tape al navegar por la URL o el índice */
+.main-content h1[id], 
+.main-content h2[id], 
+.main-content h3[id], 
+.main-content h4[id], 
+.main-content h5[id], 
+.main-content h6[id] {
+    scroll-margin-top: calc(var(--header-height, 60px) + 2rem);
+}
+
+/* Asegurar que el contenedor principal maneje el scroll de anclajes de forma fluida */
+.main-content {
+    scroll-behavior: smooth;
+}

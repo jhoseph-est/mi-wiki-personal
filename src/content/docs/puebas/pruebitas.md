@@ -13,12 +13,4 @@ title: pruebitas
 
 La idea matemática fundamental es:
 
-$$
-\boxed{
-\text{muchas cargas pequeñas}
-\longrightarrow
-\text{integral}
-}
-$$
 
----

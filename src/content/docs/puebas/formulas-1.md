@@ -98,7 +98,7 @@ $$
 
 
 $$
-\boxed{\text{Cargas iguales}\rightarrow\text{repulsión}}
+\boxed{\text{Cargas iguawpygivblhf puawbifeñhjdsk vales}\rightarrow\text{asdalfujabfñiuasdhbvpwayeibfhdjcls8wpegyfibdcshlwfgap8eycdsbihlkwag8yfecsdbihl}}
 $$
 
 $$

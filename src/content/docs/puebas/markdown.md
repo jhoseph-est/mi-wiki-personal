@@ -1,9 +1,7 @@
 ---
-title: markdown
+title: "prueba general para markdown"
 tags: ["algo"]
 ---
-
-````markdown
 # Guía Completa de Markdown (Parte 1)
 Guía práctica de todo lo que Markdown puede hacer de forma nativa o ampliamente soportada.
 

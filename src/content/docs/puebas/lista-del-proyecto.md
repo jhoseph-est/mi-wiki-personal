@@ -1,5 +1,5 @@
 ---
-title: lista de proyecto
+title: "lista del proyecto"
 ---
 
 # Checklist de Proyecto de Mecatrónica

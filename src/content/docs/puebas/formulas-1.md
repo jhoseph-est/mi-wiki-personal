@@ -41,10 +41,14 @@ Integral definida fundamental:
 $$\int_{a}^{b} f(x) \, dx = F(b) - F(a)$$
 
 Sumatoria de Gauss y series infinitas:
-$$\sum_{k=1}^{n} k = \frac{n(n+1)}{2}, \quad \sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}$$
+$$
+\sum_{k=1}^{n} k = \frac{n(n+1)}{2}, \quad \sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+$$
 
 Integral doble sobre una región:
-$$\iint_{D} \left( \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y} \right) dx \, dy = \oint_{C} (P \, dx + Q \, dy)$$
+$$
+\iint_{D} \left( \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y} \right) dx \, dy = \oint_{C} (P \, dx + Q \, dy)
+$$
 
 ---
 
@@ -52,7 +56,8 @@ $$\iint_{D} \left( \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}
 
 Matriz de rotación en 2D:
 
-$$\begin{bmatrix}
+$$
+\begin{bmatrix}
 \cos\theta & -\sin\theta \\
 \sin\theta & \cos\theta
 \end{bmatrix}
@@ -64,13 +69,15 @@ y
 \begin{bmatrix}
 x' \\
 y'
-\end{bmatrix}$$
+\end{bmatrix}
+$$
 
 Determinante:
 $$\det(A) = \begin{vmatrix}
 a & b \\
 c & d
-\end{vmatrix} = ad - bc$$
+\end{vmatrix} = ad - bc
+$$
 
 ---
 
@@ -78,8 +85,10 @@ c & d
 
 Función escalonada de Heaviside y valor absoluto:
 
-$$f(x) = \begin{cases}
+$$
+f(x) = \begin{cases}
 -x & \text{si } x < 0 \\
 0 & \text{si } x = 0 \\
 x^2 + 1 & \text{si } x > 0
-\end{cases}$$
+\end{cases}
+$$

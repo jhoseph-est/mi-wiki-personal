@@ -1,5 +1,5 @@
 ---
-title: frommater posible no hacer caso aun            # Título del documento.
+title: frommater posible no hacer caso aun           # Título del documento.
 ---
 
 # =========================

@@ -203,5 +203,52 @@ const estiloDoc = frontmatter.theme || 'moderno';
     });
   });
 </script>
+<script>
+  document.addEventListener('astro:page-load', () => {
+    // Función para manejar el scroll con compensación exacta del header (tipado estricto)
+    const scrollToHash = (hash: string) => {
+      if (!hash) return;
+      const targetElement = document.querySelector(hash);
+      const mainContent = document.querySelector('.main-content');
+      const header = document.querySelector('.main-header');
+
+      if (targetElement && mainContent) {
+        // Obtenemos la altura real del header en tiempo real
+        const headerHeight = header ? header.getBoundingClientRect().height : 60;
+        
+        // Calculamos la posición del elemento respecto al contenedor con scroll (.main-content)
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const currentScroll = mainContent.scrollTop;
+        
+        // Posición final exacta restando el alto del header para que nunca lo tape
+        const offsetPosition = elementPosition + currentScroll - headerHeight - 20;
+
+        mainContent.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    // Si la página carga directamente con un # en la URL
+    if (window.location.hash) {
+      setTimeout(() => scrollToHash(window.location.hash), 100);
+    }
+
+    // Interceptar clics en cualquier enlace interno que contenga un anclaje (#)
+    document.addEventListener('click', (e: MouseEvent) => {
+      const targetElement = e.target as HTMLElement | null;
+      const target = targetElement?.closest('a') as HTMLAnchorElement | null;
+      
+      if (target && target.hash && target.origin === window.location.origin) {
+        if (target.pathname === window.location.pathname) {
+          e.preventDefault();
+          history.pushState(null, '', target.hash);
+          scrollToHash(target.hash);
+        }
+      }
+    });
+  });
+</script>
   </body>
 </html>

@@ -1,156 +1,76 @@
 ---
 title: pruebitas
 ---
+# 16. Ejemplo de distribución continua
 
-# 15. Ley de Coulomb para distribuciones continuas
-
-Una distribución continua aparece cuando la carga está distribuida sobre:
-
-- una línea o barra;
-- una superficie;
-- un volumen.
-
-En vez de considerar cargas individuales, utilizamos un elemento infinitesimal:
+Supongamos una barra cargada uniformemente con:
 
 $$
-dq
+Q=10\,\mu C
 $$
 
-La suma:
+y:
 
 $$
-\sum
+L=2\,m
 $$
 
-se reemplaza por una integral:
+### Paso 1: densidad lineal
 
 $$
-\boxed{\sum\rightarrow\int}
+\lambda=\frac{Q}{L}
 $$
 
-La fuerza infinitesimal es:
-
 $$
-d\vec F=
-k\frac{q\,dq}{r^2}\hat r
+\lambda=
+\frac{10\times10^{-6}}{2}
 $$
-
-Por tanto:
 
 $$
 \boxed{
-\vec F=
-k\int
-\frac{q\,dq}{r^2}\hat r
+\lambda=5\times10^{-6}\ C/m
 }
 $$
 
----
+### Paso 2: elemento de carga
 
-## 15.1 Densidad lineal
-
-Para una carga distribuida a lo largo de una línea:
+Un pequeño segmento $dx$ contiene:
 
 $$
 \boxed{
-\lambda=\frac{dq}{dl}
+dq=\lambda\,dx
 }
 $$
 
-por lo tanto:
+### Paso 3: fuerza diferencial
+
+Sobre una carga $q$:
+
+$$
+dF=
+k\frac{q\,dq}{r^2}
+$$
+
+Sustituyendo:
+
+$$
+dF=
+k\frac{q\lambda\,dx}{r^2}
+$$
+
+### Paso 4: fuerza total
+
+Integramos sobre toda la barra:
 
 $$
 \boxed{
-dq=\lambda\,dl
+F=
+kq\lambda
+\int
+\frac{dx}{r^2}
 }
 $$
 
-Unidad:
-
-$$
-[\lambda]=C/m
-$$
-
-Entonces:
-
-$$
-\boxed{
-\vec F=
-k\int
-\frac{q\lambda\,dl}{r^2}\hat r
-}
-$$
-
----
-
-## 15.2 Densidad superficial
-
-Para una carga distribuida sobre una superficie:
-
-$$
-\boxed{
-\sigma=\frac{dq}{dA}
-}
-$$
-
-por lo tanto:
-
-$$
-\boxed{
-dq=\sigma\,dA
-}
-$$
-
-Unidad:
-
-$$
-[\sigma]=C/m^2
-$$
-
-Entonces:
-
-$$
-\boxed{
-\vec F=
-k\int
-\frac{q\sigma\,dA}{r^2}\hat r
-}
-$$
-
----
-
-## 15.3 Densidad volumétrica
-
-Para una carga distribuida dentro de un volumen:
-
-$$
-\boxed{
-\rho=\frac{dq}{dV}
-}
-$$
-
-por lo tanto:
-
-$$
-\boxed{
-dq=\rho\,dV
-}
-$$
-
-Unidad:
-
-$$
-[\rho]=C/m^3
-$$
-
-Entonces:
-
-$$
-\boxed{
-\vec F=
-k\int
-\frac{q\rho\,dV}{r^2}\hat r
-}
-$$
+Los límites y la expresión de $r$ dependen de la geometría del problema.
 
 ---

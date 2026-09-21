@@ -73,7 +73,8 @@ y'
 $$
 
 Determinante:
-$$\det(A) = \begin{vmatrix}
+$$
+\det(A) = \begin{vmatrix}
 a & b \\
 c & d
 \end{vmatrix} = ad - bc

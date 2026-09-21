@@ -44,15 +44,33 @@
   color: #ffffff; 
 }
 
-/* Tablas en Markdown */
-.main-content table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  margin: 1.5rem 0; 
-  display: block; 
-  overflow-x: auto; 
-  white-space: nowrap; 
+/* Contenedor responsivo para tablas */
+.main-content table-container, 
+.main-content table {
+    width: 100%;
+    margin: 1.5rem 0;
 }
+
+/* Hacemos que la tabla sea fluida y el scroll recaiga limpiamente en su contenedor o en sí misma sin holguras */
+.main-content table {
+    display: table; /* Cambiamos de block a table para evitar cálculos extraños de ancho */
+    width: 100%;
+    border-collapse: collapse;
+    overflow-x: auto;
+}
+
+/* Contenedor envolvente si el navegador lo requiere, o forzamos el scroll horizontal seguro */
+.main-content article {
+    overflow-x: hidden; /* Evita que las tablas ensanchen la página principal de forma invisible */
+}
+
+/* Permitir scroll horizontal aislado solo cuando la tabla sea muy ancha */
+.main-content table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
 .main-content th, .main-content td { 
   border: 1px solid var(--border-color); 
   padding: 0.75rem 1rem; 

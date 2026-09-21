@@ -80,6 +80,17 @@ function buildWrapperStructure(innerContent: string): HTMLElement {
 function attachMermaidControls(wrapper: HTMLElement, code: string) {
   const svg = wrapper.querySelector('svg') as SVGElement | null;
   const viewport = wrapper.querySelector('.mermaid-viewport') as HTMLElement | null;
+  if (viewport) {
+  viewport.addEventListener('wheel', (e) => {
+    e.stopPropagation();
+  if (viewport.scrollHeight <= viewport.clientHeight && viewport.scrollWidth <= viewport.clientWidth) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+  viewport.addEventListener('touchmove', (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+}
   if (!svg || !viewport) return;
 
   let currentScale = 1;
@@ -155,46 +166,67 @@ function attachMermaidControls(wrapper: HTMLElement, code: string) {
     URL.revokeObjectURL(url);
   });
 
-  wrapper.querySelector('.btn-fullscreen-diagram')?.addEventListener('click', () => {
-    let modal = document.getElementById('mermaid-global-modal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'mermaid-global-modal';
-      modal.className = 'mermaid-modal-overlay';
-      modal.innerHTML = `
-        <div class="mermaid-modal-content">
-          <button class="mermaid-modal-close">Cerrar (Esc)</button>
-          <div class="mermaid-modal-body"></div>
-        </div>
-      `;
-      document.body.appendChild(modal);
+   wrapper.querySelector('.btn-fullscreen-diagram')?.addEventListener('click', () => {
+      let modal = document.getElementById('mermaid-global-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mermaid-global-modal';
+        modal.className = 'mermaid-modal-overlay';
+        modal.innerHTML = `
+          <div class="mermaid-modal-content">
+            <button class="mermaid-modal-close">Cerrar (Esc)</button>
+            <div class="mermaid-modal-body"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const closeModal = () => {
+          modal?.classList.remove('is-active');
+          document.body.style.overflow = ''; // Restaura el scroll de la página
+        };
 
-      modal.querySelector('.mermaid-modal-close')?.addEventListener('click', () => {
-        modal?.classList.remove('is-active');
-      });
-      window.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape') modal?.classList.remove('is-active');
-      });
-    }
+        // Cerrar al hacer clic exactamente en el fondo oscuro (el div escudo)
+        modal.addEventListener('click', (ev) => {
+          if (ev.target === modal) {
+            closeModal();
+          }
+        });
 
-    const modalBody = modal.querySelector('.mermaid-modal-body') as HTMLElement;
-    const clonedSvg = svg.cloneNode(true) as SVGElement;
-    
-    clonedSvg.style.transform = 'none';
-    clonedSvg.removeAttribute('width');
-    clonedSvg.removeAttribute('height');
-    clonedSvg.style.removeProperty('width');
-    clonedSvg.style.removeProperty('height');
-    clonedSvg.style.removeProperty('max-width');
-    clonedSvg.style.removeProperty('min-width');
+        modal.querySelector('.mermaid-modal-close')?.addEventListener('click', closeModal);
+        window.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape') closeModal();
+        });
 
-    const diagramLayout = wrapper.dataset.layout || 'fit';
-    modalBody.className = `mermaid-modal-body modal-layout-${diagramLayout}`;
+        // ESCUDO ABSOLUTO: Evita que cualquier evento de scroll o touch traspase el modal hacia el fondo
+        modal.addEventListener('wheel', (ev) => {
+          ev.stopPropagation();
+        }, { passive: true });
 
-    modalBody.innerHTML = '';
-    modalBody.appendChild(clonedSvg);
-    modal.classList.add('is-active');
-  });
+        modal.addEventListener('touchmove', (ev) => {
+          ev.stopPropagation();
+        }, { passive: true });
+      }
+
+      const modalBody = modal.querySelector('.mermaid-modal-body') as HTMLElement;
+      const clonedSvg = svg.cloneNode(true) as SVGElement;
+          
+      clonedSvg.style.transform = 'none';
+      clonedSvg.removeAttribute('width');
+      clonedSvg.removeAttribute('height');
+      clonedSvg.style.removeProperty('width');
+      clonedSvg.style.removeProperty('height');
+      clonedSvg.style.removeProperty('max-width');
+      clonedSvg.style.removeProperty('min-width');
+
+      const diagramLayout = wrapper.dataset.layout || 'fit';
+      modalBody.className = `mermaid-modal-body modal-layout-${diagramLayout}`;
+      modalBody.innerHTML = '';
+      modalBody.appendChild(clonedSvg);
+
+      // Activamos el modal y congelamos el body de fondo
+      modal.classList.add('is-active');
+      document.body.style.overflow = 'hidden'; 
+    });
 }
 
 export async function renderMermaid(forceReRender = false) {

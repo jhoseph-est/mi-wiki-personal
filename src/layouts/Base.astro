@@ -145,5 +145,63 @@ const estiloDoc = frontmatter.theme || 'moderno';
         });
       });
     </script>
+    <script>
+  document.addEventListener('astro:page-load', () => {
+    // 1. Cierre seguro de sidebars móviles al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const leftPanel = document.querySelector('.left-panel');
+      const rightPanel = document.querySelector('.right-panel');
+      
+      const isLeftOpen = leftPanel?.classList.contains('show-mobile-menu');
+      const isRightOpen = rightPanel?.classList.contains('show-mobile-right');
+
+      if (!isLeftOpen && !isRightOpen) return;
+
+      const clickedInsideLeft = leftPanel?.contains(target);
+      const clickedInsideRight = rightPanel?.contains(target);
+
+      const clickedToggleButton = target.closest('button, a') && (
+        target.closest('[id*="toggle"]') || 
+        target.closest('[class*="menu"]') || 
+        target.closest('header button')
+      );
+
+      if (clickedToggleButton) return;
+
+      if (isLeftOpen && leftPanel && !clickedInsideLeft) {
+        leftPanel.classList.remove('show-mobile-menu');
+      }
+      if (isRightOpen && rightPanel && !clickedInsideRight) {
+        rightPanel.classList.remove('show-mobile-right');
+      }
+    });
+
+    // 2. Control de scroll de fondo para modales (Mermaid / Grafo)
+    const checkModals = () => {
+      const mermaidModal = document.getElementById('mermaid-global-modal');
+      const graphModal = document.getElementById('graph-modal');
+      
+      const isMermaidActive = mermaidModal?.classList.contains('is-active');
+      const isGraphActive = graphModal?.classList.contains('active') || graphModal?.classList.contains('is-active');
+
+      if (isMermaidActive || isGraphActive) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    };
+
+    document.addEventListener('click', () => {
+      setTimeout(checkModals, 50);
+    });
+    
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        setTimeout(checkModals, 50);
+      }
+    });
+  });
+</script>
   </body>
 </html>

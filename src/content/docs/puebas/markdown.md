@@ -110,11 +110,11 @@ https://openai.com
 
 Imagen básica:
 
-![Texto alternativo](imagen.png)
+<!-- ![Texto alternativo](imagen.png) -->
 
 Imagen con título:
 
-![Texto alternativo](imagen.png "Descripción")
+<!-- ![Texto alternativo](imagen.png "Descripción") -->
 
 ---
 

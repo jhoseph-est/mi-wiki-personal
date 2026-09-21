@@ -97,3 +97,15 @@ $$
 $$
 \boxed{\text{duplicar la distancia reduce la fuerza a la cuarta parte}}
 $$
+
+
+| Época       | Personaje / acontecimiento  | Aporte                                                                     |
+| ----------- | --------------------------- | -------------------------------------------------------------------------- |
+| ~600 a. C.  | Tales de Mileto             | Observó que el ámbar frotado podía atraer objetos ligeros.                 |
+| 1600        | William Gilbert             | Estudió sistemáticamente la electricidad y el magnetismo.                  |
+| 1733        | Charles du Fay              | Propuso la existencia de dos tipos de electricidad.                        |
+| 1748        | Benjamin Franklin           | Introdujo las ideas de carga positiva y negativa.                          |
+| Siglo XVIII | Charles-Augustin de Coulomb | Determinó experimentalmente la relación entre fuerza y cargas eléctricas.  |
+| Siglo XVIII | Henry Cavendish             | Realizó importantes experimentos sobre electricidad y gravitación.         |
+| Siglo XIX   | Michael Faraday             | Desarrolló conceptos fundamentales de campo eléctrico y electromagnetismo. |
+| Siglo XIX   | James Clerk Maxwell         | Unificó matemáticamente electricidad y magnetismo.                         |

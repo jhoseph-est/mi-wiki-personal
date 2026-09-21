@@ -1,5 +1,5 @@
 ---
-title: prueba para formulas 2
+title: formulas 2
 curso: Estadística y Probabilidades
 ciclo: 1
 dificultad: Básico

@@ -1,5 +1,5 @@
 ---
-title: "prueba general para markdown"
+title: "markdown general"
 tags: ["algo"]
 ---
 # Guía Completa de Markdown (Parte 1)

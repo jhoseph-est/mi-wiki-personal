@@ -1,5 +1,5 @@
 ---
-title: "Presentación Avanzada"
+title: "slides"
 slides: true
 date: 2026-09-05
 author: "Admin"

@@ -1,5 +1,5 @@
 ---
-title: "prueba para notas en md"
+title: "notas en md"
 ---
 
 # Callouts nativos de Obsidian (explicados)

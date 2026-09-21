@@ -1,5 +1,5 @@
 ---
-title: "prueba general para mermaid"
+title: "mermaid general"
 tags: ["algo"]
 slides: true
 ---

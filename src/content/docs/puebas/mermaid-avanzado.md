@@ -1,5 +1,5 @@
 ---
-title: prueba general para mermaids avanzados
+title: mermaids avanzados
 tags:
   - sistema
   - mermaid

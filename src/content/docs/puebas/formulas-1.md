@@ -1,5 +1,5 @@
 ---
-title: "prueba para formulas 2"
+title: "formulas 1"
 slides: true
 date: 2026-09-16
 author: "Admin"

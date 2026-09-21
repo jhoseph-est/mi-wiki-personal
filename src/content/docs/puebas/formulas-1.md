@@ -93,3 +93,7 @@ f(x) = \begin{cases}
 x^2 + 1 & \text{si } x > 0
 \end{cases}
 $$
+
+$$
+\boxed{\text{duplicar la distancia reduce la fuerza a la cuarta parte}}
+$$

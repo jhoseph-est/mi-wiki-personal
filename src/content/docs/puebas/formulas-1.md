@@ -96,11 +96,3 @@ $$
 
 > **Importante:** "tierra" no significa necesariamente que el objeto deba estar enterrado. En electricidad puede representar un referente de potencial y/o un gran reservorio de carga.
 
-
-$$
-\boxed{\text{Cargas iguawpygivblhf puawbifeñhjdsk vales}\rightarrow\text{asdalfujabfñiuasdhbvpwayeibfhdjcls8wpegyfibdcshlwfgap8eycdsbihlkwag8yfecsdbihl}}
-$$
-
-$$
-\boxed{\text{Cargas diferentes}\rightarrow\text{atracción}}
-$$

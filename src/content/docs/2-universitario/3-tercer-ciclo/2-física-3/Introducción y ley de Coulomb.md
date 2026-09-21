@@ -586,7 +586,7 @@ puede aproximarse como una carga puntual en determinadas situaciones.
 Si, en cambio:
 
 $$
-r\approx R
+r \approx R
 $$
 
 la distribución real de carga puede ser importante.

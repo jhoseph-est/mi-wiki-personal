@@ -94,38 +94,4 @@ x^2 + 1 & \text{si } x > 0
 \end{cases}
 $$
 
-```text
-                         ELECTRICIDAD
-                              │
-                ┌─────────────┴─────────────┐
-                │                           │
-          CARGA ELÉCTRICA              INTERACCIÓN
-                │                           │
-       ┌────────┼────────┐            Fuerza eléctrica
-       │        │        │                   │
-   Positiva  Negativa  Propiedades      Ley de Coulomb
-                         │                    │
-              ┌──────────┼──────────┐         │
-              │          │          │         │
-          Atracción  Conservación Cuantización │
-          Repulsión       │          │         │
-                          │        q = ne       │
-                          │                    │
-                  ELECTRIZACIÓN                │
-                          │                    │
-            ┌─────────────┼─────────────┐      │
-            │             │             │      │
-         Frotación    Conducción    Inducción  │
-                                                │
-                              ┌─────────────────┘
-                              │
-                       SUPERPOSICIÓN
-                              │
-                    ┌─────────┴─────────┐
-                    │                   │
-                 Discreta            Continua
-                    │                   │
-                   Σ                   ∫
-                    │                   │
-              q₁,q₂,q₃...          λ, σ, ρ
-```
+> **Importante:** "tierra" no significa necesariamente que el objeto deba estar enterrado. En electricidad puede representar un referente de potencial y/o un gran reservorio de carga.

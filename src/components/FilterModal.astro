@@ -1,0 +1,164 @@
+---
+import { formatName } from '../utils/fileTree';
+---
+
+<div id="filter-modal" class="filter-modal-overlay">
+  <div class="filter-modal-content">
+    <div class="filter-modal-header">
+      <div class="filter-header-titles">
+        <span id="filter-modal-badge" class="filter-badge">Filtro</span>
+        <h2 id="filter-modal-title">Cargando...</h2>
+      </div>
+      <button class="filter-modal-close" title="Cerrar (Esc)">&times;</button>
+    </div>
+    <div class="filter-modal-body">
+      <ul id="filter-modal-list" class="filter-grid">
+        <!-- Los elementos se inyectarán dinámicamente -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .filter-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+  }
+  .filter-modal-overlay.is-active {
+    display: flex;
+  }
+  
+  .filter-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    max-height: 85vh;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .filter-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.02);
+  }
+  :global(html[data-modo="oscuro"]) .filter-modal-header {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .filter-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8b5cf6;
+  }
+  .filter-modal-header h2 {
+    margin: 0.2rem 0 0 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+  }
+  .filter-modal-close {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .filter-modal-close:hover {
+    background: #8b5cf6;
+    color: #fff;
+  }
+  .filter-modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: calc(85vh - 100px);
+  }
+
+  /* Cuadrícula exacta de 3 columnas */
+  .filter-grid {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  @media (max-width: 900px) {
+    .filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+  @media (max-width: 600px) {
+    .filter-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+  
+  /* Estilo de tarjeta idéntico al de tus carpetas */
+  .filter-card-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 1.1rem 1.25nsrem !important;
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    color: var(--text-color) !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+  }
+  :global(html[data-modo="oscuro"]) .filter-card-item {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  .filter-card-item:hover {
+    transform: translateY(-3px) !important;
+    border-color: #8b5cf6 !important;
+    background: rgba(139, 92, 246, 0.08) !important;
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15) !important;
+  }
+  .card-icon {
+    font-size: 1.5rem !important;
+    color: #8b5cf6 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  .filter-card-item h3 {
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    color: var(--text-color) !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+  }
+</style>

@@ -95,27 +95,27 @@ if (docId && docId !== 'explorar') {
       {frontmatter.curso && (
         <div class="ficha">
           <span class="ficha-label">📚 Asignatura</span>
-          <a href={`/curso/${frontmatter.curso}`} class="ficha-chip" title={`Ver todas las notas de ${frontmatter.curso}`}>
+          <button type="button" class="ficha-chip filter-trigger" data-type="curso" data-value={frontmatter.curso} title={`Ver todas las notas de ${frontmatter.curso}`}>
             {frontmatter.curso} <span>↗</span>
-          </a>
+          </button>
         </div>
       )}
 
       {frontmatter.ciclo && (
         <div class="ficha">
           <span class="ficha-label">🎓 Ciclo / Nivel</span>
-          <a href={`/ciclo/${frontmatter.ciclo}`} class="ficha-chip" title={`Ver notas del Ciclo ${frontmatter.ciclo}`}>
+          <button type="button" class="ficha-chip filter-trigger" data-type="ciclo" data-value={frontmatter.ciclo} title={`Ver notas del Ciclo ${frontmatter.ciclo}`}>
             Ciclo {frontmatter.ciclo} <span>↗</span>
-          </a>
+          </button>
         </div>
       )}
 
       {frontmatter.dificultad && (
         <div class="ficha">
           <span class="ficha-label">⚡ Dificultad</span>
-          <a href={`/dificultad/${frontmatter.dificultad}`} class="ficha-chip" title={`Ver notas con dificultad ${frontmatter.dificultad}`}>
+          <button type="button" class="ficha-chip filter-trigger" data-type="dificultad" data-value={frontmatter.dificultad} title={`Ver notas con dificultad ${frontmatter.dificultad}`}>
             {frontmatter.dificultad} <span>↗</span>
-          </a>
+          </button>
         </div>
       )}
 
@@ -144,9 +144,9 @@ if (docId && docId !== 'explorar') {
       {frontmatter.author && (
         <div class="ficha">
           <span class="ficha-label">✍️ Autor</span>
-          <a href={`/autor/${frontmatter.author}`} class="ficha-chip" title={`Ver todas las notas de ${frontmatter.author}`}>
+          <button type="button" class="ficha-chip filter-trigger" data-type="autor" data-value={frontmatter.author} title={`Ver todas las notas de ${frontmatter.author}`}>
             {frontmatter.author} <span>↗</span>
-          </a>
+          </button>
         </div>
       )}
 
@@ -165,7 +165,7 @@ if (docId && docId !== 'explorar') {
           <span class="ficha-label">🏷️ Etiquetas</span>
           <div class="tags-container">
             {frontmatter.tags.map((tag: string) => (
-              <a href={`/tags/${tag}`} class="tag">#{tag}</a>
+              <button type="button" class="tag filter-trigger" data-type="tags" data-value={tag}>#{tag}</button>
             ))}
           </div>
         </div>

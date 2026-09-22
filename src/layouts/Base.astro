@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import LeftSidebar from '../components/LeftSidebar.astro';
 import RightSidebar from '../components/RightSidebar.astro';
 import { ClientRouter } from 'astro:transitions';
+import FilterModal from '../components/FilterModal.astro';
 
 const {
   title,
@@ -52,34 +53,38 @@ const estiloDoc = frontmatter.theme || 'moderno';
         });
       })();
     </script>
-  <link 
-    rel="stylesheet" 
-    href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" 
-    crossorigin="anonymous" 
-  />
+    <link 
+      rel="stylesheet" 
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" 
+      crossorigin="anonymous" 
+    />
   </head>
   <body>
     <Header />
-
     <div class={`layout-grid ${isLanding ? 'landing-mode' : ''}`}>
-      <aside class="sticky-panel left-panel hide-on-mobile">
-        <LeftSidebar headings={headings} />
-      </aside>
+       <aside class="sticky-panel left-panel hide-on-mobile">
+         <LeftSidebar headings={headings} />
+       </aside>
+       <main class="main-content" data-pagefind-ignore>
+         <div class="content-wrapper">
+           <slot />
+         </div>
+       </main>
+       <aside class="sticky-panel right-panel hide-on-tablet">
+         <RightSidebar frontmatter={frontmatter} docId={docId} />
+       </aside>
+     </div>
+     
+     <FilterModal />
 
-      <main class="main-content" data-pagefind-ignore>
-        <div class="content-wrapper">
-          <slot />
-        </div>
-      </main>
-
-      <aside class="sticky-panel right-panel hide-on-tablet">
-        <RightSidebar frontmatter={frontmatter} docId={docId} />
-      </aside>
-    </div>
-
-    <!-- BOTÓN COPIAR CÓDIGO -->
+    <!-- SCRIPT GLOBAL UNIFICADO (Optimizado para ciclo de vida de Astro) -->
     <script>
+      import { renderMermaid } from '../utils/mermaidViewer';
+
       document.addEventListener('astro:page-load', () => {
+        // ==========================================
+        // 1. BOTÓN COPIAR CÓDIGO
+        // ==========================================
         document.querySelectorAll('.main-content pre').forEach((preNode) => {
           const pre = preNode as HTMLElement;
           const isMermaid = pre.getAttribute('data-language') === 'mermaid' || !!pre.querySelector('.language-mermaid');
@@ -109,15 +114,215 @@ const estiloDoc = frontmatter.theme || 'moderno';
 
           pre.appendChild(btn);
         });
+
+        // ==========================================
+        // 2. INICIALIZADOR DE MERMAID
+        // ==========================================
+        renderMermaid(false);
+
+        // ==========================================
+        // 3. AISLAMIENTO DE PAGEFIND EN FÓRMULAS
+        // ==========================================
+        document.querySelectorAll('.katex-mathml, .katex-html').forEach(el => {
+          if (!el.hasAttribute('data-pagefind-ignore')) {
+            el.setAttribute('data-pagefind-ignore', 'true');
+          }
+        });
+
+        // ==========================================
+        // 4. GESTIÓN DE SIDEBARS MÓVILES Y MODALES
+        // ==========================================
+        const checkModals = () => {
+          const mermaidModal = document.getElementById('mermaid-global-modal');
+          const graphModal = document.getElementById('graph-modal');
+          const filterModal = document.getElementById('filter-modal');
+          
+          const isMermaidActive = mermaidModal?.classList.contains('is-active');
+          const isGraphActive = graphModal?.classList.contains('active') || graphModal?.classList.contains('is-active');
+          const isFilterActive = filterModal?.classList.contains('is-active');
+
+          if (isMermaidActive || isGraphActive || isFilterActive) {
+            document.body.style.overflow = 'hidden';
+          } else {
+            document.body.style.overflow = '';
+          }
+        };
+
+        // ==========================================
+        // 5. NAVEGACIÓN Y SCROLL POR HASH (#)
+        // ==========================================
+        const scrollToHash = (hash: string) => {
+          if (!hash) return;
+          const targetElement = document.querySelector(hash);
+          const mainContent = document.querySelector('.main-content');
+          const header = document.querySelector('.main-header');
+          
+          if (targetElement && mainContent) {
+            const headerHeight = header ? header.getBoundingClientRect().height : 60;
+            const elementPosition = targetElement.getBoundingClientRect().top;
+            const currentScroll = mainContent.scrollTop;
+            const offsetPosition = elementPosition + currentScroll - headerHeight - 20;
+            
+            mainContent.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        };
+
+        if (window.location.hash) {
+          setTimeout(() => scrollToHash(window.location.hash), 100);
+        }
+
+        // ==========================================
+        // 6. GESTIÓN CENTRALIZADA DE CLICS GLOBALES
+        // ==========================================
+        let allDocsCache: any[] = [];
+
+        async function getDocs() {
+          if (allDocsCache.length > 0) return allDocsCache;
+          try {
+            const res = await fetch('/api/filter.json');
+            allDocsCache = await res.json();
+            return allDocsCache;
+          } catch (err) {
+            console.error('Error cargando índice de filtros:', err);
+            return [];
+          }
+        }
+
+        const filterModal = document.getElementById('filter-modal');
+        const modalTitle = document.getElementById('filter-modal-title');
+        const modalBadge = document.getElementById('filter-modal-badge');
+        const modalList = document.getElementById('filter-modal-list');
+        const closeBtn = filterModal?.querySelector('.filter-modal-close');
+
+        function closeFilterModal() {
+          filterModal?.classList.remove('is-active');
+          checkModals();
+        }
+
+        closeBtn?.addEventListener('click', closeFilterModal);
+        filterModal?.addEventListener('click', (e) => {
+          if (e.target === filterModal) closeFilterModal();
+        });
+
+        document.addEventListener('click', async (e) => {
+          const target = e.target as HTMLElement;
+
+          // A. Cierre de sidebars móviles al hacer clic fuera
+          const leftPanel = document.querySelector('.left-panel');
+          const rightPanel = document.querySelector('.right-panel');
+          const isLeftOpen = leftPanel?.classList.contains('show-mobile-menu');
+          const isRightOpen = rightPanel?.classList.contains('show-mobile-right');
+
+          if (isLeftOpen || isRightOpen) {
+            const clickedInsideLeft = leftPanel?.contains(target);
+            const clickedInsideRight = rightPanel?.contains(target);
+            const clickedToggleButton = target.closest('button, a') && (
+              target.closest('[id*="toggle"]') || 
+              target.closest('[class*="menu"]') || 
+              target.closest('header button')
+            );
+
+            if (!clickedToggleButton) {
+              if (isLeftOpen && leftPanel && !clickedInsideLeft) leftPanel.classList.remove('show-mobile-menu');
+              if (isRightOpen && rightPanel && !clickedInsideRight) rightPanel.classList.remove('show-mobile-right');
+            }
+          }
+
+          // B. Intercepción de Anclajes (#)
+          const link = target.closest('a') as HTMLAnchorElement | null;
+          if (link) {
+            const href = link.getAttribute('href') || '';
+            if (href.includes('#') && !href.startsWith('http')) {
+              const [path, hash] = href.split('#');
+              const currentPath = window.location.pathname;
+              if (!path || currentPath.endsWith(path) || path === '') {
+                const targetEl = document.getElementById(hash);
+                if (targetEl) {
+                  e.preventDefault();
+                  history.pushState(null, '', '#' + hash);
+                  scrollToHash('#' + hash);
+                  return;
+                }
+              }
+            }
+          }
+
+          // C. Intercepción de Filtros (Sidebar Right)
+          const trigger = target.closest('.filter-trigger') as HTMLElement;
+          if (trigger) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            const type = trigger.getAttribute('data-type');
+            const rawValue = trigger.getAttribute('data-value') || '';
+
+            const docs = await getDocs();
+            let filtered: any[] = [];
+            let badgeText = '';
+            let titleText = '';
+
+            if (type === 'tags') {
+              badgeText = 'Etiqueta';
+              titleText = `#${rawValue}`;
+              filtered = docs.filter(d => d.tags && d.tags.includes(rawValue));
+            } else if (type === 'curso') {
+              badgeText = 'Asignatura';
+              titleText = rawValue;
+              filtered = docs.filter(d => d.curso === rawValue);
+            } else if (type === 'ciclo') {
+              badgeText = 'Nivel Académico';
+              titleText = `Ciclo ${rawValue}`;
+              filtered = docs.filter(d => String(d.ciclo) === rawValue);
+            } else if (type === 'dificultad') {
+              badgeText = 'Dificultad';
+              titleText = rawValue;
+              filtered = docs.filter(d => d.dificultad === rawValue);
+            } else if (type === 'autor') {
+              badgeText = 'Autor';
+              titleText = rawValue;
+              filtered = docs.filter(d => d.author === rawValue);
+            }
+
+            if (modalBadge) modalBadge.textContent = badgeText;
+            if (modalTitle) modalTitle.textContent = titleText;
+            
+            if (modalList) {
+              modalList.innerHTML = filtered.length > 0 
+                ? filtered.map(doc => {
+                    return `
+                      <li>
+                        <a href="/docs/${doc.id}" class="filter-card-item">
+                          <span class="card-icon">📄</span>
+                          <h3>${doc.title}</h3>
+                        </a>
+                      </li>
+                    `;
+                  }).join('')
+                : '<p style="text-align:center; opacity:0.6; padding: 2rem 0; grid-column: 1 / -1;">No se encontraron apuntes con este filtro.</p>';
+            }
+
+            filterModal?.classList.add('is-active');
+            checkModals();
+          }
+        });
+
+        // ==========================================
+        // 7. GESTIÓN DE TECLADO (ESC)
+        // ==========================================
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeFilterModal();
+            const graphModal = document.getElementById('graph-modal');
+            if (graphModal) graphModal.classList.remove('active', 'is-active');
+            setTimeout(checkModals, 50);
+          }
+        });
       });
-    </script>
 
-    <!-- INICIALIZADOR MODULAR DE MERMAID -->
-    <script>
-      import { renderMermaid } from '../utils/mermaidViewer';
-
-      document.addEventListener('astro:page-load', () => renderMermaid(false));
-
+      // Observador de cambios de tema para Mermaid
       let themeTimeout: ReturnType<typeof setTimeout>;
       const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -135,124 +340,5 @@ const estiloDoc = frontmatter.theme || 'moderno';
         attributeFilter: ['data-modo']
       });
     </script>
-    <!-- NUEVO SCRIPT PARA EVITAR QUE PAGEFIND DUPLIQUE EL CÓDIGO DE LAS FÓRMULAS -->
-    <script>
-      document.addEventListener('astro:page-load', () => {
-        document.querySelectorAll('.katex-mathml, .katex-html').forEach(el => {
-          if (!el.hasAttribute('data-pagefind-ignore')) {
-            el.setAttribute('data-pagefind-ignore', 'true');
-          }
-        });
-      });
-    </script>
-    <script>
-  document.addEventListener('astro:page-load', () => {
-    // 1. Cierre seguro de sidebars móviles al hacer clic fuera
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const leftPanel = document.querySelector('.left-panel');
-      const rightPanel = document.querySelector('.right-panel');
-      
-      const isLeftOpen = leftPanel?.classList.contains('show-mobile-menu');
-      const isRightOpen = rightPanel?.classList.contains('show-mobile-right');
-
-      if (!isLeftOpen && !isRightOpen) return;
-
-      const clickedInsideLeft = leftPanel?.contains(target);
-      const clickedInsideRight = rightPanel?.contains(target);
-
-      const clickedToggleButton = target.closest('button, a') && (
-        target.closest('[id*="toggle"]') || 
-        target.closest('[class*="menu"]') || 
-        target.closest('header button')
-      );
-
-      if (clickedToggleButton) return;
-
-      if (isLeftOpen && leftPanel && !clickedInsideLeft) {
-        leftPanel.classList.remove('show-mobile-menu');
-      }
-      if (isRightOpen && rightPanel && !clickedInsideRight) {
-        rightPanel.classList.remove('show-mobile-right');
-      }
-    });
-
-    // 2. Control de scroll de fondo para modales (Mermaid / Grafo)
-    const checkModals = () => {
-      const mermaidModal = document.getElementById('mermaid-global-modal');
-      const graphModal = document.getElementById('graph-modal');
-      
-      const isMermaidActive = mermaidModal?.classList.contains('is-active');
-      const isGraphActive = graphModal?.classList.contains('active') || graphModal?.classList.contains('is-active');
-
-      if (isMermaidActive || isGraphActive) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    };
-
-    document.addEventListener('click', () => {
-      setTimeout(checkModals, 50);
-    });
-    
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        setTimeout(checkModals, 50);
-      }
-    });
-  });
-</script>
-<script>
-  document.addEventListener('astro:page-load', () => {
-    const scrollToHash = (hash: string) => {
-      if (!hash) return;
-      const targetElement = document.querySelector(hash);
-      const mainContent = document.querySelector('.main-content');
-      const header = document.querySelector('.main-header');
-      
-      if (targetElement && mainContent) {
-        const headerHeight = header ? header.getBoundingClientRect().height : 60;
-        const elementPosition = targetElement.getBoundingClientRect().top;
-        const currentScroll = mainContent.scrollTop;
-        const offsetPosition = elementPosition + currentScroll - headerHeight - 20;
-        
-        mainContent.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-    };
-
-    // Si la página carga directamente con un hash en la URL
-    if (window.location.hash) {
-      setTimeout(() => scrollToHash(window.location.hash), 100);
-    }
-
-    // Interceptar clics en enlaces internos que contengan un anclaje (#)
-    document.addEventListener('click', (e: MouseEvent) => {
-      const targetElement = e.target as HTMLElement | null;
-      const link = targetElement?.closest('a') as HTMLAnchorElement | null;
-
-      if (link) {
-        const href = link.getAttribute('href') || '';
-        if (href.includes('#')) {
-          const [path, hash] = href.split('#');
-          const currentPath = window.location.pathname;
-
-          if (!path || currentPath.endsWith(path) || path === '') {
-            const targetEl = document.getElementById(hash);
-            if (targetEl) {
-              e.preventDefault();
-              history.pushState(null, '', '#' + hash);
-              scrollToHash('#' + hash);
-            }
-          }
-        }
-      }
-    });
-  });
-</script>
-
   </body>
 </html>

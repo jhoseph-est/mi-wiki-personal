@@ -22,6 +22,6 @@ const docs = defineCollection({
     tiempoLectura: z.string().optional(),
     referencia: z.string().optional(),
   })
-}); // <-- ¡Asegúrate de cerrar el esquema y defineCollection aquí correctamente!
+});
 
 export const collections = { docs };

@@ -5,7 +5,6 @@ import GraphModal from '../../components/GraphModal.astro';
 import FolderView from '../../components/FolderView.astro';
 import { formatName, generateDocPaths } from '../../utils/fileTree';
 
-
 export async function getStaticPaths() {
   const allDocs = await getCollection('docs');
   return generateDocPaths(allDocs);
@@ -56,8 +55,7 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
       <a href="/" class="crumb-link" title="Inicio">Inicio</a>
       <span class="crumb-separator"> &rsaquo; </span>
       <a href="/docs/explorar" class="crumb-link" title="Explorador">Explorador</a>
-      {breadcrumbs.length > 0 && <span class="crumb-separator"> &rsaquo; </span>}
-             
+      {breadcrumbs.length > 0 && <span class="crumb-separator"> &rsaquo; </span>}                    
       {breadcrumbs.map((folder, index) => {
         const path = '/docs/' + breadcrumbs.slice(0, index + 1).join('/');
         return (
@@ -82,7 +80,6 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
             Grafo
           </button>
           <GraphModal />
-          <!-- NUEVO BOTÓN PARA EXPORTAR PDF -->
           <button id="btn-export-pdf" class="action-btn" title="Descargar como PDF">
             PDF
           </button>
@@ -99,8 +96,7 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
       <article>
         <Content />
       </article>
-      <hr class="nav-divider" />
-               
+      <hr class="nav-divider" />                      
       <div class="doc-nav">
         {props.prev ? (
           <a href={`/docs/${props.prev.id.replace(/\\/g, '/')}`} class="nav-btn prev">
@@ -113,7 +109,6 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
             <span class="nav-title">Inicio de sección</span>
           </div>
         )}
-
         {props.next ? (
           <a href={`/docs/${props.next.id.replace(/\\/g, '/')}`} class="nav-btn next">
             <span class="nav-label">Siguiente &rarr;</span>
@@ -161,10 +156,11 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
 
 <script>
   document.addEventListener('astro:page-load', () => {
+    // 1. Control de Pantalla Completa y Atajos
     const btnFs = document.getElementById('btn-fullscreen');
     const mainContent = document.querySelector('.main-content');
     const btnPresent = document.querySelector('.presentation-btn');
-         
+
     const toggleFullScreen = () => {
       if (!document.fullscreenElement) {
         mainContent?.requestFullscreen().catch(err => console.log(err));
@@ -174,15 +170,25 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         if(btnFs) btnFs.innerHTML = ' Leer';
       }
     };
-         
+
     if (btnFs) btnFs.addEventListener('click', toggleFullScreen);
-         
+
+    // 2. Botón de Exportar a PDF
+    const btnPdf = document.getElementById('btn-export-pdf');
+    if (btnPdf) {
+      btnPdf.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    // 3. Atajos de teclado generales
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-             
+
       const graphModal = document.getElementById('graph-modal');
       const isGraphOpen = graphModal?.classList.contains('active');
+      
       if (e.key === 'Escape' && isGraphOpen) {
         graphModal?.classList.remove('active');
       }
@@ -195,15 +201,5 @@ if (props.type === 'folder' && props.folderPath === 'explorar') {
         (btnPresent as HTMLAnchorElement).click();
       }
     });
-  });
-  document.addEventListener('astro:page-load', () => {
-    // ... tu código existente de fullscreen y atajos ...
-
-    const btnPdf = document.getElementById('btn-export-pdf');
-    if (btnPdf) {
-      btnPdf.addEventListener('click', () => {
-        window.print();
-      });
-    }
   });
 </script>

@@ -14,7 +14,7 @@ const docs = defineCollection({
     orden: z.number().optional(),
     slides: z.boolean().optional(),
     draft: z.boolean().default(false),
-    
+         
     // Metadatos adicionales para notas académicas y wiki
     curso: z.string().optional(),
     ciclo: z.union([z.string(), z.number()]).optional(),
@@ -22,6 +22,6 @@ const docs = defineCollection({
     tiempoLectura: z.string().optional(),
     referencia: z.string().optional(),
   })
-});
+}); // <-- ¡Asegúrate de cerrar el esquema y defineCollection aquí correctamente!
 
 export const collections = { docs };

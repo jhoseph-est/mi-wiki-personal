@@ -6,7 +6,7 @@ tags:
   - guia
   - sistema
   - buscador
-icon: 🤖
+theme: minimalista
 ---
 
 # Cómo usar el Buscador Avanzado
@@ -33,3 +33,10 @@ Si trabajas con múltiples colaboradores o fuentes, busca por el creador del doc
 Puedes mezclar todos los comandos anteriores separados por un espacio para crear filtros ultra precisos.  
 *Ejemplo:* `guia #frontend -#css @admin`
 *(Traducción: "Busca apuntes que tengan la palabra 'guia' en el título, que tengan la etiqueta 'frontend', que NO tengan la etiqueta 'css', y que estén escritos por 'admin'").*
+
+```mermaid
+%%layout: pan-x%%
+graph LR
+A --> B
+B --> C
+```

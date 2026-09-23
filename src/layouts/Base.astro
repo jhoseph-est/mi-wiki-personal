@@ -5,6 +5,7 @@ import LeftSidebar from '../components/LeftSidebar.astro';
 import RightSidebar from '../components/RightSidebar.astro';
 import { ClientRouter } from 'astro:transitions';
 import FilterModal from '../components/FilterModal.astro';
+import GlobalModal from '../components/GlobalModal.astro'; // <--- Importamos el nuevo componente
 
 const {
   title,
@@ -76,8 +77,8 @@ const estiloDoc = frontmatter.theme || 'moderno';
      </div>
      
      <FilterModal />
+     <GlobalModal /> <!-- <--- Renderizamos el modal global aquí -->
 
-    <!-- SCRIPT GLOBAL UNIFICADO (Optimizado para ciclo de vida de Astro) -->
     <script>
       import { renderMermaid } from '../utils/mermaidViewer';
 
@@ -130,87 +131,65 @@ const estiloDoc = frontmatter.theme || 'moderno';
         });
 
         // ==========================================
-        // 4. GESTIÓN DE SIDEBARS MÓVILES Y MODALES
+        // 4. GESTIÓN CENTRALIZADA DE OVERFLOW (MODALES)
         // ==========================================
         const checkModals = () => {
-          const mermaidModal = document.getElementById('mermaid-global-modal');
-          const graphModal = document.getElementById('graph-modal');
+          const globalModal = document.getElementById('global-modal');
           const filterModal = document.getElementById('filter-modal');
+          const graphModal = document.getElementById('graph-modal'); // Por retrocompatibilidad temporal si existe
           
-          const isMermaidActive = mermaidModal?.classList.contains('is-active');
-          const isGraphActive = graphModal?.classList.contains('active') || graphModal?.classList.contains('is-active');
+          const isGlobalActive = globalModal?.classList.contains('is-active');
           const isFilterActive = filterModal?.classList.contains('is-active');
+          const isGraphActive = graphModal?.classList.contains('active') || graphModal?.classList.contains('is-active');
 
-          if (isMermaidActive || isGraphActive || isFilterActive) {
+          if (isGlobalActive || isFilterActive || isGraphActive) {
             document.body.style.overflow = 'hidden';
           } else {
             document.body.style.overflow = '';
           }
         };
 
+        // Escucha global para abrir el modal unificado mediante eventos
+        window.addEventListener('open-global-modal', ((e: CustomEvent) => {
+          const { title, subtitle, contentHTML } = e.detail || {};
+          const modal = document.getElementById('global-modal');
+          const titleEl = document.getElementById('global-modal-title');
+          const subtitleEl = document.getElementById('global-modal-subtitle');
+          const bodyEl = document.getElementById('global-modal-body');
+
+          if (titleEl) titleEl.textContent = title || '';
+          if (subtitleEl) subtitleEl.textContent = subtitle || '';
+          if (bodyEl && contentHTML) {
+            bodyEl.innerHTML = '';
+            if (typeof contentHTML === 'string') {
+              bodyEl.innerHTML = contentHTML;
+            } else if (contentHTML instanceof HTMLElement) {
+              bodyEl.appendChild(contentHTML);
+            }
+          }
+
+          modal?.classList.add('is-active');
+          checkModals();
+        }) as EventListener);
+
+        const closeGlobalModal = () => {
+          const modal = document.getElementById('global-modal');
+          modal?.classList.remove('is-active');
+          checkModals();
+        };
+
+        document.getElementById('global-modal-close')?.addEventListener('click', closeGlobalModal);
+        document.getElementById('global-modal')?.addEventListener('click', (e) => {
+          if (e.target === document.getElementById('global-modal')) closeGlobalModal();
+        });
+
         // ==========================================
         // 5. NAVEGACIÓN Y SCROLL POR HASH (#)
         // ==========================================
-        const scrollToHash = (hash: string) => {
-          if (!hash) return;
-          const targetElement = document.querySelector(hash);
-          const mainContent = document.querySelector('.main-content');
-          const header = document.querySelector('.main-header');
-          
-          if (targetElement && mainContent) {
-            const headerHeight = header ? header.getBoundingClientRect().height : 60;
-            const elementPosition = targetElement.getBoundingClientRect().top;
-            const currentScroll = mainContent.scrollTop;
-            const offsetPosition = elementPosition + currentScroll - headerHeight - 20;
-            
-            mainContent.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          }
-        };
-
-        if (window.location.hash) {
-          setTimeout(() => scrollToHash(window.location.hash), 100);
-        }
-
-        // ==========================================
-        // 6. GESTIÓN CENTRALIZADA DE CLICS GLOBALES
-        // ==========================================
-        let allDocsCache: any[] = [];
-
-        async function getDocs() {
-          if (allDocsCache.length > 0) return allDocsCache;
-          try {
-            const res = await fetch('/api/filter.json');
-            allDocsCache = await res.json();
-            return allDocsCache;
-          } catch (err) {
-            console.error('Error cargando índice de filtros:', err);
-            return [];
-          }
-        }
-
-        const filterModal = document.getElementById('filter-modal');
-        const modalTitle = document.getElementById('filter-modal-title');
-        const modalBadge = document.getElementById('filter-modal-badge');
-        const modalList = document.getElementById('filter-modal-list');
-        const closeBtn = filterModal?.querySelector('.filter-modal-close');
-
-        function closeFilterModal() {
-          filterModal?.classList.remove('is-active');
-          checkModals();
-        }
-
-        closeBtn?.addEventListener('click', closeFilterModal);
-        filterModal?.addEventListener('click', (e) => {
-          if (e.target === filterModal) closeFilterModal();
-        });
-
-        document.addEventListener('click', async (e) => {
+        document.addEventListener('click', (e) => {
           const target = e.target as HTMLElement;
 
-          // A. Cierre de sidebars móviles al hacer clic fuera
+          // Cierre de sidebars móviles
           const leftPanel = document.querySelector('.left-panel');
           const rightPanel = document.querySelector('.right-panel');
           const isLeftOpen = leftPanel?.classList.contains('show-mobile-menu');
@@ -231,92 +210,39 @@ const estiloDoc = frontmatter.theme || 'moderno';
             }
           }
 
-          // B. Intercepción de Anclajes (#)
+          // Intercepción de Anclajes (#)
           const link = target.closest('a') as HTMLAnchorElement | null;
           if (link) {
             const href = link.getAttribute('href') || '';
             if (href.includes('#') && !href.startsWith('http')) {
-              const [path, hash] = href.split('#');
+              const [path, rawHash] = href.split('#');
               const currentPath = window.location.pathname;
               if (!path || currentPath.endsWith(path) || path === '') {
-                const targetEl = document.getElementById(hash);
-                if (targetEl) {
-                  e.preventDefault();
-                  history.pushState(null, '', '#' + hash);
-                  scrollToHash('#' + hash);
-                  return;
+                try {
+                  // Selector de atributos [id="..."] es totalmente inmune a IDs numéricos o símbolos
+                  const targetEl = document.querySelector(`[id="${CSS.escape(rawHash)}"]`);
+                  if (targetEl) {
+                    e.preventDefault();
+                    history.pushState(null, '', '#' + rawHash);
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    return;
+                  }
+                } catch (err) {
+                  console.warn('Error al navegar al anclaje:', err);
                 }
               }
             }
           }
-
-          // C. Intercepción de Filtros (Sidebar Right)
-          const trigger = target.closest('.filter-trigger') as HTMLElement;
-          if (trigger) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-            const type = trigger.getAttribute('data-type');
-            const rawValue = trigger.getAttribute('data-value') || '';
-
-            const docs = await getDocs();
-            let filtered: any[] = [];
-            let badgeText = '';
-            let titleText = '';
-
-            if (type === 'tags') {
-              badgeText = 'Etiqueta';
-              titleText = `#${rawValue}`;
-              filtered = docs.filter(d => d.tags && d.tags.includes(rawValue));
-            } else if (type === 'curso') {
-              badgeText = 'Asignatura';
-              titleText = rawValue;
-              filtered = docs.filter(d => d.curso === rawValue);
-            } else if (type === 'ciclo') {
-              badgeText = 'Nivel Académico';
-              titleText = `Ciclo ${rawValue}`;
-              filtered = docs.filter(d => String(d.ciclo) === rawValue);
-            } else if (type === 'dificultad') {
-              badgeText = 'Dificultad';
-              titleText = rawValue;
-              filtered = docs.filter(d => d.dificultad === rawValue);
-            } else if (type === 'autor') {
-              badgeText = 'Autor';
-              titleText = rawValue;
-              filtered = docs.filter(d => d.author === rawValue);
-            }
-
-            if (modalBadge) modalBadge.textContent = badgeText;
-            if (modalTitle) modalTitle.textContent = titleText;
-            
-            if (modalList) {
-              modalList.innerHTML = filtered.length > 0 
-                ? filtered.map(doc => {
-                    return `
-                      <li>
-                        <a href="/docs/${doc.id}" class="filter-card-item">
-                          <span class="card-icon">📄</span>
-                          <h3>${doc.title}</h3>
-                        </a>
-                      </li>
-                    `;
-                  }).join('')
-                : '<p style="text-align:center; opacity:0.6; padding: 2rem 0; grid-column: 1 / -1;">No se encontraron apuntes con este filtro.</p>';
-            }
-
-            filterModal?.classList.add('is-active');
-            checkModals();
-          }
         });
 
         // ==========================================
-        // 7. GESTIÓN DE TECLADO (ESC)
+        // 6. GESTIÓN DE TECLADO (ESC)
         // ==========================================
         window.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') {
-            closeFilterModal();
-            const graphModal = document.getElementById('graph-modal');
-            if (graphModal) graphModal.classList.remove('active', 'is-active');
+            closeGlobalModal();
+            const filterModal = document.getElementById('filter-modal');
+            filterModal?.classList.remove('is-active');
             setTimeout(checkModals, 50);
           }
         });

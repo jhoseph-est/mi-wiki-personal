@@ -246,9 +246,52 @@ body {
   .doc-nav,
   .nav-divider,
   .copy-code-btn,
-  #graph-modal,
+  #global-modal,
   .main-content::after {
     display: none !important;
+  }
+
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 12pt !important;
+  }
+
+  .layout-grid {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .content-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  pre, table, .mermaid-native, .gantt-native-card, blockquote {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 1.5rem 0 !important;
+  }
+
+  .mermaid-native svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .mermaid-native.is-gantt svg {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
   }
 
   html, body {

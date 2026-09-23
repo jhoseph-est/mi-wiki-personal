@@ -311,6 +311,7 @@ const tocTree = buildToc(headings);
     });
 
     // Scroll espía del TOC conectado al contenedor .main-content
+    // Scroll espía del TOC conectado al contenedor .main-content
     if (tocObserver) {
       tocObserver.disconnect();
       tocObserver = null;
@@ -320,32 +321,41 @@ const tocTree = buildToc(headings);
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>('#toc-pane a[href^="#"]');
 
     if (mainContent && tocLinks.length > 0) {
-      tocObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const targetId = entry.target.getAttribute('id');
-              tocLinks.forEach((link) => {
-                const href = link.getAttribute('href');
-                if (href === `#${targetId}`) {
-                  link.classList.add('toc-active');
-                } else {
-                  link.classList.remove('toc-active');
-                }
-              });
-            }
-          });
-        },
-        {
-          root: mainContent, // CLAVE: el scroll ocurre dentro de .main-content
-          rootMargin: '-5% 0px -75% 0px',
-          threshold: 0
-        }
-      );
+      const setupObserver = () => {
+        if (tocObserver) tocObserver.disconnect();
 
-      mainContent.querySelectorAll('h1[id], h2[id], h3[id], h4[id]').forEach((heading) => {
-        tocObserver?.observe(heading);
-      });
+        tocObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const targetId = entry.target.getAttribute('id');
+                tocLinks.forEach((link) => {
+                  const href = link.getAttribute('href');
+                  if (href === `#${targetId}`) {
+                    link.classList.add('toc-active');
+                  } else {
+                    link.classList.remove('toc-active');
+                  }
+                });
+              }
+            });
+          },
+          {
+            root: mainContent,
+            rootMargin: '-10% 0px -65% 0px',
+            threshold: 0
+          }
+        );
+
+        mainContent.querySelectorAll('h1[id], h2[id], h3[id], h4[id]').forEach((heading) => {
+          tocObserver?.observe(heading);
+        });
+      };
+
+      // Inicializamos de inmediato y re-sincronizamos a los 300ms 
+      // para dar tiempo a que Mermaid y KaTeX expandan el DOM
+      setupObserver();
+      setTimeout(setupObserver, 300);
     }
   }
 

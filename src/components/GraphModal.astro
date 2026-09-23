@@ -1,86 +1,7 @@
 ---
 // src/components/GraphModal.astro
 ---
-<div id="graph-modal" class="graph-modal-overlay">
-  <div class="graph-modal-content">
-    <div class="graph-modal-header">
-      <div>
-        <h3 class="graph-title">Red de Conocimiento</h3>
-        <p class="graph-subtitle">Haz clic en un nodo para navegar a ese apunte.</p>
-      </div>
-      <button id="close-graph-btn" class="close-btn" aria-label="Cerrar grafo">
-        Cerrar
-      </button>
-    </div>
-    <div id="graph-container"></div>
-  </div>
-</div>
-
-<style>
-  .graph-modal-overlay {
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px); 
-    z-index: 9999; 
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    opacity: 0;
-    pointer-events: none; 
-    transition: opacity 0.2s ease;
-  }
-  .graph-modal-overlay.active { 
-    opacity: 1; 
-    pointer-events: auto; 
-  }
-  .graph-modal-content {
-    width: 95vw; 
-    height: 90vh; 
-    background: var(--bg-color);
-    border: 1px solid var(--border-color); 
-    border-radius: 12px;
-    display: flex; 
-    flex-direction: column;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
-    overflow: hidden;
-  }
-  .graph-modal-header {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    padding: 1rem 1.5rem; 
-    border-bottom: 1px solid var(--border-color);
-    background: var(--header-bg);
-  }
-  .graph-title { margin: 0; color: #8b5cf6; font-size: 1.1rem; }
-  .graph-subtitle { margin: 0; opacity: 0.7; font-size: 0.85rem; color: var(--text-color); }
-
-  #graph-container { 
-    flex-grow: 1; 
-    width: 100%; 
-    height: 100%; 
-    cursor: grab; 
-    position: relative; 
-  }
-  #graph-container:active { cursor: grabbing; }
-  
-  .close-btn {
-    background: rgba(239, 68, 68, 0.1); 
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3); 
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold;
-    font-size: 0.85rem; 
-    transition: all 0.2s ease;
-  }
-  .close-btn:hover { 
-    background: #ef4444; 
-    color: white; 
-  }
-</style>
+<!-- Ya no necesitamos duplicar el HTML del modal aquí -->
 
 <script>
   import ForceGraph from 'force-graph';
@@ -94,13 +15,12 @@
     color?: string;
   }
 
-  // 1. Tipo derivado automáticamente sin depender de exportaciones inexistentes
   type ForceGraphInstance = {
-  width: (w?: number) => any;
-  height: (h?: number) => any;
-  zoomToFit: (duration?: number, padding?: number) => any;
-  _destructor?: () => void;
-  [key: string]: any;
+    width: (w?: number) => any;
+    height: (h?: number) => any;
+    zoomToFit: (duration?: number, padding?: number) => any;
+    _destructor?: () => void;
+    [key: string]: any;
   };
 
   let Graph: ForceGraphInstance | null = null;
@@ -123,37 +43,43 @@
 
   function setupGraphModal() {
     const btnToggleGraph = document.getElementById('btn-toggle-graph');
-    const graphModal = document.getElementById('graph-modal');
-    const closeGraphBtn = document.getElementById('close-graph-btn');
-    const graphContainer = document.getElementById('graph-container');
-         
-    if (!btnToggleGraph || !graphModal || !graphContainer) return;
+    if (!btnToggleGraph) return;
 
     let isFetching = false;
 
-    const closeGraphModal = () => {
-      graphModal.classList.remove('active');
-      destroyGraph(graphContainer);
-    };
+    btnToggleGraph.onclick = () => {
+      // 1. Creamos dinámicamente el contenedor interno para el grafo
+      const graphContainer = document.createElement('div');
+      graphContainer.id = 'graph-container';
+      graphContainer.style.width = '100%';
+      graphContainer.style.height = '100%';
+      graphContainer.style.cursor = 'grab';
+      graphContainer.style.position = 'relative';
 
-    const openGraphModal = () => {
-      graphModal.classList.add('active');
+      // 2. Disparamos el evento global para abrir el modal unificado
+      window.dispatchEvent(new CustomEvent('open-global-modal', {
+        detail: {
+          title: 'Red de Conocimiento',
+          subtitle: 'Haz clic en un nodo para navegar a ese apunte.',
+          contentHTML: graphContainer
+        }
+      }));
+
       if (Graph || isFetching) return;
       isFetching = true;
-      graphContainer.innerHTML = '';
 
       fetch('/api/graph.json')
         .then((res) => res.json())
         .then((data) => {
           isFetching = false;
-          if (!graphModal.classList.contains('active')) return;
+          const globalModal = document.getElementById('global-modal');
+          if (!globalModal?.classList.contains('is-active')) return;
 
           const isDark = document.documentElement.getAttribute('data-modo') === 'oscuro';
           const computedBg = window.getComputedStyle(document.body).backgroundColor;
           const lineColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
           const textColor = isDark ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 23, 42, 0.85)';
 
-          // 2. Ejecución segura para evitar TS2348
           const createGraph = ForceGraph as any;
           Graph = createGraph()(graphContainer)
             .graphData(data)
@@ -182,7 +108,10 @@
             .onNodeClick((node: unknown) => {
               const n = node as GraphNodeObject;
               if (n && n.id) {
-                closeGraphModal();
+                // Cerramos el modal limpiando el estado
+                document.getElementById('global-modal')?.classList.remove('is-active');
+                destroyGraph(graphContainer);
+                document.body.style.overflow = '';
                 navigate(n.id);
               }
             });
@@ -206,13 +135,6 @@
         .catch(() => { 
           isFetching = false; 
         });
-    };
-
-    btnToggleGraph.onclick = openGraphModal;
-    if (closeGraphBtn) closeGraphBtn.onclick = closeGraphModal;
-
-    graphModal.onclick = (e) => {
-      if (e.target === graphModal) closeGraphModal();
     };
   }
 

@@ -23,3 +23,10 @@ Este repositorio está construido con **Astro**, **Markdown** y **MDX**, estruct
 ---
 
 Usa el menú superior para ir a la **Portada** y aprender la guía básica e intermedia sobre cómo escribir tus propios archivos `.md` y `.mdx`.
+
+```mermaid
+%%layout: pan-x%%
+graph LR
+A --> B
+B --> C
+```

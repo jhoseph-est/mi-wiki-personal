@@ -16,39 +16,39 @@
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 150, 0.5); }
 
-/* --- ESTRUCTURA BASE --- */
+/* Aseguramos el contenedor raíz en pantalla completa sin desbordamientos raros */
 body {
-  margin: 0;
-  background-color: var(--bg-color) !important;
-  color: var(--text-color) !important;
-  font-family: var(--ui-font) !important;
-  font-size: var(--font-size);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+   margin: 0;
+   background-color: var(--bg-color) !important;
+   color: var(--text-color) !important;
+   font-family: var(--ui-font) !important;
+   font-size: var(--font-size);
+   display: flex;
+   flex-direction: column;
+   height: 100vh;
+   overflow: hidden;
 }
 
+
+/* La rejilla principal ocupa de forma estricta TODO el espacio restante debajo del header */
 .layout-grid {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
-  margin: 0 auto;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
+   display: grid;
+   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
+   margin: 0 auto;
+   width: 100%;
+   flex: 1;
+   min-height: 0; /* Vital para que el scroll interior funcione en CSS Grid */
 }
 
+/* El área central de lectura con su propio scroll y el respiro exacto para los anclajes */
 .main-content {
-  padding: var(--content-padding, 2rem 3rem);
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  box-sizing: border-box;
-  
-  /* AÑADIR ESTAS DOS LÍNEAS */
-  scroll-behavior: smooth; 
-  scroll-padding-top: 1.5rem; /* El respiro visual exacto para que el título no choque con el borde superior */
+   padding: var(--content-padding, 2rem 3rem);
+   height: 100%;
+   overflow-y: auto;
+   overflow-x: hidden;
+   box-sizing: border-box;
+   scroll-behavior: smooth;
+   scroll-padding-top: 3rem; /* RESPIRO OBLIGATORIO: Evita que los títulos queden pegados arriba */
 }
 
 .content-wrapper {
@@ -61,7 +61,7 @@ body {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem;
+  padding: 1rem 1rem 5rem 1rem; /* Padding inferior amplio para evitar cortes al final del scroll */
   box-sizing: border-box;
 }
 
@@ -86,18 +86,18 @@ body {
 }
 
 /* --- HEADER Y NAVEGACIÓN --- */
+/* El Header se queda anclado arriba de forma estática en el flujo flex, sin sticky conflictivo */
 .main-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  height: var(--header-height);
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
-  z-index: 100;
-  position: sticky;
-  top: 0;
-  gap: 15px;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 0 1.5rem;
+   height: var(--header-height);
+   background: var(--header-bg);
+   border-bottom: 1px solid var(--border-color);
+   z-index: 100;
+   flex-shrink: 0; /* Impide que el header se comprima o colapse */
+   gap: 15px;
 }
 
 .logo-container {

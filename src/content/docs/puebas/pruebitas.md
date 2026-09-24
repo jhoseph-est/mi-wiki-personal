@@ -2,12 +2,16 @@
 title: pruebita
 ---
 
+# titulo
+
+
 | Característica | Conductor | Aislante |
 |---|---|---|
 | Movimiento de electrones | Fácil | Difícil |
 | Redistribución de carga | Fácil | Limitada |
 | Ejemplo | Cobre | Plástico |
 
+## subtitulo
 
 
 | Magnitud | Símbolo | Unidad S.I. |
@@ -18,6 +22,7 @@ title: pruebita
 | Constante de Coulomb | $k$ | $N\,m^2/C^2$ |
 | Permitividad del vacío | $\varepsilon_0$ | $C^2/(N\,m^2)$ |
 
+## subtitulo
 
 
 | Distribución discreta | Distribución continua |

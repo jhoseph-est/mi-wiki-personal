@@ -101,7 +101,12 @@ function buildToc(flatHeadings: Heading[]): TocItem[] {
   const toc: TocItem[] = [];
   const parentStack: TocItem[] = [];
 
+  if (!Array.isArray(flatHeadings)) return toc;
+
   flatHeadings.forEach((h) => {
+    // Blindaje: Ignoramos encabezados mal formados que puedan romper la jerarquía
+    if (!h || !h.slug || !h.text) return;
+
     const item: TocItem = { ...h, children: [] };
     while (parentStack.length > 0 && parentStack[parentStack.length - 1].depth >= item.depth) {
       parentStack.pop();

@@ -219,12 +219,26 @@ const estiloDoc = frontmatter.theme || 'moderno';
               const currentPath = window.location.pathname;
               if (!path || currentPath.endsWith(path) || path === '') {
                 try {
-                  // Selector de atributos [id="..."] es totalmente inmune a IDs numéricos o símbolos
                   const targetEl = document.querySelector(`[id="${CSS.escape(rawHash)}"]`);
                   if (targetEl) {
                     e.preventDefault();
                     history.pushState(null, '', '#' + rawHash);
-                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // CORRECCIÓN: Cálculo manual del scroll respetando el header fijo
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                      const headerHeight = 60; // Altura de la cabecera (--header-height)
+                      const containerTop = mainContent.getBoundingClientRect().top;
+                      const elementTop = targetEl.getBoundingClientRect().top;
+                      
+                      // Posición exacta restando el espacio del header y un respiro visual
+                      const offsetPosition = elementTop - containerTop + mainContent.scrollTop - headerHeight - 20;
+
+                      mainContent.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                      });
+                    }
                     return;
                   }
                 } catch (err) {

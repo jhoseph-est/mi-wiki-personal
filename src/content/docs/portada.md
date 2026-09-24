@@ -16,12 +16,12 @@ Todo documento debe iniciar con un bloque YAML superior para definir su título,
 
 ```yaml
 ---
-title: "Título de tu Apunte"
+title: Título de tu Apunte
 date: 2026-09-03
 author: "Tu Nombre"
 tags: ["etiqueta1", "etiqueta2"]
 orden: 2
-theme: "academico" # Opcional: moderno, minimalista, academico, oscuro
+theme: "academico"
 ---
 ```
 
@@ -35,7 +35,7 @@ Puedes usar texto en **negrita**, *cursiva*, listas ordenadas o desordenadas, y 
 
 ## 3. Matemáticas con KaTeX
 
-Para fórmulas en la misma línea de texto, usa un símbolo de dólar: la velocidad de la luz es $c$. Para bloques matemáticos complejos **en archivos .mdx** , usa siempre el bloque de tipo `math`:
+Para fórmulas en la misma línea de texto, usa un símbolo de dólar: la velocidad de la luz es . Para bloques matemáticos complejos **en archivos .mdx** , usa siempre el bloque de tipo `math`:
 
 
 
@@ -51,6 +51,8 @@ Si cambias la extensión de tu archivo a `.mdx`, puedes combinar HTML/JSX con bl
 const mensaje = "¡Hola mundo!";
 console.log(mensaje);
 ```
+
+
 ```mermaid
 %%layout: pan-x%%
 graph LR
